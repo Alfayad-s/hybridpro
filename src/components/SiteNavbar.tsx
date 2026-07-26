@@ -1,0 +1,88 @@
+"use client";
+
+import {
+  Navbar,
+  NavBody,
+  NavItems,
+  NavbarLogo,
+  NavbarButton,
+} from "@/components/ui/resizable-navbar";
+import StaggeredMenu from "@/components/ui/StaggeredMenu";
+import { useIsMobile } from "@/hooks/useIsMobile";
+
+// Desktop pill nav — keep this list short so links never collide when it shrinks.
+const navItems = [
+  { name: "About", link: "#about" },
+  { name: "Programs", link: "#programs" },
+  { name: "Coaching", link: "#coaching" },
+  { name: "Results", link: "#results" },
+  { name: "Pricing", link: "#pricing" },
+  { name: "FAQ", link: "#faq" },
+];
+
+const staggeredItems = [
+  { label: "Experience", ariaLabel: "Go to the scroll experience", link: "#top" },
+  { label: "About", ariaLabel: "Learn about us", link: "#about" },
+  { label: "Programs", ariaLabel: "See training programs", link: "#programs" },
+  { label: "Coaching", ariaLabel: "How coaching works", link: "#coaching" },
+  { label: "Results", ariaLabel: "See client results", link: "#results" },
+  { label: "Pricing", ariaLabel: "See pricing plans", link: "#pricing" },
+  { label: "FAQ", ariaLabel: "Frequently asked questions", link: "#faq" },
+  { label: "Blog", ariaLabel: "Read the blog", link: "#blog" },
+  { label: "Contact", ariaLabel: "Get in touch", link: "#contact" },
+];
+
+const socialItems = [
+  { label: "Instagram", link: "https://instagram.com" },
+  { label: "YouTube", link: "https://youtube.com" },
+  { label: "X", link: "https://x.com" },
+];
+
+export default function SiteNavbar() {
+  const { isMobile, ready } = useIsMobile(1024);
+
+  // Avoid flashing the wrong nav during hydration.
+  if (!ready) {
+    return (
+      <div
+        className="pointer-events-none fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between px-4 sm:px-6"
+        aria-hidden
+      />
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <StaggeredMenu
+        isFixed
+        position="right"
+        items={staggeredItems}
+        socialItems={socialItems}
+        displaySocials
+        displayItemNumbering
+        logoUrl="/company-logo.svg"
+        menuButtonColor="#ffffff"
+        openMenuButtonColor="#39FF14"
+        changeMenuColorOnOpen
+        colors={["#142000", "#A6FF00"]}
+        accentColor="#39FF14"
+      />
+    );
+  }
+
+  return (
+    <div className="relative w-full">
+      <Navbar className="px-4 pt-3 xl:px-6">
+        <NavBody>
+          <NavbarLogo />
+          <NavItems items={navItems} />
+          <div className="relative z-20 flex shrink-0 items-center">
+            <NavbarButton href="#contact" variant="primary" className="px-4 py-2">
+              Join now
+            </NavbarButton>
+          </div>
+        </NavBody>
+      </Navbar>
+    </div>
+  );
+}
