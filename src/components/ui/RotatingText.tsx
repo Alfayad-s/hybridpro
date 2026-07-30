@@ -49,7 +49,10 @@ export type RotatingTextProps = {
   splitLevelClassName?: string;
   elementLevelClassName?: string;
   children?: ReactNode;
-} & Omit<HTMLAttributes<HTMLSpanElement>, "children">;
+} & Omit<
+  HTMLAttributes<HTMLSpanElement>,
+  "children" | "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart"
+>;
 
 const RotatingText = forwardRef<RotatingTextHandle, RotatingTextProps>(
   (props, ref) => {

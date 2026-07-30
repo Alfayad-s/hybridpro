@@ -52,12 +52,9 @@ export const Carousel = ({ items, duration = 40 }: CarouselProps) => {
     setModalOpen(false);
   }, []);
 
-  // Duplicate once for seamless -50% translate loop (clone so each copy has its own state)
+  // Duplicate once for seamless -50% translate loop (clone with unique keys)
   const loopItems = [...items, ...items].map((item, index) =>
-    cloneElement(item, {
-      key: `gallery-loop-${index}`,
-      index: index % items.length,
-    }),
+    cloneElement(item, { key: `gallery-loop-${index}` }),
   );
 
   return (
