@@ -34,7 +34,7 @@ export default function CoachingSection() {
         <Reveal>
           <Eyebrow>Coaching</Eyebrow>
           <SectionTitle>Real coaching, not a PDF.</SectionTitle>
-          <p className="mt-6 max-w-md text-base leading-relaxed text-white/60 sm:text-lg">
+          <p className="mt-6 max-w-md text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
             You get a coach who knows your name, your lifts and your limits — and who
             answers when you message.
           </p>
@@ -43,7 +43,7 @@ export default function CoachingSection() {
         <ol className="flex flex-col">
           {steps.map((step, i) => (
             <Reveal key={step.title} delay={0.06 * i}>
-              <li className="flex gap-5 border-t border-white/10 py-6 first:border-t-0 first:pt-0">
+              <li className="flex gap-5 border-t border-[color:var(--border)] py-6 first:border-t-0 first:pt-0">
                 <span
                   className="pt-1 font-mono text-xs tracking-widest"
                   style={{ color: FLUORO_GREEN }}
@@ -52,12 +52,12 @@ export default function CoachingSection() {
                 </span>
                 <div>
                   <h3
-                    className="text-2xl leading-none tracking-[0.04em] text-white uppercase sm:text-3xl"
+                    className="text-2xl leading-none tracking-[0.04em] text-[var(--foreground)] uppercase sm:text-3xl"
                     style={{ fontFamily: "var(--font-bebas), sans-serif" }}
                   >
                     {step.title}
                   </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-white/60 sm:text-base">
+                  <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)] sm:text-base">
                     {step.body}
                   </p>
                 </div>

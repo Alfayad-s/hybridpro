@@ -48,16 +48,16 @@ export default function BlogSection() {
           <Reveal key={post.title} delay={0.08 * i}>
             <a
               href={post.href}
-              className="flex h-full flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition-colors duration-300 hover:border-white/25 sm:p-7"
+              className="flex h-full flex-col rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-6 transition-colors duration-300 hover:border-[color:var(--border)] sm:p-7"
             >
               <div className="flex items-center gap-3 text-[0.7rem] tracking-[0.25em] uppercase">
                 <span style={{ color: FLUORO_GREEN }}>{post.category}</span>
-                <span className="text-white/30">{post.date}</span>
+                <span className="text-[color:var(--muted-soft)]">{post.date}</span>
               </div>
-              <h3 className="mt-4 text-xl leading-snug text-white sm:text-2xl">
+              <h3 className="mt-4 text-xl leading-snug text-[var(--foreground)] sm:text-2xl">
                 {post.title}
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-white/55">
+              <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
                 {post.excerpt}
               </p>
               <span

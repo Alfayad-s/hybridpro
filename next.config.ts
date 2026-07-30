@@ -32,7 +32,7 @@ const withPWA = withPWAInit({
         },
       },
       {
-        urlPattern: /\/gym-cinematic\.mp3$/i,
+        urlPattern: /\/audio\/gym-cinematic\.mp3$/i,
         handler: "CacheFirst",
         options: {
           cacheName: "hybrid-pro-audio-v1",
@@ -65,7 +65,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/gym-cinematic.mp3",
+        source: "/audio/gym-cinematic.mp3",
         headers: [
           {
             key: "Cache-Control",

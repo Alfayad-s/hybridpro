@@ -52,7 +52,7 @@
 .slider-range {
   position: absolute;
   height: 100%;
-  background-color: #39ff14;
+  background-color: var(--brand-green);
   border-radius: 9999px;
 }
 

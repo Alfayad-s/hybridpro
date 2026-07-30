@@ -49,8 +49,15 @@ export default function PricingSection() {
   return (
     <SectionShell id="pricing">
       <Reveal>
-        <Eyebrow>Pricing</Eyebrow>
-        <SectionTitle>Simple plans. Cancel anytime.</SectionTitle>
+        <Eyebrow>Coaching pricing</Eyebrow>
+        <SectionTitle>Live coaching. Cancel anytime.</SectionTitle>
+        <p className="mt-6 max-w-2xl text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
+          Ongoing coaching with Akash — separate from upcoming self-guided PDF plans in the{" "}
+          <a href="#shop" className="underline underline-offset-4 hover:text-[var(--foreground)]">
+            shop
+          </a>
+          .
+        </p>
       </Reveal>
 
       <div className="mt-12 grid gap-4 sm:mt-16 sm:gap-5 md:grid-cols-3">
@@ -59,10 +66,10 @@ export default function PricingSection() {
             <article
               className="flex h-full flex-col rounded-2xl border p-6 sm:p-7"
               style={{
-                borderColor: plan.featured ? FLUORO_GREEN : "rgba(255,255,255,0.1)",
+                borderColor: plan.featured ? FLUORO_GREEN : "var(--border)",
                 background: plan.featured
-                  ? "rgba(57,255,20,0.05)"
-                  : "rgba(255,255,255,0.02)",
+                  ? "rgba(var(--brand-green-rgb), 0.12)"
+                  : "var(--card)",
               }}
             >
               {plan.featured && (
@@ -74,25 +81,25 @@ export default function PricingSection() {
                 </span>
               )}
               <h3
-                className="text-3xl leading-none tracking-[0.04em] text-white uppercase sm:text-4xl"
+                className="text-3xl leading-none tracking-[0.04em] text-[var(--foreground)] uppercase sm:text-4xl"
                 style={{ fontFamily: "var(--font-bebas), sans-serif" }}
               >
                 {plan.name}
               </h3>
               <p className="mt-4 flex items-baseline gap-2">
-                <span className="text-4xl font-semibold text-white sm:text-5xl">
+                <span className="text-4xl font-semibold text-[var(--foreground)] sm:text-5xl">
                   {plan.price}
                 </span>
-                <span className="text-xs tracking-[0.2em] text-white/40 uppercase">
+                <span className="text-xs tracking-[0.2em] text-[color:var(--muted-soft)] uppercase">
                   {plan.cadence}
                 </span>
               </p>
-              <p className="mt-4 text-sm leading-relaxed text-white/60">{plan.blurb}</p>
-              <ul className="mt-6 flex flex-col gap-2 border-t border-white/10 pt-5">
+              <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">{plan.blurb}</p>
+              <ul className="mt-6 flex flex-col gap-2 border-t border-[color:var(--border)] pt-5">
                 {plan.features.map((feature) => (
                   <li
                     key={feature}
-                    className="flex items-start gap-3 text-sm text-white/70"
+                    className="flex items-start gap-3 text-sm text-[color:var(--muted)]"
                   >
                     <span
                       className="mt-[0.45rem] h-1 w-3 shrink-0 rounded-full"
@@ -110,8 +117,8 @@ export default function PricingSection() {
                   plan.featured
                     ? { background: FLUORO_GREEN, color: "#000" }
                     : {
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        color: "#fff",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
                       }
                 }
               >

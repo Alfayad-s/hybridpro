@@ -1,24 +1,33 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import BrandLogo from "@/components/BrandLogo";
+import { useScrollHideNav } from "@/hooks/useScrollHideNav";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import {
   motion,
   AnimatePresence,
 } from "motion/react";
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 interface NavbarProps {
   children: React.ReactNode;
   className?: string;
   /** Element id that triggers the shrink state when it reaches the top */
   shrinkOnSectionId?: string;
+  /** Shrink pill when scrollY passes threshold (e.g. standalone pages) */
+  shrinkOnScroll?: boolean;
+  shrinkScrollThreshold?: number;
+  /** Light hero behind nav — use dark link color before pill appears */
+  lightHero?: boolean;
 }
 
 interface NavBodyProps {
   children: React.ReactNode;
   className?: string;
   visible?: boolean;
+  lightHero?: boolean;
 }
 
 interface NavItemsProps {
@@ -52,13 +61,21 @@ export const Navbar = ({
   children,
   className,
   shrinkOnSectionId = "about",
+  shrinkOnScroll = false,
+  shrinkScrollThreshold = 64,
+  lightHero = false,
 }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const hidden = useScrollHideNav();
 
-  // Shrink only when the next page section enters the top — not during frame scrubbing.
   useEffect(() => {
     const update = () => {
+      if (shrinkOnScroll) {
+        setVisible(window.scrollY > shrinkScrollThreshold);
+        return;
+      }
+
       const section = document.getElementById(shrinkOnSectionId);
       if (!section) {
         setVisible(false);
@@ -76,19 +93,31 @@ export const Navbar = ({
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [shrinkOnSectionId]);
+  }, [shrinkOnSectionId, shrinkOnScroll, shrinkScrollThreshold]);
 
   return (
     <motion.div
       ref={ref}
-      // Fixed so it stays over the scroll-frame experience
+      initial={false}
+      animate={{
+        y: hidden ? "-110%" : 0,
+        opacity: hidden ? 0 : 1,
+      }}
+      transition={{
+        duration: 0.35,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      style={{ pointerEvents: hidden ? "none" : "auto" }}
       className={cn("fixed inset-x-0 top-0 z-40 w-full", className)}
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
           ? React.cloneElement(
-              child as React.ReactElement<{ visible?: boolean }>,
-              { visible },
+              child as React.ReactElement<{
+                visible?: boolean;
+                lightHero?: boolean;
+              }>,
+              { visible, lightHero },
             )
           : child,
       )}
@@ -96,14 +125,16 @@ export const Navbar = ({
   );
 };
 
-export const NavBody = ({ children, className, visible }: NavBodyProps) => {
+export const NavBody = ({ children, className, visible, lightHero }: NavBodyProps) => {
   return (
     <motion.div
       initial={false}
       animate={{
-        backdropFilter: visible ? "blur(10px)" : "blur(0px)",
-        backgroundColor: visible ? "rgba(0, 0, 0, 0.75)" : "rgba(0, 0, 0, 0)",
-        boxShadow: "none",
+        backdropFilter: visible ? "blur(12px)" : "blur(0px)",
+        backgroundColor: visible ? "var(--nav-pill)" : "rgba(247, 247, 250, 0)",
+        boxShadow: visible
+          ? "0 8px 32px rgba(0, 0, 0, 0.08)"
+          : "none",
         maxWidth: visible ? 1080 : 1280,
         y: visible ? 16 : 0,
       }}
@@ -115,8 +146,11 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
       }}
       className={cn(
         "relative z-[60] mx-auto hidden w-full flex-row items-center justify-between gap-3 self-start rounded-full bg-transparent px-3 py-2 lg:flex xl:gap-4 xl:px-4",
+        visible && "border border-[color:var(--border)]",
         className,
       )}
+      data-nav-scrolled={visible || undefined}
+      data-nav-light={lightHero && !visible ? true : undefined}
     >
       {children}
     </motion.div>
@@ -130,7 +164,12 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "relative z-10 flex min-w-0 flex-1 flex-row items-center justify-center gap-0.5 text-[13px] font-medium text-white/70 transition duration-200 hover:text-white xl:gap-1 xl:text-sm",
+        "relative z-10 flex min-w-0 flex-1 flex-row items-center justify-center gap-0.5 text-[13px] font-medium transition duration-200 xl:gap-1 xl:text-sm",
+        "text-white/75 hover:text-white",
+        "[[data-nav-light]_&]:text-black/55 [[data-nav-light]_&]:hover:text-black",
+        "dark:[[data-nav-light]_&]:text-white/75 dark:[[data-nav-light]_&]:hover:text-white",
+        "[[data-nav-scrolled]_&]:text-black/55 [[data-nav-scrolled]_&]:hover:text-black",
+        "dark:[[data-nav-scrolled]_&]:text-white/70 dark:[[data-nav-scrolled]_&]:hover:text-white",
         className,
       )}
     >
@@ -138,14 +177,14 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
         <a
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
-          className="relative shrink-0 whitespace-nowrap px-2.5 py-2 text-white/70 xl:px-3.5"
+          className="relative shrink-0 whitespace-nowrap px-2.5 py-2 xl:px-3.5"
           key={`link-${idx}`}
           href={item.link}
         >
           {hovered === idx && (
             <motion.div
               layoutId="hovered"
-              className="absolute inset-0 h-full w-full rounded-full bg-white/10"
+              className="absolute inset-0 h-full w-full rounded-full bg-white/10 [[data-nav-scrolled]_&]:bg-black/5 dark:[[data-nav-scrolled]_&]:bg-white/10"
             />
           )}
           <span className="relative z-20">{item.name}</span>
@@ -238,19 +277,16 @@ export const MobileNavToggle = ({
 };
 
 export const NavbarLogo = () => {
+  const pathname = usePathname();
+  const href = pathname === "/" ? "#top" : "/";
+
   return (
     <a
-      href="#top"
-      className="relative z-20 mr-1 flex shrink-0 items-center px-1 py-1 xl:mr-2 xl:px-2"
+      href={href}
+      className="relative z-20 mr-1 flex shrink-0 items-center px-1 py-1 text-[var(--brand-green)] xl:mr-2 xl:px-2"
       aria-label="Hybrid Pro home"
     >
-      <img
-        src="/company-logo.svg"
-        alt="Hybrid Pro"
-        width={72}
-        height={52}
-        className="h-8 w-auto xl:h-9"
-      />
+      <BrandLogo className="h-8 w-auto xl:h-9" />
     </a>
   );
 };
@@ -277,11 +313,11 @@ export const NavbarButton = ({
 
   const variantStyles = {
     primary:
-      "bg-[#39FF14] text-black shadow-[0_0_18px_rgba(57,255,20,0.35)]",
-    secondary: "bg-transparent shadow-none text-white/80",
-    dark: "bg-white/10 text-white border border-white/15",
+      "bg-[var(--brand-green)] text-black shadow-[0_0_18px_rgba(var(--brand-green-rgb),0.35)]",
+    secondary: "bg-transparent shadow-none text-[color:var(--muted)]",
+    dark: "bg-[var(--card)] text-[var(--foreground)] border border-[color:var(--border)]",
     gradient:
-      "bg-gradient-to-b from-[#39FF14] to-[#1f9a0c] text-black shadow-[0px_2px_0px_0px_rgba(255,255,255,0.2)_inset]",
+      "bg-gradient-to-b from-[var(--brand-green)] to-[#6bb300] text-black shadow-[0px_2px_0px_0px_rgba(255,255,255,0.2)_inset]",
   };
 
   return (

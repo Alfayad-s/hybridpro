@@ -33,8 +33,8 @@ type FrameImage = HTMLImageElement | undefined;
 type MutableNumberRef = { current: number };
 type Quote = { start: number; end: number; text: string; sub?: string };
 
-const FLUORO_GREEN = "#39FF14";
-const MUSIC_SRC = "/gym-cinematic.mp3";
+const FLUORO_GREEN = "var(--brand-green)";
+const MUSIC_SRC = "/audio/gym-cinematic.mp3";
 /** 1-based numbers matching frame_XXXX.png */
 const MUSIC_START_FRAME = 198;
 const MUSIC_STOP_FRAME = 190;
@@ -358,6 +358,7 @@ export default function ScrollFrameAnimation({
   const startedRef = useRef(false);
   const activeQuoteRef = useRef(-1);
   const applyMusicRef = useRef<(zeroBasedFrame: number) => void>(() => {});
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
   const [loadingPercentage, setLoadingPercentage] = useState(0);
   const [isReady, setIsReady] = useState(false);
@@ -583,6 +584,36 @@ export default function ScrollFrameAnimation({
     }
   };
 
+  /** Jump past the pinned frame experience into About. */
+  const skipHero = () => {
+    if (!startedRef.current) return;
+
+    musicArmedRef.current = false;
+    fadeVolume(0, 0.45, "power2.in");
+
+    const trigger = scrollTriggerRef.current;
+    const about = document.getElementById("about");
+    const targetY = trigger
+      ? trigger.end + 1
+      : about
+        ? about.getBoundingClientRect().top + window.scrollY
+        : null;
+
+    if (targetY === null) return;
+
+    // Native smooth-scroll crawls through the long pin; tween it in ~1s instead.
+    const proxy = { y: window.scrollY };
+    gsap.to(proxy, {
+      y: targetY,
+      duration: 1.05,
+      ease: "power2.inOut",
+      overwrite: true,
+      onUpdate: () => {
+        window.scrollTo(0, proxy.y);
+      },
+    });
+  };
+
   // Set up canvas rendering and the scoped GSAP ScrollTrigger after enter.
   useLayoutEffect(() => {
     if (!isReady || !started) return;
@@ -644,7 +675,7 @@ export default function ScrollFrameAnimation({
     const gsapContext = gsap.context(() => {
       const playhead = { frame: 0 };
 
-      gsap.to(playhead, {
+      const tween = gsap.to(playhead, {
         frame: frameCount - 1,
         ease: "none",
         snap: "frame",
@@ -659,12 +690,15 @@ export default function ScrollFrameAnimation({
         },
         onUpdate: () => scheduleFrame(playhead.frame),
       });
+
+      scrollTriggerRef.current = tween.scrollTrigger ?? null;
     }, section);
 
     window.addEventListener("resize", handleResize, { passive: true });
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      scrollTriggerRef.current = null;
       gsapContext.revert();
 
       if (drawRafRef.current !== null) {
@@ -715,7 +749,7 @@ export default function ScrollFrameAnimation({
             aria-hidden
           >
             <motion.img
-              src="/logo-grey-border.svg"
+              src="/brand/logo-grey-border.svg"
               alt=""
               draggable={false}
               className="h-auto w-[min(78vw,420px)] select-none sm:w-[min(62vw,520px)] md:w-[min(48vw,580px)]"
@@ -826,6 +860,28 @@ export default function ScrollFrameAnimation({
           />
         </div>
       )}
+
+      {/* Skip hero — jumps past the pinned frame scrub into About */}
+      <AnimatePresence>
+        {started && (
+          <motion.button
+            key="skip-hero"
+            type="button"
+            onClick={skipHero}
+            className="absolute right-4 z-40 rounded-full border border-white/20 bg-black/45 px-4 py-2 text-[11px] tracking-[0.22em] text-white/75 uppercase backdrop-blur-sm transition hover:border-[color:var(--brand-green)]/60 hover:text-[var(--brand-green)] sm:right-6 sm:text-xs"
+            style={{
+              bottom: "max(5.75rem, calc(env(safe-area-inset-bottom, 0px) + 5.25rem))",
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.5, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            aria-label="Skip intro and go to about"
+          >
+            Skip
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Loading / click-to-enter gate (unlocks audio) */}
       <AnimatePresence>

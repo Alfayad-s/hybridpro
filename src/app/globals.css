@@ -1,31 +1,228 @@
 @import "tailwindcss";
 
+/* Animatable theme tokens — browsers interpolate these on switch */
+@property --background {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f7f7fa;
+}
+
+@property --foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #111111;
+}
+
+@property --muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(17, 17, 17, 0.55);
+}
+
+@property --muted-soft {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(17, 17, 17, 0.35);
+}
+
+@property --border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(17, 17, 17, 0.1);
+}
+
+@property --card {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(17, 17, 17, 0.03);
+}
+
+@property --about-fade {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f7f7fa;
+}
+
+@property --glass-fill {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.42);
+}
+
+@property --glass-border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.55);
+}
+
+@property --glass-shadow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(17, 17, 17, 0.12);
+}
+
+@property --glass-highlight {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.75);
+}
+
+@property --nav-pill {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(247, 247, 250, 0.88);
+}
+
+@property --brand-green {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #93e200;
+}
+
 :root {
+  --background: #f7f7fa;
+  --foreground: #111111;
+  --brand-green: #93E200;
+  --brand-green-rgb: 147, 226, 0;
+  --muted: rgba(17, 17, 17, 0.55);
+  --muted-soft: rgba(17, 17, 17, 0.35);
+  --border: rgba(17, 17, 17, 0.1);
+  --card: rgba(17, 17, 17, 0.03);
+  --about-fade: #f7f7fa;
+  --glass-fill: rgba(255, 255, 255, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-shadow: rgba(17, 17, 17, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.75);
+  --nav-pill: rgba(247, 247, 250, 0.88);
+  --theme-duration: 0.65s;
+  --theme-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark {
   --background: #000000;
   --foreground: #ededed;
+  --brand-green: #A6FF00;
+  --brand-green-rgb: 166, 255, 0;
+  --muted: rgba(255, 255, 255, 0.55);
+  --muted-soft: rgba(255, 255, 255, 0.35);
+  --border: rgba(255, 255, 255, 0.12);
+  --card: rgba(255, 255, 255, 0.04);
+  --about-fade: #000000;
+  --glass-fill: rgba(20, 20, 20, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: rgba(0, 0, 0, 0.45);
+  --glass-highlight: rgba(255, 255, 255, 0.2);
+  --nav-pill: rgba(0, 0, 0, 0.78);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), "Inter Fallback", system-ui, sans-serif;
   --font-display: var(--font-bebas);
+  --animate-first: moveVertical 30s ease infinite;
+  --animate-second: moveInCircle 20s reverse infinite;
+  --animate-third: moveInCircle 40s linear infinite;
+  --animate-fourth: moveHorizontal 40s ease infinite;
+  --animate-fifth: moveInCircle 20s ease infinite;
+}
+
+@keyframes moveHorizontal {
+  0% {
+    transform: translateX(-50%) translateY(-10%);
+  }
+  50% {
+    transform: translateX(50%) translateY(10%);
+  }
+  100% {
+    transform: translateX(-50%) translateY(-10%);
+  }
+}
+
+@keyframes moveInCircle {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes moveVertical {
+  0% {
+    transform: translateY(-50%);
+  }
+  50% {
+    transform: translateY(50%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+::selection {
+  background: var(--brand-green);
+  color: #000000;
+}
+
+::-moz-selection {
+  background: var(--brand-green);
+  color: #000000;
 }
 
 html {
   scroll-behavior: auto;
   -webkit-text-size-adjust: 100%;
+  transition:
+    --background var(--theme-duration) var(--theme-ease),
+    --foreground var(--theme-duration) var(--theme-ease),
+    --brand-green var(--theme-duration) var(--theme-ease),
+    --muted var(--theme-duration) var(--theme-ease),
+    --muted-soft var(--theme-duration) var(--theme-ease),
+    --border var(--theme-duration) var(--theme-ease),
+    --card var(--theme-duration) var(--theme-ease),
+    --about-fade var(--theme-duration) var(--theme-ease),
+    --glass-fill var(--theme-duration) var(--theme-ease),
+    --glass-border var(--theme-duration) var(--theme-ease),
+    --glass-shadow var(--theme-duration) var(--theme-ease),
+    --glass-highlight var(--theme-duration) var(--theme-ease),
+    --nav-pill var(--theme-duration) var(--theme-ease);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter), "Inter Fallback", system-ui, sans-serif;
   margin: 0;
   min-height: 100dvh;
   overscroll-behavior-y: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth paint on themed surfaces while tokens interpolate */
+main,
+section,
+article,
+figure,
+aside,
+header,
+.staggered-menu-panel,
+.sm-panel-item,
+.sm-socials-link,
+.sm-toggle,
+.theme-glass-btn {
+  transition:
+    background-color var(--theme-duration) var(--theme-ease),
+    color var(--theme-duration) var(--theme-ease),
+    border-color var(--theme-duration) var(--theme-ease),
+    box-shadow var(--theme-duration) var(--theme-ease),
+    fill var(--theme-duration) var(--theme-ease),
+    stroke var(--theme-duration) var(--theme-ease);
 }
 
 /* Prefer dynamic viewport height on mobile browsers */
@@ -37,4 +234,109 @@ body {
 .h-screen {
   height: 100vh;
   height: 100dvh;
+}
+
+/* Fluid glass theme toggle */
+.theme-glass-btn {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill);
+  box-shadow:
+    0 10px 30px var(--glass-shadow),
+    inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  cursor: pointer;
+}
+
+.theme-glass-btn__fluid {
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(var(--brand-green-rgb), 0.35), transparent 42%),
+    radial-gradient(circle at 75% 70%, rgba(255, 255, 255, 0.35), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(var(--brand-green-rgb), 0.12), transparent 60%);
+  animation: theme-glass-fluid 7s ease-in-out infinite;
+  opacity: 0.9;
+  pointer-events: none;
+  transition: opacity var(--theme-duration) var(--theme-ease);
+}
+
+.theme-glass-btn__shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    transparent 42%,
+    transparent 58%,
+    rgba(255, 255, 255, 0.18) 100%
+  );
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity var(--theme-duration) var(--theme-ease);
+}
+
+.dark .theme-glass-btn__fluid {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(var(--brand-green-rgb), 0.28), transparent 42%),
+    radial-gradient(circle at 75% 70%, rgba(255, 255, 255, 0.12), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(var(--brand-green-rgb), 0.1), transparent 60%);
+}
+
+@keyframes theme-glass-fluid {
+  0%,
+  100% {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5%, 4%, 0) scale(1.08);
+  }
+}
+
+@keyframes gallery-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.gallery-marquee-track {
+  animation: gallery-marquee 40s linear infinite;
+  will-change: transform;
+}
+
+.gallery-marquee-track.is-paused {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-marquee-track {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  main,
+  section,
+  article,
+  figure,
+  aside,
+  header,
+  .staggered-menu-panel,
+  .sm-panel-item,
+  .sm-socials-link,
+  .sm-toggle,
+  .theme-glass-btn,
+  .theme-glass-btn__fluid,
+  .theme-glass-btn__shine {
+    transition: none !important;
+  }
+
+  .theme-glass-btn__fluid {
+    animation: none;
+  }
 }

@@ -8,6 +8,8 @@ import React, {
   useState,
 } from "react";
 import { gsap } from "gsap";
+import BrandLogo from "@/components/BrandLogo";
+import { useScrollHideNav } from "@/hooks/useScrollHideNav";
 import "./StaggeredMenu.css";
 
 export type StaggeredMenuItem = {
@@ -42,16 +44,16 @@ export type StaggeredMenuProps = {
 
 export default function StaggeredMenu({
   position = "right",
-  colors = ["#1a3d00", "#39FF14"],
+  colors = ["#e8f5c8", "#93E200"],
   items = [],
   socialItems = [],
   displaySocials = true,
   displayItemNumbering = true,
   className,
-  logoUrl = "/company-logo.svg",
+  logoUrl = "/brand/logo.svg",
   menuButtonColor = "#fff",
-  openMenuButtonColor = "#39FF14",
-  accentColor = "#39FF14",
+  openMenuButtonColor = "#93E200",
+  accentColor = "#93E200",
   changeMenuColorOnOpen = true,
   isFixed = false,
   closeOnClickAway = true,
@@ -59,6 +61,7 @@ export default function StaggeredMenu({
   onMenuClose,
 }: StaggeredMenuProps) {
   const [open, setOpen] = useState(false);
+  const headerHidden = useScrollHideNav({ enabled: !open });
   const openRef = useRef(false);
   const panelRef = useRef<HTMLElement>(null);
   const preLayersRef = useRef<HTMLDivElement>(null);
@@ -436,17 +439,17 @@ export default function StaggeredMenu({
         ))}
       </div>
 
-      <header className="staggered-menu-header" aria-label="Main navigation header">
+      <header
+        className={`staggered-menu-header${headerHidden ? " is-scroll-hidden" : ""}`}
+        aria-label="Main navigation header"
+      >
         <div className="sm-logo" aria-label="Logo">
-          <a href="#top" onClick={closeMenu}>
-            <img
-              src={logoUrl}
-              alt="Hybrid Pro"
-              className="sm-logo-img"
-              draggable={false}
-              width={110}
-              height={80}
-            />
+          <a
+            href="#top"
+            onClick={closeMenu}
+            className="text-[var(--brand-green)]"
+          >
+            <BrandLogo className="sm-logo-img h-[30px] w-auto sm:h-9" />
           </a>
         </div>
 
