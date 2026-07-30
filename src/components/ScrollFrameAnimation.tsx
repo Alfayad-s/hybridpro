@@ -41,17 +41,96 @@ const MUSIC_STOP_FRAME = 190;
 const MUSIC_MAX_VOLUME = 0.85;
 const MUSIC_FADE_IN_SEC = 4.5;
 const MUSIC_FADE_OUT_SEC = 1.2;
+/** Skip READY overlay on later visits */
+const ENTERED_STORAGE_KEY = "hybridpro-hero-entered";
 
-/** Quote ranges use 1-based frame numbers across the full sequence. */
+function hasEnteredBefore() {
+  try {
+    return localStorage.getItem(ENTERED_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markEntered() {
+  try {
+    localStorage.setItem(ENTERED_STORAGE_KEY, "1");
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+/** Quote ranges use 1-based frame numbers — a Hybrid Pro story told while you scroll. */
 const QUOTES: Quote[] = [
-  { start: 1, end: 140, text: "Welcome to Hybrid Pro", sub: "Your transformation starts here" },
-  { start: 200, end: 360, text: "Push past comfort", sub: "Where growth begins" },
-  { start: 420, end: 580, text: "Strength is a decision", sub: "Make it every day" },
-  { start: 640, end: 800, text: "Train with purpose", sub: "Not just intensity" },
-  { start: 860, end: 1020, text: "Mind over muscle", sub: "Focus wins the set" },
-  { start: 1080, end: 1240, text: "Become unstoppable", sub: "One rep at a time" },
-  { start: 1320, end: 1523, text: "This is Hybrid Pro", sub: "Now go earn it" },
+  {
+    start: 1,
+    end: 120,
+    text: "Welcome to Hybrid Pro",
+    sub: "Where ordinary routines end — and real transformation begins.",
+  },
+  {
+    start: 150,
+    end: 260,
+    text: "Not another template",
+    sub: "A complete coaching system engineered around your body, your schedule, your goals.",
+  },
+  {
+    start: 290,
+    end: 400,
+    text: "What is Hybrid Pro?",
+    sub: "The place where strength, fat loss, muscle, mobility, and lasting habits finally move as one.",
+  },
+  {
+    start: 430,
+    end: 540,
+    text: "Guided by Akash",
+    sub: "Founder & CEO — certified, proven, and committed to the version of you that doesn’t quit.",
+  },
+  {
+    start: 570,
+    end: 680,
+    text: "Train with purpose",
+    sub: "Consistency compounds. Show up with intent — and let the results speak for themselves.",
+  },
+  {
+    start: 710,
+    end: 820,
+    text: "Built for your life",
+    sub: "No generic plans. Every session is shaped to fit the life you actually live.",
+  },
+  {
+    start: 850,
+    end: 960,
+    text: "More than the gym",
+    sub: "Progressive training. Intelligent nutrition. Accountability that holds you when motivation fades.",
+  },
+  {
+    start: 990,
+    end: 1100,
+    text: "Who we coach",
+    sub: "From first-timers to athletes, busy professionals to postpartum rebuilds — online and in person.",
+  },
+  {
+    start: 1130,
+    end: 1240,
+    text: "No quick fixes",
+    sub: "We build a stronger body, a sharper mindset, and confidence that outlasts any program.",
+  },
+  {
+    start: 1270,
+    end: 1380,
+    text: "Every rep. Every check-in.",
+    sub: "Expert guidance in your corner — through every setback, every PR, every breakthrough.",
+  },
+  {
+    start: 1410,
+    end: 1523,
+    text: "This is Hybrid Pro",
+    sub: "Your next chapter starts now. Keep scrolling — then take the first step.",
+  },
 ];
+
+const quoteEase = [0.16, 1, 0.3, 1] as const;
 
 function quoteIndexForFrame(frameNumber: number): number {
   return QUOTES.findIndex((q) => frameNumber >= q.start && frameNumber <= q.end);
@@ -359,6 +438,8 @@ export default function ScrollFrameAnimation({
   const activeQuoteRef = useRef(-1);
   const applyMusicRef = useRef<(zeroBasedFrame: number) => void>(() => {});
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
+  const skippingRef = useRef(false);
+  const skipScrollTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const [loadingPercentage, setLoadingPercentage] = useState(0);
   const [isReady, setIsReady] = useState(false);
@@ -366,6 +447,7 @@ export default function ScrollFrameAnimation({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
   const [entering, setEntering] = useState(false);
+  const [skipped, setSkipped] = useState(false);
   const [activeQuote, setActiveQuote] = useState(-1);
   const [loadingFromCache, setLoadingFromCache] = useState(false);
 
@@ -486,8 +568,18 @@ export default function ScrollFrameAnimation({
       ease,
       onComplete: () => {
         if (fadeTargetRef.current === to) fadeTargetRef.current = null;
+        if (to <= 0.01) {
+          audio.pause();
+        }
       },
     });
+  };
+
+  const stopMusic = (duration = MUSIC_FADE_OUT_SEC) => {
+    musicArmedRef.current = false;
+    const audio = audioRef.current;
+    if (!audio) return;
+    fadeVolume(0, duration, "power2.in");
   };
 
   /** Sync music from scroll frame updates via refs — no React re-renders. */
@@ -529,21 +621,48 @@ export default function ScrollFrameAnimation({
     if (
       musicArmedRef.current ||
       audio.volume > 0.01 ||
-      fadeTargetRef.current === targetVolume
+      fadeTargetRef.current === 0
     ) {
       musicArmedRef.current = false;
       fadeVolume(0, MUSIC_FADE_OUT_SEC, "sine.out");
-    }
-
-    audio.loop = true;
-    if (audio.paused) {
-      void audio.play().catch(() => {});
     }
   };
 
   useEffect(() => {
     applyMusicRef.current = applyMusicForFrame;
   });
+
+  /** Returning visitors: skip READY gate once frames are ready. */
+  useEffect(() => {
+    if (!isReady || started || entering || loadError) return;
+    if (!hasEnteredBefore()) return;
+
+    startedRef.current = true;
+    setStarted(true);
+  }, [isReady, started, entering, loadError]);
+
+  /** Unlock / resume music after returning visitors interact (browser autoplay policy). */
+  useEffect(() => {
+    if (!started || !hasEnteredBefore()) return;
+
+    const unlock = () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      if (audio.paused && musicArmedRef.current) {
+        void audio.play().catch(() => {});
+      } else if (audio.paused) {
+        audio.volume = 0;
+        void audio.play().catch(() => {});
+      }
+    };
+
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, [started]);
 
   /** Must run inside a click/tap — unlocks audio and keeps silent playback alive. */
   const enterExperience = async () => {
@@ -558,9 +677,11 @@ export default function ScrollFrameAnimation({
         audio.currentTime = 0;
         await audio.play();
       }
+      markEntered();
       startedRef.current = true;
       setStarted(true);
     } catch {
+      markEntered();
       startedRef.current = true;
       setStarted(true);
     } finally {
@@ -584,33 +705,51 @@ export default function ScrollFrameAnimation({
     }
   };
 
-  /** Jump past the pinned frame experience into About. */
+  /** Jump past the pinned frame experience into About — no frame scrub. */
   const skipHero = () => {
-    if (!startedRef.current) return;
+    if (!startedRef.current || skippingRef.current) return;
 
-    musicArmedRef.current = false;
-    fadeVolume(0, 0.45, "power2.in");
+    skippingRef.current = true;
+    setSkipped(true);
+    stopMusic(0.45);
+    skipScrollTweenRef.current?.kill();
+
+    // Hide frames immediately (before React re-renders).
+    if (canvasRef.current) {
+      canvasRef.current.style.opacity = "0";
+    }
 
     const trigger = scrollTriggerRef.current;
-    const about = document.getElementById("about");
-    const targetY = trigger
-      ? trigger.end + 1
-      : about
-        ? about.getBoundingClientRect().top + window.scrollY
-        : null;
 
-    if (targetY === null) return;
+    // Snap scrub + playhead to the end so frames don't catch up mid-skip.
+    if (trigger) {
+      trigger.getTween?.()?.progress(1);
+      trigger.animation?.progress(1);
+      window.scrollTo(0, trigger.end + 1);
+      ScrollTrigger.update();
+    }
 
-    // Native smooth-scroll crawls through the long pin; tween it in ~1s instead.
-    const proxy = { y: window.scrollY };
-    gsap.to(proxy, {
-      y: targetY,
-      duration: 1.05,
-      ease: "power2.inOut",
-      overwrite: true,
-      onUpdate: () => {
-        window.scrollTo(0, proxy.y);
-      },
+    // Short smooth settle into About (pin is already cleared).
+    requestAnimationFrame(() => {
+      const about = document.getElementById("about");
+      if (!about) return;
+
+      const targetY =
+        about.getBoundingClientRect().top + window.scrollY - 8;
+      const proxy = { y: window.scrollY };
+
+      skipScrollTweenRef.current = gsap.to(proxy, {
+        y: Math.max(0, targetY),
+        duration: 0.9,
+        ease: "power2.inOut",
+        overwrite: true,
+        onUpdate: () => {
+          window.scrollTo(0, proxy.y);
+        },
+        onComplete: () => {
+          skipScrollTweenRef.current = null;
+        },
+      });
     });
   };
 
@@ -672,6 +811,55 @@ export default function ScrollFrameAnimation({
     // Seed welcome quote on first paint.
     scheduleFrame(0);
 
+    // Cap how fast frames/quotes can advance — even on rapid scroll.
+    const MAX_FRAMES_PER_SEC = 36;
+    let targetFrame = 0;
+    let displayFrame = 0;
+    let lastTickTs = performance.now();
+    let rateRafId: number | null = null;
+
+    const tickPlayhead = (now: number) => {
+      const dt = Math.min(0.05, Math.max(0, (now - lastTickTs) / 1000));
+      lastTickTs = now;
+      const maxStep = MAX_FRAMES_PER_SEC * dt;
+      const delta = targetFrame - displayFrame;
+
+      if (Math.abs(delta) <= maxStep) {
+        displayFrame = targetFrame;
+      } else {
+        displayFrame += Math.sign(delta) * maxStep;
+      }
+
+      scheduleFrame(displayFrame);
+
+      if (Math.abs(targetFrame - displayFrame) > 0.05) {
+        rateRafId = window.requestAnimationFrame(tickPlayhead);
+      } else {
+        rateRafId = null;
+        scheduleFrame(targetFrame);
+      }
+    };
+
+    const setTargetFrame = (frame: number) => {
+      // Skip jumps straight to the end — never scrub through frames.
+      if (skippingRef.current) {
+        targetFrame = frame;
+        displayFrame = frame;
+        if (rateRafId !== null) {
+          window.cancelAnimationFrame(rateRafId);
+          rateRafId = null;
+        }
+        scheduleFrame(frame);
+        return;
+      }
+
+      targetFrame = frame;
+      if (rateRafId === null) {
+        lastTickTs = performance.now();
+        rateRafId = window.requestAnimationFrame(tickPlayhead);
+      }
+    };
+
     const gsapContext = gsap.context(() => {
       const playhead = { frame: 0 };
 
@@ -684,11 +872,44 @@ export default function ScrollFrameAnimation({
           start: "top top",
           end: `+=${scrollLength}`,
           pin: true,
-          scrub: 1.2,
+          // Higher scrub = smoother catch-up; rate limiter still caps visual speed
+          scrub: 2.4,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onLeave: () => {
+            musicArmedRef.current = false;
+            const audio = audioRef.current;
+            if (!audio) return;
+            volumeTweenRef.current?.kill();
+            fadeTargetRef.current = null;
+            gsap.to(audio, {
+              volume: 0,
+              duration: 0.6,
+              ease: "power2.in",
+              onComplete: () => audio.pause(),
+            });
+          },
+          onEnterBack: () => {
+            // Re-enable hero if the user scrolls back up after Skip.
+            if (skippingRef.current) {
+              skippingRef.current = false;
+              setSkipped(false);
+              if (canvasRef.current) {
+                canvasRef.current.style.opacity = "";
+              }
+            }
+          },
+          onLeaveBack: () => {
+            musicArmedRef.current = false;
+            const audio = audioRef.current;
+            if (!audio) return;
+            volumeTweenRef.current?.kill();
+            fadeTargetRef.current = null;
+            audio.pause();
+            audio.volume = 0;
+          },
         },
-        onUpdate: () => scheduleFrame(playhead.frame),
+        onUpdate: () => setTargetFrame(playhead.frame),
       });
 
       scrollTriggerRef.current = tween.scrollTrigger ?? null;
@@ -700,6 +921,11 @@ export default function ScrollFrameAnimation({
       window.removeEventListener("resize", handleResize);
       scrollTriggerRef.current = null;
       gsapContext.revert();
+
+      if (rateRafId !== null) {
+        window.cancelAnimationFrame(rateRafId);
+        rateRafId = null;
+      }
 
       if (drawRafRef.current !== null) {
         window.cancelAnimationFrame(drawRafRef.current);
@@ -720,13 +946,13 @@ export default function ScrollFrameAnimation({
     >
       <canvas
         ref={canvasRef}
-        className={`absolute inset-0 block h-full w-full transition-opacity duration-700 ${
-          started ? "opacity-100" : "opacity-0"
+        className={`absolute inset-0 block h-full w-full transition-opacity duration-300 ${
+          started && !skipped ? "opacity-100" : "opacity-0"
         }`}
       />
 
       {/* Top shade */}
-      {started && (
+      {started && !skipped && (
         <div
           className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[38vh]"
           style={{
@@ -738,7 +964,7 @@ export default function ScrollFrameAnimation({
 
       {/* Welcome logo — sits behind the first quote, fades out with it */}
       <AnimatePresence>
-        {started && activeQuote === 0 && (
+        {started && !skipped && activeQuote === 0 && (
           <motion.div
             key="welcome-logo"
             className="pointer-events-none absolute inset-0 z-[15] flex items-center justify-center"
@@ -764,53 +990,98 @@ export default function ScrollFrameAnimation({
       {/* Quotes */}
       <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6">
         <AnimatePresence mode="wait">
-          {started && activeQuote >= 0 && (
+          {started && !skipped && activeQuote >= 0 && (
             <motion.div
               key={QUOTES[activeQuote].text}
               className="relative flex max-w-5xl flex-col items-center text-center"
-              initial={{ opacity: 0, y: 36, filter: "blur(12px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -28, filter: "blur(10px)" }}
-              transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: 48, filter: "blur(16px)", scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
+              exit={{
+                opacity: 0,
+                y: -36,
+                filter: "blur(14px)",
+                scale: 1.02,
+                transition: { duration: 0.55, ease: quoteEase },
+              }}
+              transition={{ duration: 0.95, ease: quoteEase }}
             >
+              <motion.div
+                className="mb-6 h-px w-10 origin-center sm:mb-7 sm:w-14"
+                style={{ background: FLUORO_GREEN }}
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ scaleX: 1, opacity: 0.85 }}
+                exit={{ scaleX: 0, opacity: 0 }}
+                transition={{ duration: 0.7, delay: 0.12, ease: quoteEase }}
+                aria-hidden
+              />
+
               <motion.p
-                className="text-center leading-[0.95] tracking-[0.04em] text-white uppercase"
+                className="text-center leading-[0.92] text-white uppercase"
                 style={{
                   fontFamily: "var(--font-bebas), sans-serif",
                   textShadow: "0 2px 40px rgba(0,0,0,0.65)",
+                  letterSpacing: "0.06em",
+                  wordSpacing: "0.12em",
                 }}
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               >
                 {activeQuote === 0 ? (
                   <>
-                    <span className="block text-2xl tracking-[0.18em] text-white/80 sm:text-3xl md:text-4xl lg:text-5xl">
+                    <motion.span
+                      className="block text-2xl text-white/80 sm:text-3xl md:text-4xl lg:text-5xl"
+                      style={{ letterSpacing: "0.22em", wordSpacing: "0.2em" }}
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.75, ease: quoteEase }}
+                    >
                       Welcome to
-                    </span>
+                    </motion.span>
                     <SquigglyText
                       stepDuration={70}
                       scale={[5, 8]}
-                      className="mt-2 block text-6xl tracking-[0.04em] sm:text-8xl md:text-9xl lg:text-[9.5rem]"
-                      style={{ color: FLUORO_GREEN }}
+                      className="mt-2 block text-6xl sm:text-8xl md:text-9xl lg:text-[9.5rem]"
+                      style={{ color: FLUORO_GREEN, letterSpacing: "0.04em" }}
                     >
                       Hybrid Pro
                     </SquigglyText>
                   </>
                 ) : (
-                  <span className="block text-5xl sm:text-7xl md:text-8xl lg:text-9xl">
-                    {QUOTES[activeQuote].text}
+                  <span
+                    className="inline-block max-w-[15ch] text-4xl sm:max-w-[22ch] sm:text-6xl md:max-w-none md:text-7xl lg:text-8xl xl:text-9xl"
+                    style={{ letterSpacing: "0.07em", wordSpacing: "0.18em" }}
+                  >
+                    {QUOTES[activeQuote].text.split(" ").map((word, i, arr) => (
+                      <motion.span
+                        key={`${word}-${i}`}
+                        className="inline-block"
+                        initial={{ opacity: 0, y: "0.55em", filter: "blur(8px)" }}
+                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        transition={{
+                          duration: 0.7,
+                          delay: 0.06 + i * 0.07,
+                          ease: quoteEase,
+                        }}
+                      >
+                        {word}
+                        {i < arr.length - 1 ? "\u00A0" : null}
+                      </motion.span>
+                    ))}
                   </span>
                 )}
               </motion.p>
+
               {QUOTES[activeQuote].sub && (
                 <motion.p
-                  className="mt-5 text-sm tracking-[0.35em] uppercase sm:text-base md:text-lg"
-                  style={{ color: FLUORO_GREEN }}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-6 max-w-2xl text-sm leading-[1.7] text-balance text-white/75 sm:mt-7 sm:text-base md:text-lg md:leading-[1.65]"
+                  style={{
+                    fontFamily: "var(--font-inter), system-ui, sans-serif",
+                    letterSpacing: "0.02em",
+                    wordSpacing: "0.06em",
+                  }}
+                  initial={{ opacity: 0, y: 22, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ delay: 0.38, duration: 0.85, ease: quoteEase }}
                 >
+                  <span className="text-[color:var(--brand-green)]">— </span>
                   {QUOTES[activeQuote].sub}
                 </motion.p>
               )}
@@ -841,7 +1112,7 @@ export default function ScrollFrameAnimation({
       </AnimatePresence>
 
       {/* Volume slider — bottom center */}
-      {started && (
+      {started && !skipped && (
         <div
           className="absolute bottom-6 left-1/2 z-40 w-[min(14rem,calc(100vw-2.5rem))] -translate-x-1/2 sm:bottom-8"
           style={{
@@ -861,9 +1132,9 @@ export default function ScrollFrameAnimation({
         </div>
       )}
 
-      {/* Skip hero — jumps past the pinned frame scrub into About */}
+      {/* Skip hero — jumps past the pin into About without scrubbing frames */}
       <AnimatePresence>
-        {started && (
+        {started && !skipped && (
           <motion.button
             key="skip-hero"
             type="button"

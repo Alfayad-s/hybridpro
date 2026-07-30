@@ -232,20 +232,20 @@ export default function AboutPageContent() {
         </div>
       </section>
 
-      {/* Intro — stacked on mobile, image left + copy right on desktop */}
-      <section className="relative isolate overflow-hidden border-t border-[color:var(--border)] px-4 py-12 sm:px-6 sm:py-16 md:px-10 md:py-20">
-        <div className="mx-auto grid max-w-6xl items-center gap-8 lg:grid-cols-2 lg:gap-14">
-          <Reveal className="relative mx-auto aspect-[3/4] w-full max-w-[320px] overflow-hidden rounded-[1.75rem] sm:max-w-[380px] lg:mx-0 lg:max-w-none lg:rounded-l-none lg:rounded-r-[3.5rem]">
+      {/* Intro — image flush left, narrower column; copy takes remaining space */}
+      <section className="relative isolate overflow-hidden border-t border-[color:var(--border)]">
+        <div className="grid items-center lg:grid-cols-[minmax(240px,36%)_minmax(0,1fr)]">
+          <Reveal className="relative mx-auto aspect-[3/4] w-full max-w-[320px] overflow-hidden rounded-[1.75rem] sm:max-w-[360px] lg:mx-0 lg:aspect-auto lg:max-w-none lg:min-h-[min(70vh,560px)] lg:rounded-none">
             <Image
               src={trainerPhotos[2].src}
               alt="Akash training — lat pulldown"
               fill
-              sizes="(max-width: 1024px) 90vw, 50vw"
+              sizes="(max-width: 1024px) 90vw, 36vw"
               className="object-cover object-center"
             />
           </Reveal>
 
-          <div className="min-w-0 text-left">
+          <div className="min-w-0 px-4 py-12 text-left sm:px-6 sm:py-16 md:px-10 md:py-20 lg:max-w-2xl lg:pl-10 xl:pl-14">
             <Reveal>
               <p
                 className="text-[0.7rem] tracking-[0.4em] uppercase sm:text-xs"

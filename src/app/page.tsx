@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <main id="top" className="min-h-screen bg-[var(--background)]">
       <SiteNavbar />
-      <ThemeGlassToggle />
+      <ThemeGlassToggle showAfterSelector="#about" />
       <ScrollFrameAnimation
         frameCount={1523}
         folderPath="/frames"

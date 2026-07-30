@@ -5,26 +5,17 @@ import { useTheme } from "@/components/ThemeProvider";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { Compare } from "@/components/ui/compare";
 import { cn } from "@/lib/utils";
-import { Eyebrow, FLUORO_GREEN, Reveal, SectionTitle } from "./Reveal";
-
+import { Eyebrow, Reveal, SectionTitle } from "./Reveal";
 import { resultImages } from "@/lib/trainerMedia";
-
-const stats = [
-  { value: "1,200+", label: "Athletes coached" },
-  { value: "94%", label: "Stay past 6 months" },
-  { value: "12 wks", label: "Avg. first transform" },
-];
 
 const transformations = [
   {
-    name: "Client 01",
-    program: "Fat Loss System · 12 weeks",
+    id: "client-1",
     before: resultImages.client1.before,
     after: resultImages.client1.after,
   },
   {
-    name: "Client 02",
-    program: "Strength & Performance · 10 weeks",
+    id: "client-2",
     before: resultImages.client2.before,
     after: resultImages.client2.after,
   },
@@ -36,47 +27,24 @@ function TransformationCard({
   client: (typeof transformations)[number];
 }) {
   return (
-    <article
-      className="flex w-[min(78vw,300px)] shrink-0 flex-col sm:w-[320px] md:w-[360px]"
-    >
-      <div className="overflow-hidden rounded-2xl border border-black/10 bg-white p-3 sm:rounded-3xl sm:p-4">
-        <div className="mb-3 flex items-center justify-between gap-2 text-[0.6rem] tracking-[0.28em] uppercase sm:text-[0.65rem]">
-          <span className="text-black/40">Before</span>
-          <span style={{ color: FLUORO_GREEN }}>Hover to compare</span>
-          <span className="text-black/40">After</span>
-        </div>
-
-        <Compare
-          firstImage={client.before}
-          secondImage={client.after}
-          firstImageClassName="object-cover object-center"
-          secondImageClassname="object-cover object-center"
-          className="h-[280px] w-full rounded-xl sm:h-[320px] sm:rounded-2xl md:h-[360px]"
-          slideMode="hover"
-          initialSliderPercentage={50}
-          showHandlebar
-        />
-
-        <div className="mt-4 text-center">
-          <p
-            className="text-xl tracking-[0.03em] text-black uppercase sm:text-2xl"
-            style={{ fontFamily: "var(--font-bebas), sans-serif" }}
-          >
-            {client.name}
-          </p>
-          <p className="mt-1 text-[0.65rem] tracking-[0.2em] text-black/45 uppercase sm:text-xs">
-            {client.program}
-          </p>
-        </div>
-      </div>
-    </article>
+    <div className="relative h-[min(58dvh,420px)] w-[min(72vw,280px)] shrink-0 overflow-hidden rounded-2xl sm:h-[min(60dvh,460px)] sm:w-[300px] sm:rounded-3xl md:h-[min(62dvh,500px)] md:w-[340px]">
+      <Compare
+        firstImage={client.before}
+        secondImage={client.after}
+        firstImageClassName="object-contain object-center"
+        secondImageClassname="object-contain object-center"
+        className="h-full w-full rounded-2xl bg-white sm:rounded-3xl"
+        slideMode="hover"
+        initialSliderPercentage={50}
+        showHandlebar
+      />
+    </div>
   );
 }
 
 function ResultsCarousel() {
   const [paused, setPaused] = useState(false);
 
-  // Triple the set so the track feels full with only 2 unique clients
   const base = [...transformations, ...transformations, ...transformations];
   const loop = [...base, ...base];
 
@@ -101,7 +69,7 @@ function ResultsCarousel() {
       >
         {loop.map((client, i) => (
           <div
-            key={`${client.name}-${i}`}
+            key={`${client.id}-${i}`}
             aria-hidden={i >= base.length ? true : undefined}
           >
             <TransformationCard client={client} />
@@ -158,31 +126,12 @@ export default function ResultsSection() {
           <Eyebrow>Results</Eyebrow>
           <SectionTitle>Proof, not promises.</SectionTitle>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-[color:var(--muted)] sm:mt-4 sm:text-base">
-            Real client progress — hover any card to reveal before and after.
-            Hover the row to pause.
+            Real client progress — hover to compare before and after. Hover the
+            row to pause.
           </p>
         </Reveal>
 
-        <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 border-y border-[color:var(--border)] py-4 sm:mt-6 sm:gap-x-12 sm:py-5">
-          {stats.map((stat) => (
-            <div key={stat.label}>
-              <p
-                className="text-3xl leading-none tracking-[0.02em] uppercase sm:text-4xl md:text-5xl"
-                style={{
-                  fontFamily: "var(--font-bebas), sans-serif",
-                  color: FLUORO_GREEN,
-                }}
-              >
-                {stat.value}
-              </p>
-              <p className="mt-1 text-[0.65rem] tracking-[0.25em] text-[color:var(--muted-soft)] uppercase sm:text-xs">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-auto flex min-h-0 flex-1 items-center py-4 sm:py-6">
+        <div className="mt-auto flex min-h-0 flex-1 items-center py-6 sm:py-8">
           <div className="w-full -mx-4 sm:-mx-6 md:mx-0">
             <ResultsCarousel />
           </div>
