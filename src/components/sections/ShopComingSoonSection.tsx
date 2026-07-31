@@ -15,6 +15,7 @@ const planOptions = [
       "Progression notes",
     ],
     priceLabel: "₹1,999",
+    bestValue: false,
   },
   {
     weeks: 8,
@@ -28,6 +29,7 @@ const planOptions = [
       "Deload week built in",
     ],
     priceLabel: "₹3,499",
+    bestValue: false,
   },
   {
     weeks: 12,
