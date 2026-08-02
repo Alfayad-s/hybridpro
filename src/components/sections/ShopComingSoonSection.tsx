@@ -8,7 +8,7 @@ const planOptions = [
     weeksLabel: "04",
     name: "Starter Block",
     blurb:
-      "Build the habit. Clear sessions, simple progressive structure — perfect if you’re just getting going.",
+      "Build the habit. Clear sessions, simple progressive structure, perfect if you’re just getting going.",
     includes: [
       "Full 4-week PDF program",
       "Warm-ups & mobility",
@@ -22,7 +22,7 @@ const planOptions = [
     weeksLabel: "08",
     name: "Transform Block",
     blurb:
-      "Enough runway to change how you look and feel — strength, conditioning, and recovery in one system.",
+      "Enough runway to change how you look and feel, strength, conditioning, and recovery in one system.",
     includes: [
       "Full 8-week PDF program",
       "Nutrition guidelines",
@@ -51,7 +51,7 @@ const ebooks = [
   {
     title: "Nutrition Essentials",
     blurb:
-      "Simple fueling rules that fit real life — no crash diets, no guesswork.",
+      "Simple fueling rules that fit real life, no crash diets, no guesswork.",
   },
   {
     title: "Habit Playbook",
@@ -85,13 +85,13 @@ export default function ShopComingSoonSection() {
           </div>
           <SectionTitle>Plans &amp; playbooks.</SectionTitle>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
-            Self-guided PDFs you buy once and download instantly — separate from
+            Self-guided PDFs you buy once and download instantly, separate from
             live coaching. We’re finishing the catalog and checkout. Leave your
             details in contact to get notified.
           </p>
         </Reveal>
 
-        {/* Training plans — editorial rows */}
+        {/* Training plans, editorial rows */}
         <div className="mt-14 sm:mt-20">
           <Reveal>
             <p className="text-[0.65rem] tracking-[0.35em] text-[color:var(--muted-soft)] uppercase sm:text-xs">
@@ -110,9 +110,7 @@ export default function ShopComingSoonSection() {
                       plan.bestValue ? "border-l-2 pl-5 sm:pl-6" : ""
                     }`}
                     style={
-                      plan.bestValue
-                        ? { borderColor: FLUORO_GREEN }
-                        : undefined
+                      plan.bestValue ? { borderColor: FLUORO_GREEN } : undefined
                     }
                   >
                     {/* Weeks mark panel */}
@@ -238,7 +236,7 @@ export default function ShopComingSoonSection() {
           </div>
         </div>
 
-        {/* Ebooks — open list */}
+        {/* Ebooks, open list */}
         <div className="mt-16 sm:mt-20">
           <Reveal>
             <p className="text-[0.65rem] tracking-[0.35em] text-[color:var(--muted-soft)] uppercase sm:text-xs">

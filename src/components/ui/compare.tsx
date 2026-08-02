@@ -172,9 +172,7 @@ export const Compare = ({
           transition={{ duration: 0 }}
         >
           {showHandlebar && (
-            <div
-              className="absolute top-1/2 -right-2.5 z-30 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md bg-white shadow-md"
-            >
+            <div className="absolute top-1/2 -right-2.5 z-30 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md bg-white shadow-md">
               <IconGripVertical className="h-4 w-4 text-black" />
             </div>
           )}

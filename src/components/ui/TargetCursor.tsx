@@ -112,7 +112,8 @@ export default function TargetCursor({
     cornersRef.current = cursor.querySelectorAll(".target-cursor-corner");
 
     containingBlockRef.current = getContainingBlock(cursor);
-    const getOffset = () => getContainingBlockOffset(containingBlockRef.current);
+    const getOffset = () =>
+      getContainingBlockOffset(containingBlockRef.current);
 
     let activeTarget: Element | null = null;
     let currentLeaveHandler: (() => void) | null = null;
@@ -139,7 +140,11 @@ export default function TargetCursor({
       }
       spinTl.current = gsap
         .timeline({ repeat: -1 })
-        .to(cursor, { rotation: "+=360", duration: spinDuration, ease: "none" });
+        .to(cursor, {
+          rotation: "+=360",
+          duration: spinDuration,
+          ease: "none",
+        });
     };
 
     createSpinTimeline();
@@ -335,9 +340,7 @@ export default function TargetCursor({
         }
 
         if (cornersRef.current) {
-          const leaveCorners = Array.from(
-            cornersRef.current,
-          ) as HTMLElement[];
+          const leaveCorners = Array.from(cornersRef.current) as HTMLElement[];
           gsap.killTweensOf(leaveCorners, "x,y");
           const { cornerSize: size } = constants;
           const positions = [
@@ -442,13 +445,11 @@ export default function TargetCursor({
     if (isMobile || !cursorRef.current || !spinTl.current) return;
     if (spinTl.current.isActive()) {
       spinTl.current.kill();
-      spinTl.current = gsap
-        .timeline({ repeat: -1 })
-        .to(cursorRef.current, {
-          rotation: "+=360",
-          duration: spinDuration,
-          ease: "none",
-        });
+      spinTl.current = gsap.timeline({ repeat: -1 }).to(cursorRef.current, {
+        rotation: "+=360",
+        duration: spinDuration,
+        ease: "none",
+      });
     }
   }, [spinDuration, isMobile]);
 

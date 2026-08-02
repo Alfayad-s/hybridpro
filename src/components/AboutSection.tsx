@@ -5,7 +5,12 @@ import { useTheme } from "@/components/ThemeProvider";
 import { trainer } from "@/lib/trainerContent";
 import { trainerPortraits } from "@/lib/trainerMedia";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
@@ -29,9 +34,7 @@ function AboutSectionMobile({
       data-scroll-hold
       className="relative isolate flex min-h-[100dvh] scroll-mt-16 flex-col overflow-x-clip bg-[var(--background)] px-4"
       style={{
-        paddingTop: isPwa
-          ? "max(4.5rem, env(safe-area-inset-top))"
-          : "4.5rem",
+        paddingTop: isPwa ? "max(4.5rem, env(safe-area-inset-top))" : "4.5rem",
         paddingBottom: isPwa
           ? "max(1.5rem, env(safe-area-inset-bottom))"
           : "1.5rem",

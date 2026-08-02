@@ -10,24 +10,24 @@ const faqs = [
     a: "No. Every program has an equipment-light variation, and your coach adapts the plan to whatever you actually have access to.",
   },
   {
-    q: "I'm a complete beginner — is this for me?",
+    q: "I'm a complete beginner, is this for me?",
     a: "Yes. We start from your current level, teach the lifts properly, and progress at a pace your body can absorb.",
   },
   {
     q: "What's the difference between Shop and Coaching?",
-    a: "Shop (coming soon) is one-time digital products — PDF training plans and ebooks you download yourself. Coaching is ongoing personalised support with check-ins, form reviews, and a coach in your corner.",
+    a: "Shop (coming soon) is one-time digital products, PDF training plans and ebooks you download yourself. Coaching is ongoing personalised support with check-ins, form reviews, and a coach in your corner.",
   },
   {
     q: "How fast will I see results?",
-    a: "Most athletes notice strength and energy changes within 3–4 weeks, and visible physique change around week 8 to 12.",
+    a: "Most athletes notice strength and energy changes within 3 to 4 weeks, and visible physique change around week 8 to 12.",
   },
   {
     q: "What if I need to pause?",
-    a: "You can pause or cancel your coaching plan at any time — no contracts, no cancellation calls. Digital shop purchases (when live) are one-time downloads.",
+    a: "You can pause or cancel your coaching plan at any time, no contracts, no cancellation calls. Digital shop purchases (when live) are one-time downloads.",
   },
   {
     q: "Is nutrition included?",
-    a: "Yes — Hybrid Coaching and 1-to-1 Elite include personalised nutrition targets, meal structure, and adjustments in your check-ins. See the Nutrition section for how meal planning works alongside training. Self-guided includes general guidelines; a deeper nutrition ebook is coming in the shop.",
+    a: "Yes, Hybrid Coaching and 1-to-1 Elite include personalised nutrition targets, meal structure, and adjustments in your check-ins. See the Nutrition section for how meal planning works alongside training. Self-guided includes general guidelines; a deeper nutrition ebook is coming in the shop.",
   },
 ];
 
@@ -61,7 +61,9 @@ export default function FaqSection() {
                   <span>{faq.q}</span>
                   <span
                     className="relative h-3 w-3 shrink-0 text-[color:var(--muted-soft)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                    style={{ transform: isOpen ? "rotate(45deg)" : "rotate(0deg)" }}
+                    style={{
+                      transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
+                    }}
                     aria-hidden
                   >
                     <span className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-current" />

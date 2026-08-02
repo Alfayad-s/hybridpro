@@ -5,7 +5,11 @@ import TrainerGallerySection from "@/components/TrainerGallerySection";
 import { useTheme } from "@/components/ThemeProvider";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
 import { trainer } from "@/lib/trainerContent";
-import { trainerPhotos, trainerPortraits, trainerVideo } from "@/lib/trainerMedia";
+import {
+  trainerPhotos,
+  trainerPortraits,
+  trainerVideo,
+} from "@/lib/trainerMedia";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,7 +59,9 @@ function PhilosophyVideo({
     video.muted = true;
     video.playsInline = true;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (reduced) return;
 
     const observer = new IntersectionObserver(
@@ -109,7 +115,7 @@ export default function AboutPageContent() {
       <SiteNavbar />
       <ThemeGlassToggle />
 
-      {/* Futuristic name hero — giant type behind portrait */}
+      {/* Futuristic name hero, giant type behind portrait */}
       <section className="relative isolate flex h-[100svh] min-h-[560px] flex-col overflow-hidden bg-[var(--background)]">
         <div
           className="pointer-events-none absolute inset-0"
@@ -121,7 +127,7 @@ export default function AboutPageContent() {
           aria-hidden
         />
 
-        {/* Massive background wordmark — behind portrait */}
+        {/* Massive background wordmark, behind portrait */}
         <motion.h1
           className="pointer-events-none absolute inset-x-0 top-[36%] z-0 flex -translate-y-1/2 items-center justify-center px-2 select-none sm:top-[40%] md:top-[42%]"
           initial={{ opacity: 0, scale: 0.96 }}
@@ -135,9 +141,7 @@ export default function AboutPageContent() {
               fontFamily: "var(--font-bebas), sans-serif",
               fontSize: "clamp(7.5rem, 38vw, 32rem)",
               letterSpacing: "0.08em",
-              textShadow: isDark
-                ? "0 0 80px rgba(166,255,0,0.08)"
-                : "none",
+              textShadow: isDark ? "0 0 80px rgba(166,255,0,0.08)" : "none",
             }}
           >
             <span className="relative inline-block">
@@ -155,7 +159,7 @@ export default function AboutPageContent() {
           </span>
         </motion.h1>
 
-        {/* Portrait — anchored from bottom with soft fade into page */}
+        {/* Portrait, anchored from bottom with soft fade into page */}
         <motion.div
           className="absolute inset-x-0 bottom-0 z-10 flex h-[72%] max-h-[820px] items-end justify-center sm:h-[76%] md:h-[80%]"
           initial={{ opacity: 0, y: 36 }}
@@ -232,13 +236,13 @@ export default function AboutPageContent() {
         </div>
       </section>
 
-      {/* Intro — image flush left, narrower column; copy takes remaining space */}
+      {/* Intro, image flush left, narrower column; copy takes remaining space */}
       <section className="relative isolate overflow-hidden border-t border-[color:var(--border)]">
         <div className="grid items-center lg:grid-cols-[minmax(240px,36%)_minmax(0,1fr)]">
           <Reveal className="relative mx-auto aspect-[3/4] w-full max-w-[320px] overflow-hidden rounded-[1.75rem] sm:max-w-[360px] lg:mx-0 lg:aspect-auto lg:max-w-none lg:min-h-[min(70vh,560px)] lg:rounded-none">
             <Image
               src={trainerPhotos[2].src}
-              alt="Akash training — lat pulldown"
+              alt="Akash training, lat pulldown"
               fill
               sizes="(max-width: 1024px) 90vw, 36vw"
               className="object-cover object-center"
@@ -264,7 +268,9 @@ export default function AboutPageContent() {
             <Reveal delay={0.06}>
               <p
                 className="mt-6 text-base leading-[1.7] text-[color:var(--muted)] sm:mt-7 sm:text-lg sm:leading-[1.75] md:text-[1.25rem] md:leading-[1.7]"
-                style={{ fontFamily: "var(--font-inter), system-ui, sans-serif" }}
+                style={{
+                  fontFamily: "var(--font-inter), system-ui, sans-serif",
+                }}
               >
                 {trainer.heroLead}
               </p>
@@ -285,7 +291,9 @@ export default function AboutPageContent() {
             <Reveal delay={0.18}>
               <p
                 className="mt-7 text-sm leading-[1.7] tracking-[0.01em] text-[color:var(--muted)] sm:mt-8 sm:text-base sm:leading-[1.75]"
-                style={{ fontFamily: "var(--font-inter), system-ui, sans-serif" }}
+                style={{
+                  fontFamily: "var(--font-inter), system-ui, sans-serif",
+                }}
               >
                 {trainer.closing}
               </p>

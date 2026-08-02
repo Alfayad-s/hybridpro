@@ -14,14 +14,18 @@ const plans = [
     price: "$49",
     cadence: "per month",
     blurb: "Structured programming you run on your own schedule.",
-    features: ["Full program library", "App-based tracking", "Monthly plan refresh"],
+    features: [
+      "Full program library",
+      "App-based tracking",
+      "Monthly plan refresh",
+    ],
     featured: false,
   },
   {
     name: "Hybrid Coaching",
     price: "$149",
     cadence: "per month",
-    blurb: "The full system — personalised plan plus a coach in your corner.",
+    blurb: "The full system, personalised plan plus a coach in your corner.",
     features: [
       "Custom weekly programming",
       "Video form reviews",
@@ -52,11 +56,8 @@ export default function PricingSection() {
         <Eyebrow>Coaching pricing</Eyebrow>
         <SectionTitle>Live coaching. Cancel anytime.</SectionTitle>
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
-          Ongoing coaching with Akash — separate from upcoming self-guided PDF plans in the{" "}
-          <a href="#shop" className="underline underline-offset-4 hover:text-[var(--foreground)]">
-            shop
-          </a>
-          .
+          Ongoing coaching with Akash, live guidance, accountability, and plans
+          shaped around your goals.
         </p>
       </Reveal>
 
@@ -94,7 +95,9 @@ export default function PricingSection() {
                   {plan.cadence}
                 </span>
               </p>
-              <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">{plan.blurb}</p>
+              <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">
+                {plan.blurb}
+              </p>
               <ul className="mt-6 flex flex-col gap-2 border-t border-[color:var(--border)] pt-5">
                 {plan.features.map((feature) => (
                   <li

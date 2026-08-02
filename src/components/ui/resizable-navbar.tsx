@@ -4,10 +4,7 @@ import { cn } from "@/lib/utils";
 import BrandLogo from "@/components/BrandLogo";
 import { useScrollHideNav } from "@/hooks/useScrollHideNav";
 import { IconMenu2, IconX } from "@tabler/icons-react";
-import {
-  motion,
-  AnimatePresence,
-} from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
@@ -125,16 +122,19 @@ export const Navbar = ({
   );
 };
 
-export const NavBody = ({ children, className, visible, lightHero }: NavBodyProps) => {
+export const NavBody = ({
+  children,
+  className,
+  visible,
+  lightHero,
+}: NavBodyProps) => {
   return (
     <motion.div
       initial={false}
       animate={{
         backdropFilter: visible ? "blur(12px)" : "blur(0px)",
         backgroundColor: visible ? "var(--nav-pill)" : "rgba(247, 247, 250, 0)",
-        boxShadow: visible
-          ? "0 8px 32px rgba(0, 0, 0, 0.08)"
-          : "none",
+        boxShadow: visible ? "0 8px 32px rgba(0, 0, 0, 0.08)" : "none",
         maxWidth: visible ? 1080 : 1280,
         y: visible ? 16 : 0,
       }}
@@ -305,8 +305,7 @@ export const NavbarButton = ({
   className?: string;
   variant?: "primary" | "secondary" | "dark" | "gradient";
 } & (
-  | React.ComponentPropsWithoutRef<"a">
-  | React.ComponentPropsWithoutRef<"button">
+  React.ComponentPropsWithoutRef<"a"> | React.ComponentPropsWithoutRef<"button">
 )) => {
   const baseStyles =
     "px-4 py-2 rounded-full text-sm font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center";

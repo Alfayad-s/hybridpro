@@ -7,7 +7,9 @@ function isStandaloneDisplay() {
   const mq = window.matchMedia("(display-mode: standalone)").matches;
   const iosStandalone =
     "standalone" in window.navigator &&
-    Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone);
+    Boolean(
+      (window.navigator as Navigator & { standalone?: boolean }).standalone,
+    );
   return mq || iosStandalone;
 }
 
@@ -26,8 +28,9 @@ export function useIsMobile(breakpointPx = 1024) {
     const displayMode = window.matchMedia("(display-mode: standalone)");
 
     const update = () => {
-      const coarse =
-        window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+      const coarse = window.matchMedia(
+        "(hover: none) and (pointer: coarse)",
+      ).matches;
       const narrow = media.matches;
       const standalone = isStandaloneDisplay();
       setIsPwa(standalone);

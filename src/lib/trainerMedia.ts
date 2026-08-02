@@ -8,6 +8,7 @@ export const brand = {
 export const trainerPortraits = {
   dark: "/trainer/portrait-dark.png",
   light: "/trainer/portrait-light.png",
+  footer: "/trainer/gallery/footer-portrait.png",
 } as const;
 
 export const trainerVideo = {
@@ -21,14 +22,14 @@ export const trainerGalleryCards = [
     alt: "Akash coaching in the gym",
     category: "On the floor",
     title: "Coaching in session",
-    quote: "Every rep is coached — form first, ego last.",
+    quote: "Every rep is coached, form first, ego last.",
   },
   {
     src: "/trainer/gallery/portrait.jpg",
-    alt: "Akash — Hybrid Pro trainer",
+    alt: "Akash, Hybrid Pro trainer",
     category: "Hybrid Pro",
     title: "Built for strength",
-    quote: "Strength isn’t given. It’s earned — one session at a time.",
+    quote: "Strength isn’t given. It’s earned, one session at a time.",
   },
   {
     src: "/trainer/gallery/lat-pulldown.jpg",
@@ -39,14 +40,14 @@ export const trainerGalleryCards = [
   },
   {
     src: "/trainer/gallery/cable-row.jpg",
-    alt: "Akash — strength and conditioning",
+    alt: "Akash, strength and conditioning",
     category: "Conditioning",
     title: "Work that lasts",
     quote: "Fat loss and strength can coexist when the plan fits your life.",
   },
 ] as const;
 
-/** First gallery photo — used as video poster */
+/** First gallery photo, used as video poster */
 export const trainerPhotos = trainerGalleryCards;
 
 export const programImages = {

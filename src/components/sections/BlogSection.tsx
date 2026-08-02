@@ -14,7 +14,7 @@ const posts = [
     date: "Jul 2026",
     title: "Why hybrid athletes out-progress pure lifters",
     excerpt:
-      "Mixing strength and conditioning does not blunt your gains — done in the right order, it accelerates them.",
+      "Mixing strength and conditioning does not blunt your gains, done in the right order, it accelerates them.",
     href: "#blog",
   },
   {
@@ -52,7 +52,9 @@ export default function BlogSection() {
             >
               <div className="flex items-center gap-3 text-[0.7rem] tracking-[0.25em] uppercase">
                 <span style={{ color: FLUORO_GREEN }}>{post.category}</span>
-                <span className="text-[color:var(--muted-soft)]">{post.date}</span>
+                <span className="text-[color:var(--muted-soft)]">
+                  {post.date}
+                </span>
               </div>
               <h3 className="mt-4 text-xl leading-snug text-[var(--foreground)] sm:text-2xl">
                 {post.title}

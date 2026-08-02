@@ -46,7 +46,10 @@ export const BackgroundGradientAnimation = ({
     const el = containerRef.current;
     if (!el) return;
 
-    el.style.setProperty("--gradient-background-start", gradientBackgroundStart);
+    el.style.setProperty(
+      "--gradient-background-start",
+      gradientBackgroundStart,
+    );
     el.style.setProperty("--gradient-background-end", gradientBackgroundEnd);
     el.style.setProperty("--first-color", firstColor);
     el.style.setProperty("--second-color", secondColor);
@@ -114,11 +117,15 @@ export const BackgroundGradientAnimation = ({
       <svg className="hidden" aria-hidden>
         <defs>
           <filter id="results-gradient-blur">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+            <feGaussianBlur
+              in="SourceGraphic"
+              stdDeviation="10"
+              result="blur"
+            />
             <feColorMatrix
               in="blur"
               mode="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8"
+              values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 18 -8"
               result="goo"
             />
             <feBlend in="SourceGraphic" in2="goo" />

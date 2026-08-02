@@ -268,7 +268,8 @@ export default function StaggeredMenu({
         );
         if (numberEls.length) gsap.set(numberEls, { "--sm-num-opacity": 0 });
 
-        const socialTitle = panel.querySelector<HTMLElement>(".sm-socials-title");
+        const socialTitle =
+          panel.querySelector<HTMLElement>(".sm-socials-title");
         const socialLinks = Array.from(
           panel.querySelectorAll<HTMLElement>(".sm-socials-link"),
         );
@@ -429,7 +430,11 @@ export default function StaggeredMenu({
       className={`${className ? `${className} ` : ""}staggered-menu-wrapper${
         isFixed ? " fixed-wrapper" : ""
       }`}
-      style={accentColor ? ({ ["--sm-accent"]: accentColor } as React.CSSProperties) : undefined}
+      style={
+        accentColor
+          ? ({ ["--sm-accent"]: accentColor } as React.CSSProperties)
+          : undefined
+      }
       data-position={position}
       data-open={open || undefined}
     >

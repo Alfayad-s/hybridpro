@@ -16,7 +16,6 @@ const navItems = [
   { name: "Home", link: "/" },
   { name: "About", link: "#about" },
   { name: "Programs", link: "#programs" },
-  { name: "Shop", link: "#shop" },
   { name: "Coaching", link: "#coaching" },
   { name: "Nutrition", link: "#nutrition" },
   { name: "Pricing", link: "#pricing" },
@@ -24,12 +23,19 @@ const navItems = [
 
 const staggeredItems = [
   { label: "Home", ariaLabel: "Go to home page", link: "/" },
-  { label: "Experience", ariaLabel: "Go to the scroll experience", link: "#top" },
+  {
+    label: "Experience",
+    ariaLabel: "Go to the scroll experience",
+    link: "#top",
+  },
   { label: "About", ariaLabel: "Learn about us", link: "#about" },
   { label: "Programs", ariaLabel: "See training programs", link: "#programs" },
-  { label: "Shop", ariaLabel: "Upcoming digital shop", link: "#shop" },
   { label: "Coaching", ariaLabel: "How coaching works", link: "#coaching" },
-  { label: "Nutrition", ariaLabel: "Nutrition and meal planning", link: "#nutrition" },
+  {
+    label: "Nutrition",
+    ariaLabel: "Nutrition and meal planning",
+    link: "#nutrition",
+  },
   { label: "Results", ariaLabel: "See client results", link: "#results" },
   { label: "Pricing", ariaLabel: "See coaching pricing", link: "#pricing" },
   { label: "FAQ", ariaLabel: "Frequently asked questions", link: "#faq" },
@@ -90,7 +96,9 @@ export default function SiteNavbar() {
         menuButtonColor={brandGreen}
         openMenuButtonColor={theme === "dark" ? "#ededed" : "#111111"}
         changeMenuColorOnOpen
-        colors={theme === "dark" ? ["#142000", "#A6FF00"] : ["#e8f5c8", "#93E200"]}
+        colors={
+          theme === "dark" ? ["#142000", "#A6FF00"] : ["#e8f5c8", "#93E200"]
+        }
         accentColor={brandGreen}
       />
     );

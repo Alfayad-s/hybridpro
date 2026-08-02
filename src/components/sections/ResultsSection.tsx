@@ -27,13 +27,13 @@ function TransformationCard({
   client: (typeof transformations)[number];
 }) {
   return (
-    <div className="relative h-[min(58dvh,420px)] w-[min(72vw,280px)] shrink-0 overflow-hidden rounded-2xl sm:h-[min(60dvh,460px)] sm:w-[300px] sm:rounded-3xl md:h-[min(62dvh,500px)] md:w-[340px]">
+    <div className="relative h-[380px] w-[260px] shrink-0 overflow-hidden rounded-2xl sm:h-[420px] sm:w-[280px] sm:rounded-3xl md:h-[460px] md:w-[300px]">
       <Compare
         firstImage={client.before}
         secondImage={client.after}
-        firstImageClassName="object-contain object-center"
-        secondImageClassname="object-contain object-center"
-        className="h-full w-full rounded-2xl bg-white sm:rounded-3xl"
+        firstImageClassName="object-cover object-center"
+        secondImageClassname="object-cover object-center"
+        className="h-full w-full rounded-2xl bg-transparent sm:rounded-3xl"
         slideMode="hover"
         initialSliderPercentage={50}
         showHandlebar
@@ -95,18 +95,16 @@ export default function ResultsSection() {
           interactive
           containerClassName="h-full w-full"
           gradientBackgroundStart={
-            isDark ? "rgb(0, 0, 0)" : "rgb(232, 245, 200)"
+            isDark ? "rgb(4, 18, 0)" : "rgb(210, 255, 140)"
           }
-          gradientBackgroundEnd={
-            isDark ? "rgb(10, 18, 4)" : "rgb(247, 247, 250)"
-          }
-          firstColor={isDark ? "166, 255, 0" : "147, 226, 0"}
-          secondColor={isDark ? "80, 140, 20" : "120, 180, 40"}
-          thirdColor={isDark ? "40, 80, 10" : "200, 230, 120"}
-          fourthColor={isDark ? "30, 50, 8" : "180, 200, 100"}
-          fifthColor={isDark ? "100, 160, 30" : "100, 150, 40"}
-          pointerColor={isDark ? "166, 255, 0" : "147, 226, 0"}
-          size="80%"
+          gradientBackgroundEnd={isDark ? "rgb(8, 28, 2)" : "rgb(180, 255, 90)"}
+          firstColor="166, 255, 0"
+          secondColor="57, 255, 20"
+          thirdColor="204, 255, 0"
+          fourthColor="147, 226, 0"
+          fifthColor="120, 255, 80"
+          pointerColor="166, 255, 0"
+          size="90%"
           blendingValue="hard-light"
         />
       </div>
@@ -115,8 +113,8 @@ export default function ResultsSection() {
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background: isDark
-            ? "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.6) 100%)"
-            : "linear-gradient(180deg, rgba(247,247,250,0.72) 0%, rgba(247,247,250,0.45) 50%, rgba(247,247,250,0.75) 100%)",
+            ? "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.18) 50%, rgba(0,0,0,0.45) 100%)"
+            : "linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.32) 100%)",
         }}
         aria-hidden
       />
@@ -126,7 +124,7 @@ export default function ResultsSection() {
           <Eyebrow>Results</Eyebrow>
           <SectionTitle>Proof, not promises.</SectionTitle>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-[color:var(--muted)] sm:mt-4 sm:text-base">
-            Real client progress — hover to compare before and after. Hover the
+            Real client progress, hover to compare before and after. Hover the
             row to pause.
           </p>
         </Reveal>

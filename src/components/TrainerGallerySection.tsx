@@ -1,6 +1,9 @@
 "use client";
 
-import { Carousel, GalleryCarouselCard } from "@/components/ui/apple-cards-carousel";
+import {
+  Carousel,
+  GalleryCarouselCard,
+} from "@/components/ui/apple-cards-carousel";
 import { trainerGalleryCards } from "@/lib/trainerMedia";
 
 const BRAND = "var(--brand-green)";
@@ -29,7 +32,7 @@ export default function TrainerGallerySection() {
           In action
         </h2>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-[color:var(--muted)] sm:text-base">
-          Real sessions on the floor — coaching, effort, and the mindset behind
+          Real sessions on the floor, coaching, effort, and the mindset behind
           every result. Hover to pause.
         </p>
 

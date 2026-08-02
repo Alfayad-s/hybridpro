@@ -62,7 +62,8 @@ export default function NutritionSection() {
   const [activeStyle, setActiveStyle] =
     useState<(typeof trainingStyles)[number]["id"]>("bodybuilding");
 
-  const active = trainingStyles.find((s) => s.id === activeStyle) ?? trainingStyles[1];
+  const active =
+    trainingStyles.find((s) => s.id === activeStyle) ?? trainingStyles[1];
 
   return (
     <section
@@ -75,9 +76,10 @@ export default function NutritionSection() {
           <Eyebrow>Nutrition &amp; planning</Eyebrow>
           <SectionTitle>Fuel that matches the work.</SectionTitle>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
-            Training alone isn’t enough. Hybrid Pro pairs your sessions with practical meal
-            structure, macros that fit your life, and check-ins that keep you consistent —
-            so the plate and the program pull in the same direction.
+            Training alone isn’t enough. Hybrid Pro pairs your sessions with
+            practical meal structure, macros that fit your life, and check-ins
+            that keep you consistent, so the plate and the program pull in the
+            same direction.
           </p>
         </Reveal>
 
@@ -95,8 +97,8 @@ export default function NutritionSection() {
                   Check-ins that keep you going
                 </h3>
                 <p className="mt-4 max-w-sm text-sm leading-relaxed text-black/75 sm:text-base">
-                  Your coach reviews progress, adapts meals and training, and keeps you
-                  moving — even when life gets busy.
+                  Your coach reviews progress, adapts meals and training, and
+                  keeps you moving, even when life gets busy.
                 </p>
               </div>
               <a
@@ -137,9 +139,9 @@ export default function NutritionSection() {
                   Nutrition, simplified.
                 </h3>
                 <p className="mt-4 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
-                  Personalised macros, meal frameworks, and follow-ups built around your
-                  schedule — not crash diets. Eat for strength, fat loss, or performance
-                  without overcomplicating every plate.
+                  Personalised macros, meal frameworks, and follow-ups built
+                  around your schedule, not crash diets. Eat for strength, fat
+                  loss, or performance without overcomplicating every plate.
                 </p>
                 <a
                   href="#pricing"
@@ -152,7 +154,7 @@ export default function NutritionSection() {
             </article>
           </Reveal>
 
-          {/* Training styles — image swaps on selection */}
+          {/* Training styles, image swaps on selection */}
           <Reveal delay={0.12}>
             <article className="relative flex h-full min-h-[280px] overflow-hidden rounded-[1.75rem] sm:min-h-[300px] sm:rounded-[2rem]">
               <AnimatePresence mode="sync" initial={false}>

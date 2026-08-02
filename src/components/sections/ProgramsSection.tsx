@@ -8,12 +8,12 @@ const programs = [
   {
     step: "01",
     name: "Strength & Performance",
-    duration: "8–12 weeks",
+    duration: "8 to 12 weeks",
     audience: "Lifters · athletes · busy professionals",
     image: programImages.strength,
     imageAlt: "Athlete performing a heavy deadlift in the gym",
     summary:
-      "Progressive strength training built around your schedule — heavy compounds, smart recovery, and mobility so you get stronger without breaking down.",
+      "Progressive strength training built around your schedule, heavy compounds, smart recovery, and mobility so you get stronger without breaking down.",
     points: [
       "Progressive overload programming",
       "Mobility & injury prevention",
@@ -23,12 +23,12 @@ const programs = [
   {
     step: "02",
     name: "Fat Loss System",
-    duration: "8–12 weeks",
+    duration: "8 to 12 weeks",
     audience: "Weight-loss · lifestyle change",
     image: programImages.fatLoss,
     imageAlt: "Client training for sustainable fat loss",
     summary:
-      "Sustainable fat loss without crash diets. Training, nutrition coaching, and habit building that fit real life — so results actually stick.",
+      "Sustainable fat loss without crash diets. Training, nutrition coaching, and habit building that fit real life, so results actually stick.",
     points: [
       "Personalised nutrition targets",
       "Habit architecture that lasts",
@@ -38,12 +38,12 @@ const programs = [
   {
     step: "03",
     name: "Muscle Development",
-    duration: "8–12 weeks",
+    duration: "8 to 12 weeks",
     audience: "Beginners · physique · postpartum rebuild",
     image: programImages.muscle,
     imageAlt: "Focused muscle-building training session",
     summary:
-      "Build muscle with purpose — from first confident sessions to advanced hypertrophy — with form coaching and a plan shaped around your body and goals.",
+      "Build muscle with purpose, from first confident sessions to advanced hypertrophy, with form coaching and a plan shaped around your body and goals.",
     points: [
       "Hypertrophy-focused sessions",
       "Technique & form reviews",
@@ -64,7 +64,7 @@ export default function ProgramsSection() {
           <Eyebrow>Programs</Eyebrow>
           <SectionTitle>Built around your goal.</SectionTitle>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
-            Three Hybrid Pro pathways — customised to your body, lifestyle, and
+            Three Hybrid Pro pathways, customised to your body, lifestyle, and
             schedule. Online and in person.
           </p>
         </Reveal>

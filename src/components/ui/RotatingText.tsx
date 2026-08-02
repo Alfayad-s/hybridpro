@@ -82,7 +82,10 @@ const RotatingText = forwardRef<RotatingTextHandle, RotatingTextProps>(
     const splitIntoCharacters = (text: string) => {
       if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
         const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
-        return Array.from(segmenter.segment(text), (segment) => segment.segment);
+        return Array.from(
+          segmenter.segment(text),
+          (segment) => segment.segment,
+        );
       }
       return Array.from(text);
     };
@@ -119,7 +122,8 @@ const RotatingText = forwardRef<RotatingTextHandle, RotatingTextProps>(
       (index: number, totalChars: number) => {
         const total = totalChars;
         if (staggerFrom === "first") return index * staggerDuration;
-        if (staggerFrom === "last") return (total - 1 - index) * staggerDuration;
+        if (staggerFrom === "last")
+          return (total - 1 - index) * staggerDuration;
         if (staggerFrom === "center") {
           const center = Math.floor(total / 2);
           return Math.abs(center - index) * staggerDuration;
@@ -206,10 +210,15 @@ const RotatingText = forwardRef<RotatingTextHandle, RotatingTextProps>(
         transition={transition}
       >
         <span className="text-rotate-sr-only">{texts[currentTextIndex]}</span>
-        <AnimatePresence mode={animatePresenceMode} initial={animatePresenceInitial}>
+        <AnimatePresence
+          mode={animatePresenceMode}
+          initial={animatePresenceInitial}
+        >
           <motion.span
             key={currentTextIndex}
-            className={cn(splitBy === "lines" ? "text-rotate-lines" : "text-rotate")}
+            className={cn(
+              splitBy === "lines" ? "text-rotate-lines" : "text-rotate",
+            )}
             layout
             aria-hidden="true"
           >
@@ -239,7 +248,10 @@ const RotatingText = forwardRef<RotatingTextHandle, RotatingTextProps>(
                           totalChars,
                         ),
                       }}
-                      className={cn("text-rotate-element", elementLevelClassName)}
+                      className={cn(
+                        "text-rotate-element",
+                        elementLevelClassName,
+                      )}
                     >
                       {char}
                     </motion.span>

@@ -7,12 +7,7 @@ import {
   useMotionValueEvent,
   useTransform,
 } from "motion/react";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { IconVolume, IconVolumeOff } from "@tabler/icons-react";
 
 import "./ElasticSlider.css";
@@ -184,9 +179,7 @@ function Slider({
 
   return (
     <>
-      {showValue && (
-        <p className="value-indicator">{Math.round(value)}</p>
-      )}
+      {showValue && <p className="value-indicator">{Math.round(value)}</p>}
       <motion.div
         onHoverStart={() => animate(scale, 1.2)}
         onHoverEnd={() => animate(scale, 1)}

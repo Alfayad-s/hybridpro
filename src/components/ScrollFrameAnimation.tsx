@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { AnimatePresence, motion } from "framer-motion";
@@ -60,13 +55,13 @@ function markEntered() {
   }
 }
 
-/** Quote ranges use 1-based frame numbers — a Hybrid Pro story told while you scroll. */
+/** Quote ranges use 1-based frame numbers, a Hybrid Pro story told while you scroll. */
 const QUOTES: Quote[] = [
   {
     start: 1,
     end: 120,
     text: "Welcome to Hybrid Pro",
-    sub: "Where ordinary routines end — and real transformation begins.",
+    sub: "Where ordinary routines end, and real transformation begins.",
   },
   {
     start: 150,
@@ -84,13 +79,13 @@ const QUOTES: Quote[] = [
     start: 430,
     end: 540,
     text: "Guided by Akash",
-    sub: "Founder & CEO — certified, proven, and committed to the version of you that doesn’t quit.",
+    sub: "Founder & CEO, certified, proven, and committed to the version of you that doesn’t quit.",
   },
   {
     start: 570,
     end: 680,
     text: "Train with purpose",
-    sub: "Consistency compounds. Show up with intent — and let the results speak for themselves.",
+    sub: "Consistency compounds. Show up with intent, and let the results speak for themselves.",
   },
   {
     start: 710,
@@ -108,7 +103,7 @@ const QUOTES: Quote[] = [
     start: 990,
     end: 1100,
     text: "Who we coach",
-    sub: "From first-timers to athletes, busy professionals to postpartum rebuilds — online and in person.",
+    sub: "From first-timers to athletes, busy professionals to postpartum rebuilds, online and in person.",
   },
   {
     start: 1130,
@@ -120,20 +115,22 @@ const QUOTES: Quote[] = [
     start: 1270,
     end: 1380,
     text: "Every rep. Every check-in.",
-    sub: "Expert guidance in your corner — through every setback, every PR, every breakthrough.",
+    sub: "Expert guidance in your corner, through every setback, every PR, every breakthrough.",
   },
   {
     start: 1410,
     end: 1523,
     text: "This is Hybrid Pro",
-    sub: "Your next chapter starts now. Keep scrolling — then take the first step.",
+    sub: "Your next chapter starts now. Keep scrolling, then take the first step.",
   },
 ];
 
 const quoteEase = [0.16, 1, 0.3, 1] as const;
 
 function quoteIndexForFrame(frameNumber: number): number {
-  return QUOTES.findIndex((q) => frameNumber >= q.start && frameNumber <= q.end);
+  return QUOTES.findIndex(
+    (q) => frameNumber >= q.start && frameNumber <= q.end,
+  );
 }
 
 function isMobileDevice(): boolean {
@@ -148,9 +145,11 @@ function getLoadStrategy(frameCount: number) {
   const mobile = isMobileDevice();
   const connection =
     typeof navigator !== "undefined"
-      ? (navigator as Navigator & {
-          connection?: { effectiveType?: string; saveData?: boolean };
-        }).connection
+      ? (
+          navigator as Navigator & {
+            connection?: { effectiveType?: string; saveData?: boolean };
+          }
+        ).connection
       : undefined;
 
   const slowNetwork =
@@ -268,7 +267,11 @@ async function preloadImagesProgressive(
   let fromCacheCount = 0;
   let readyFired = false;
 
-  const markLoaded = (index: number, image: HTMLImageElement, fromCache: boolean) => {
+  const markLoaded = (
+    index: number,
+    image: HTMLImageElement,
+    fromCache: boolean,
+  ) => {
     images[index] = image;
     loaded += 1;
     if (fromCache) fromCacheCount += 1;
@@ -535,7 +538,8 @@ export default function ScrollFrameAnimation({
       })
       .catch((error: unknown) => {
         if (cancelled) return;
-        if (error instanceof DOMException && error.name === "AbortError") return;
+        if (error instanceof DOMException && error.name === "AbortError")
+          return;
         const message =
           error instanceof Error ? error.message : "Unable to load frames.";
         setLoadError(message);
@@ -582,7 +586,7 @@ export default function ScrollFrameAnimation({
     fadeVolume(0, duration, "power2.in");
   };
 
-  /** Sync music from scroll frame updates via refs — no React re-renders. */
+  /** Sync music from scroll frame updates via refs, no React re-renders. */
   const applyMusicForFrame = (zeroBasedFrame: number) => {
     const audio = audioRef.current;
     if (!audio || !startedRef.current) return;
@@ -664,7 +668,7 @@ export default function ScrollFrameAnimation({
     };
   }, [started]);
 
-  /** Must run inside a click/tap — unlocks audio and keeps silent playback alive. */
+  /** Must run inside a click/tap, unlocks audio and keeps silent playback alive. */
   const enterExperience = async () => {
     if (!isReady || entering || started) return;
     setEntering(true);
@@ -690,7 +694,10 @@ export default function ScrollFrameAnimation({
   };
 
   const handleVolumeChange = (sliderValue: number) => {
-    const next = Math.max(0, Math.min(1, (sliderValue / 100) * MUSIC_MAX_VOLUME));
+    const next = Math.max(
+      0,
+      Math.min(1, (sliderValue / 100) * MUSIC_MAX_VOLUME),
+    );
     userVolumeRef.current = next;
 
     const audio = audioRef.current;
@@ -705,7 +712,7 @@ export default function ScrollFrameAnimation({
     }
   };
 
-  /** Jump past the pinned frame experience into About — no frame scrub. */
+  /** Jump past the pinned frame experience into About, no frame scrub. */
   const skipHero = () => {
     if (!startedRef.current || skippingRef.current) return;
 
@@ -734,8 +741,7 @@ export default function ScrollFrameAnimation({
       const about = document.getElementById("about");
       if (!about) return;
 
-      const targetY =
-        about.getBoundingClientRect().top + window.scrollY - 8;
+      const targetY = about.getBoundingClientRect().top + window.scrollY - 8;
       const proxy = { y: window.scrollY };
 
       skipScrollTweenRef.current = gsap.to(proxy, {
@@ -811,7 +817,7 @@ export default function ScrollFrameAnimation({
     // Seed welcome quote on first paint.
     scheduleFrame(0);
 
-    // Cap how fast frames/quotes can advance — even on rapid scroll.
+    // Cap how fast frames/quotes can advance, even on rapid scroll.
     const MAX_FRAMES_PER_SEC = 36;
     let targetFrame = 0;
     let displayFrame = 0;
@@ -841,7 +847,7 @@ export default function ScrollFrameAnimation({
     };
 
     const setTargetFrame = (frame: number) => {
-      // Skip jumps straight to the end — never scrub through frames.
+      // Skip jumps straight to the end, never scrub through frames.
       if (skippingRef.current) {
         targetFrame = frame;
         displayFrame = frame;
@@ -962,7 +968,7 @@ export default function ScrollFrameAnimation({
         />
       )}
 
-      {/* Welcome logo — sits behind the first quote, fades out with it */}
+      {/* Welcome logo, sits behind the first quote, fades out with it */}
       <AnimatePresence>
         {started && !skipped && activeQuote === 0 && (
           <motion.div
@@ -1053,7 +1059,11 @@ export default function ScrollFrameAnimation({
                       <motion.span
                         key={`${word}-${i}`}
                         className="inline-block"
-                        initial={{ opacity: 0, y: "0.55em", filter: "blur(8px)" }}
+                        initial={{
+                          opacity: 0,
+                          y: "0.55em",
+                          filter: "blur(8px)",
+                        }}
                         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                         transition={{
                           duration: 0.7,
@@ -1081,7 +1091,6 @@ export default function ScrollFrameAnimation({
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ delay: 0.38, duration: 0.85, ease: quoteEase }}
                 >
-                  <span className="text-[color:var(--brand-green)]">— </span>
                   {QUOTES[activeQuote].sub}
                 </motion.p>
               )}
@@ -1090,7 +1099,7 @@ export default function ScrollFrameAnimation({
         </AnimatePresence>
       </div>
 
-      {/* Scroll hint — sits above the bottom-center sound control */}
+      {/* Scroll hint, sits above the bottom-center sound control */}
       <AnimatePresence>
         {started && activeQuote < 0 && (
           <motion.div
@@ -1103,7 +1112,11 @@ export default function ScrollFrameAnimation({
             <motion.p
               className="text-xs tracking-[0.3em] text-white/55 uppercase"
               animate={{ opacity: [0.35, 0.85, 0.35], y: [0, -4, 0] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              transition={{
+                duration: 2.4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             >
               Scroll
             </motion.p>
@@ -1111,7 +1124,7 @@ export default function ScrollFrameAnimation({
         )}
       </AnimatePresence>
 
-      {/* Volume slider — bottom center */}
+      {/* Volume slider, bottom center */}
       {started && !skipped && (
         <div
           className="absolute bottom-6 left-1/2 z-40 w-[min(14rem,calc(100vw-2.5rem))] -translate-x-1/2 sm:bottom-8"
@@ -1132,7 +1145,7 @@ export default function ScrollFrameAnimation({
         </div>
       )}
 
-      {/* Skip hero — jumps past the pin into About without scrubbing frames */}
+      {/* Skip hero, jumps past the pin into About without scrubbing frames */}
       <AnimatePresence>
         {started && !skipped && (
           <motion.button
@@ -1141,7 +1154,8 @@ export default function ScrollFrameAnimation({
             onClick={skipHero}
             className="absolute right-4 z-40 rounded-full border border-white/20 bg-black/45 px-4 py-2 text-[11px] tracking-[0.22em] text-white/75 uppercase backdrop-blur-sm transition hover:border-[color:var(--brand-green)]/60 hover:text-[var(--brand-green)] sm:right-6 sm:text-xs"
             style={{
-              bottom: "max(5.75rem, calc(env(safe-area-inset-bottom, 0px) + 5.25rem))",
+              bottom:
+                "max(5.75rem, calc(env(safe-area-inset-bottom, 0px) + 5.25rem))",
             }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1162,7 +1176,10 @@ export default function ScrollFrameAnimation({
             type="button"
             className="absolute inset-0 z-50 flex cursor-pointer flex-col items-center justify-center bg-black"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+            }}
             onClick={() => void enterExperience()}
             disabled={!isReady || entering || Boolean(loadError)}
           >
@@ -1188,7 +1205,7 @@ export default function ScrollFrameAnimation({
                 </span>
                 {loadingFromCache && (
                   <p className="mt-3 max-w-xs px-6 text-center text-[10px] tracking-[0.2em] text-white/35 uppercase">
-                    Saved on this device — no re-download
+                    Saved on this device, no re-download
                   </p>
                 )}
               </>
@@ -1205,7 +1222,11 @@ export default function ScrollFrameAnimation({
                 <motion.p
                   className="text-xs tracking-[0.35em] text-white/70 uppercase"
                   animate={{ opacity: [0.45, 1, 0.45] }}
-                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 2.2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                 >
                   {entering ? "Starting…" : "Click to enter"}
                 </motion.p>

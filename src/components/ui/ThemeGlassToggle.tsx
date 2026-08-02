@@ -75,7 +75,12 @@ export default function ThemeGlassToggle({
             <motion.span
               key={theme}
               className="relative z-10 text-[var(--foreground)]"
-              initial={{ opacity: 0, rotate: -40, scale: 0.7, filter: "blur(6px)" }}
+              initial={{
+                opacity: 0,
+                rotate: -40,
+                scale: 0.7,
+                filter: "blur(6px)",
+              }}
               animate={{ opacity: 1, rotate: 0, scale: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, rotate: 40, scale: 0.7, filter: "blur(6px)" }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
