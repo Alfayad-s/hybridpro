@@ -33,7 +33,7 @@ export default function TrainerGallerySection() {
         </h2>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-[color:var(--muted)] sm:text-base">
           Real sessions on the floor, coaching, effort, and the mindset behind
-          every result. Hover to pause.
+          every result. Swipe or drag the cards.
         </p>
 
         <div className="mt-8 -mx-4 sm:-mx-6 md:mx-0 md:mt-10">
