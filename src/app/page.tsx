@@ -2,6 +2,7 @@ import AboutSection from "@/components/AboutSection";
 import HomeHero from "@/components/HomeHero";
 import SiteNavbar from "@/components/SiteNavbar";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
+import AppInstallSection from "@/components/sections/AppInstallSection";
 import BlogSection from "@/components/sections/BlogSection";
 import CoachingSection from "@/components/sections/CoachingSection";
 import ContactSection from "@/components/sections/ContactSection";
@@ -24,6 +25,7 @@ export default function Home() {
       <NutritionSection />
       <ResultsSection />
       <PricingSection />
+      <AppInstallSection />
       <FaqSection />
       <BlogSection />
       <ContactSection />

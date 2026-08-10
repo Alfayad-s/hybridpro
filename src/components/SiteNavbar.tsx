@@ -18,6 +18,7 @@ const navItems = [
   { name: "Programs", link: "#programs" },
   { name: "Coaching", link: "#coaching" },
   { name: "Nutrition", link: "#nutrition" },
+  { name: "App", link: "#app" },
   { name: "Pricing", link: "#pricing" },
 ];
 
@@ -38,6 +39,8 @@ const staggeredItems = [
   },
   { label: "Results", ariaLabel: "See client results", link: "#results" },
   { label: "Pricing", ariaLabel: "See coaching pricing", link: "#pricing" },
+  { label: "App", ariaLabel: "Install GymTrack app", link: "#app" },
+  { label: "Install guide", ariaLabel: "GymTrack install instructions", link: "/app" },
   { label: "FAQ", ariaLabel: "Frequently asked questions", link: "#faq" },
   { label: "Blog", ariaLabel: "Read the blog", link: "#blog" },
   { label: "Contact", ariaLabel: "Get in touch", link: "#contact" },

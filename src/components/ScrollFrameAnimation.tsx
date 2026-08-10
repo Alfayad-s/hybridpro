@@ -38,6 +38,8 @@ const MUSIC_FADE_IN_SEC = 4.5;
 const MUSIC_FADE_OUT_SEC = 1.2;
 /** Skip READY overlay on later visits */
 const ENTERED_STORAGE_KEY = "hybridpro-hero-entered";
+/** Hero music slider 0–100 */
+const VOLUME_STORAGE_KEY = "hybridpro-hero-volume";
 
 function hasEnteredBefore() {
   try {
@@ -50,6 +52,29 @@ function hasEnteredBefore() {
 function markEntered() {
   try {
     localStorage.setItem(ENTERED_STORAGE_KEY, "1");
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+function readStoredSliderVolume(): number {
+  try {
+    const raw = localStorage.getItem(VOLUME_STORAGE_KEY);
+    if (raw == null) return 100;
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return 100;
+    return Math.max(0, Math.min(100, n));
+  } catch {
+    return 100;
+  }
+}
+
+function writeStoredSliderVolume(sliderValue: number) {
+  try {
+    localStorage.setItem(
+      VOLUME_STORAGE_KEY,
+      String(Math.round(Math.max(0, Math.min(100, sliderValue)))),
+    );
   } catch {
     // ignore quota / private mode
   }
@@ -453,6 +478,14 @@ export default function ScrollFrameAnimation({
   const [skipped, setSkipped] = useState(false);
   const [activeQuote, setActiveQuote] = useState(-1);
   const [loadingFromCache, setLoadingFromCache] = useState(false);
+  const [sliderVolume, setSliderVolume] = useState(100);
+
+  // Restore saved hero music level before the user enters.
+  useEffect(() => {
+    const stored = readStoredSliderVolume();
+    setSliderVolume(stored);
+    userVolumeRef.current = (stored / 100) * MUSIC_MAX_VOLUME;
+  }, []);
 
   // Create + preload audio once.
   useEffect(() => {
@@ -694,11 +727,14 @@ export default function ScrollFrameAnimation({
   };
 
   const handleVolumeChange = (sliderValue: number) => {
+    const clamped = Math.max(0, Math.min(100, sliderValue));
     const next = Math.max(
       0,
-      Math.min(1, (sliderValue / 100) * MUSIC_MAX_VOLUME),
+      Math.min(1, (clamped / 100) * MUSIC_MAX_VOLUME),
     );
     userVolumeRef.current = next;
+    setSliderVolume(clamped);
+    writeStoredSliderVolume(clamped);
 
     const audio = audioRef.current;
     if (!audio || !startedRef.current) return;
@@ -1134,7 +1170,7 @@ export default function ScrollFrameAnimation({
         >
           <ElasticSlider
             startingValue={0}
-            defaultValue={100}
+            defaultValue={sliderVolume}
             maxValue={100}
             isStepped
             stepSize={1}

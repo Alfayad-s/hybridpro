@@ -132,10 +132,10 @@ function AboutSectionMobile({
                 More about Akash
               </Link>
               <a
-                href="#contact"
+                href="/assessment"
                 className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[color:var(--border)] px-6 text-sm font-medium text-[var(--foreground)] transition active:scale-[0.98]"
               >
-                Start training
+                Take Body Assessment
               </a>
             </div>
           </div>
@@ -325,10 +325,10 @@ function AboutSectionDesktop({
                   More about Akash
                 </Link>
                 <a
-                  href="#contact"
+                  href="/assessment"
                   className="inline-flex items-center justify-center rounded-full border border-[color:var(--border)] px-6 py-3.5 text-sm font-medium text-[var(--foreground)] transition hover:border-[color:var(--brand-green)]"
                 >
-                  Start training
+                  Take Body Assessment
                 </a>
               </motion.div>
             </motion.div>
