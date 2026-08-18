@@ -16,6 +16,8 @@ interface NavbarProps {
   /** Shrink pill when scrollY passes threshold (e.g. standalone pages) */
   shrinkOnScroll?: boolean;
   shrinkScrollThreshold?: number;
+  /** Keep the scrolled / active pill background at all times */
+  alwaysScrolled?: boolean;
   /** Light hero behind nav — use dark link color before pill appears */
   lightHero?: boolean;
 }
@@ -60,13 +62,19 @@ export const Navbar = ({
   shrinkOnSectionId = "about",
   shrinkOnScroll = false,
   shrinkScrollThreshold = 64,
+  alwaysScrolled = false,
   lightHero = false,
 }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(alwaysScrolled);
   const hidden = useScrollHideNav();
 
   useEffect(() => {
+    if (alwaysScrolled) {
+      setVisible(true);
+      return;
+    }
+
     const update = () => {
       if (shrinkOnScroll) {
         setVisible(window.scrollY > shrinkScrollThreshold);
@@ -90,7 +98,12 @@ export const Navbar = ({
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [shrinkOnSectionId, shrinkOnScroll, shrinkScrollThreshold]);
+  }, [
+    alwaysScrolled,
+    shrinkOnSectionId,
+    shrinkOnScroll,
+    shrinkScrollThreshold,
+  ]);
 
   return (
     <motion.div

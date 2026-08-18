@@ -6,14 +6,26 @@ import { useEffect, useState } from "react";
 const BRAND = "var(--brand-green)";
 const ease = [0.22, 1, 0.36, 1] as const;
 const SPLASH_MS = 1800;
+const STORAGE_KEY = "hybridpro-splash-seen";
 
 /**
- * Splash on every full page load: small green logo on white, then fade out.
+ * Splash once per browser: small green logo on white, then fade out.
+ * Skipped on later visits / refreshes after the first view.
  */
 export default function SplashScreen() {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    try {
+      if (window.localStorage.getItem(STORAGE_KEY) === "1") {
+        return;
+      }
+    } catch {
+      // private mode — still show once this load
+    }
+
+    setVisible(true);
+
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -21,6 +33,11 @@ export default function SplashScreen() {
 
     const timer = window.setTimeout(() => {
       setVisible(false);
+      try {
+        window.localStorage.setItem(STORAGE_KEY, "1");
+      } catch {
+        // ignore
+      }
     }, duration);
 
     return () => window.clearTimeout(timer);

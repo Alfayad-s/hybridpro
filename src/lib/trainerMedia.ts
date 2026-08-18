@@ -76,6 +76,10 @@ export const resultImages = {
     before: "/results/client-2-before.jpg",
     after: "/results/client-2-after.jpg",
   },
+  client3: {
+    before: "/results/client-3-before.png",
+    after: "/results/client-3-after.png",
+  },
 } as const;
 
 export const audio = {

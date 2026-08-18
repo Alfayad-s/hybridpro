@@ -144,7 +144,7 @@ export default function NutritionSection() {
                   loss, or performance without overcomplicating every plate.
                 </p>
                 <a
-                  href="#pricing"
+                  href="/pricing"
                   className="mt-7 inline-flex w-fit items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-black transition hover:-translate-y-0.5"
                   style={{ background: FLUORO_GREEN }}
                 >

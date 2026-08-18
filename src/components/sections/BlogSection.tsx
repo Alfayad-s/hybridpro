@@ -15,7 +15,7 @@ const posts = [
     title: "Why hybrid athletes out-progress pure lifters",
     excerpt:
       "Mixing strength and conditioning does not blunt your gains, done in the right order, it accelerates them.",
-    href: "#blog",
+    href: "/blog",
   },
   {
     category: "Nutrition",
@@ -23,7 +23,7 @@ const posts = [
     title: "Eating for a heavy training block",
     excerpt:
       "A practical framework for fuelling five sessions a week without tracking every gram.",
-    href: "#blog",
+    href: "/blog",
   },
   {
     category: "Recovery",
@@ -31,7 +31,7 @@ const posts = [
     title: "The recovery habits that actually move the needle",
     excerpt:
       "Sleep, protein and load management beat every gadget on the market. Here is how to structure them.",
-    href: "#blog",
+    href: "/blog",
   },
 ];
 

@@ -15,11 +15,12 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { name: "Home", link: "/" },
   { name: "About", link: "#about" },
-  { name: "Programs", link: "#programs" },
-  { name: "Coaching", link: "#coaching" },
+  { name: "Programs", link: "/programs" },
+  { name: "Coaching", link: "/coaching" },
   { name: "Nutrition", link: "#nutrition" },
-  { name: "App", link: "#app" },
-  { name: "Pricing", link: "#pricing" },
+  { name: "App", link: "/app" },
+  { name: "Pricing", link: "/pricing" },
+  { name: "Blog", link: "/blog" },
 ];
 
 const staggeredItems = [
@@ -30,19 +31,18 @@ const staggeredItems = [
     link: "#top",
   },
   { label: "About", ariaLabel: "Learn about us", link: "#about" },
-  { label: "Programs", ariaLabel: "See training programs", link: "#programs" },
-  { label: "Coaching", ariaLabel: "How coaching works", link: "#coaching" },
+  { label: "Programs", ariaLabel: "See training programs", link: "/programs" },
+  { label: "Coaching", ariaLabel: "How coaching works", link: "/coaching" },
   {
     label: "Nutrition",
     ariaLabel: "Nutrition and meal planning",
     link: "#nutrition",
   },
   { label: "Results", ariaLabel: "See client results", link: "#results" },
-  { label: "Pricing", ariaLabel: "See coaching pricing", link: "#pricing" },
-  { label: "App", ariaLabel: "Install GymTrack app", link: "#app" },
-  { label: "Install guide", ariaLabel: "GymTrack install instructions", link: "/app" },
+  { label: "Pricing", ariaLabel: "See coaching pricing", link: "/pricing" },
+  { label: "App", ariaLabel: "Install GymTrack app", link: "/app" },
   { label: "FAQ", ariaLabel: "Frequently asked questions", link: "#faq" },
-  { label: "Blog", ariaLabel: "Read the blog", link: "#blog" },
+  { label: "Blog", ariaLabel: "Read the blog", link: "/blog" },
   { label: "Contact", ariaLabel: "Get in touch", link: "#contact" },
 ];
 
@@ -65,7 +65,6 @@ export default function SiteNavbar() {
   const pathname = usePathname();
   const brandGreen = theme === "dark" ? "#A6FF00" : "#93E200";
   const onHome = pathname === "/";
-  const onAboutPage = pathname === "/about";
 
   const desktopNavItems = navItems.map((item) => ({
     ...item,
@@ -109,13 +108,7 @@ export default function SiteNavbar() {
 
   return (
     <div className="relative w-full">
-      <Navbar
-        className="px-4 pt-3 xl:px-6"
-        shrinkOnScroll={onAboutPage}
-        shrinkScrollThreshold={48}
-        shrinkOnSectionId={onAboutPage ? undefined : "about"}
-        lightHero={onAboutPage}
-      >
+      <Navbar className="px-4 pt-3 xl:px-6" alwaysScrolled>
         <NavBody>
           <NavbarLogo />
           <NavItems items={desktopNavItems} />

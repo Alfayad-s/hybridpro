@@ -19,6 +19,11 @@ const transformations = [
     before: resultImages.client2.before,
     after: resultImages.client2.after,
   },
+  {
+    id: "client-3",
+    before: resultImages.client3.before,
+    after: resultImages.client3.after,
+  },
 ];
 
 function TransformationCard({

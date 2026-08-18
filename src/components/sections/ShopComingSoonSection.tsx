@@ -275,7 +275,7 @@ export default function ShopComingSoonSection() {
           <p className="mt-12 max-w-xl text-sm text-[color:var(--muted)]">
             Want live coaching instead? See{" "}
             <a
-              href="#pricing"
+              href="/pricing"
               className="underline underline-offset-4 hover:text-[var(--foreground)]"
             >
               coaching pricing
