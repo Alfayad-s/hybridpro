@@ -20,6 +20,8 @@ interface NavbarProps {
   alwaysScrolled?: boolean;
   /** Light hero behind nav — use dark link color before pill appears */
   lightHero?: boolean;
+  /** Dark video/hero behind nav — dark glass + light links before pill appears */
+  darkHero?: boolean;
 }
 
 interface NavBodyProps {
@@ -27,6 +29,7 @@ interface NavBodyProps {
   className?: string;
   visible?: boolean;
   lightHero?: boolean;
+  darkHero?: boolean;
 }
 
 interface NavItemsProps {
@@ -64,6 +67,7 @@ export const Navbar = ({
   shrinkScrollThreshold = 64,
   alwaysScrolled = false,
   lightHero = false,
+  darkHero = false,
 }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(alwaysScrolled);
@@ -126,8 +130,9 @@ export const Navbar = ({
               child as React.ReactElement<{
                 visible?: boolean;
                 lightHero?: boolean;
+                darkHero?: boolean;
               }>,
-              { visible, lightHero },
+              { visible, lightHero, darkHero },
             )
           : child,
       )}
@@ -140,16 +145,27 @@ export const NavBody = ({
   className,
   visible,
   lightHero,
+  darkHero,
 }: NavBodyProps) => {
+  const onDarkHero = Boolean(darkHero && !visible);
+
   return (
     <motion.div
       initial={false}
       animate={{
-        backdropFilter: visible ? "blur(12px)" : "blur(0px)",
-        backgroundColor: visible ? "var(--nav-pill)" : "rgba(247, 247, 250, 0)",
-        boxShadow: visible ? "0 8px 32px rgba(0, 0, 0, 0.08)" : "none",
-        maxWidth: visible ? 1080 : 1280,
-        y: visible ? 16 : 0,
+        backdropFilter: visible || onDarkHero ? "blur(12px)" : "blur(0px)",
+        backgroundColor: visible
+          ? "var(--nav-pill)"
+          : onDarkHero
+            ? "rgba(0, 0, 0, 0.55)"
+            : "rgba(247, 247, 250, 0)",
+        boxShadow: visible
+          ? "0 8px 32px rgba(0, 0, 0, 0.08)"
+          : onDarkHero
+            ? "0 8px 28px rgba(0, 0, 0, 0.28)"
+            : "none",
+        maxWidth: visible || onDarkHero ? 1080 : 1280,
+        y: visible || onDarkHero ? 16 : 0,
       }}
       transition={{
         type: "spring",
@@ -160,10 +176,12 @@ export const NavBody = ({
       className={cn(
         "relative z-[60] mx-auto hidden w-full flex-row items-center justify-between gap-3 self-start rounded-full bg-transparent px-3 py-2 lg:flex xl:gap-4 xl:px-4",
         visible && "border border-[color:var(--border)]",
+        onDarkHero && "border border-white/10",
         className,
       )}
       data-nav-scrolled={visible || undefined}
       data-nav-light={lightHero && !visible ? true : undefined}
+      data-nav-dark-hero={onDarkHero || undefined}
     >
       {children}
     </motion.div>

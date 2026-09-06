@@ -108,7 +108,14 @@ export default function SiteNavbar() {
 
   return (
     <div className="relative w-full">
-      <Navbar className="px-4 pt-3 xl:px-6" alwaysScrolled>
+      <Navbar
+        className="px-4 pt-3 xl:px-6"
+        // Home hero video is dark: use dark glass nav until About, then normal pill.
+        // Other pages keep the solid active pill.
+        alwaysScrolled={!onHome}
+        shrinkOnSectionId={onHome ? "about" : undefined}
+        darkHero={onHome}
+      >
         <NavBody>
           <NavbarLogo />
           <NavItems items={desktopNavItems} />

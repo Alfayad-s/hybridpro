@@ -35,12 +35,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
+    // Default is always light/white; only honor an explicit user choice.
     const initial =
-      stored === "light" || stored === "dark"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
+      stored === "light" || stored === "dark" ? stored : "light";
 
     applyTheme(initial);
     setThemeState(initial);

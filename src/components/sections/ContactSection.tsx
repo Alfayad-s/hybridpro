@@ -5,28 +5,61 @@ import { type FormEvent, useState } from "react";
 import { FLUORO_GREEN, Reveal } from "./Reveal";
 
 const fieldClass =
-  "w-full border-0 border-b border-black/30 bg-transparent px-0 py-4 text-lg font-bold uppercase tracking-[0.04em] text-black placeholder:font-bold placeholder:uppercase placeholder:tracking-[0.04em] placeholder:text-black/45 outline-none transition focus:border-black focus:ring-0 sm:py-5 sm:text-xl md:text-2xl";
+  "w-full border-0 border-b border-black/30 bg-transparent px-0 py-4 text-lg font-bold uppercase tracking-[0.04em] text-black placeholder:font-bold placeholder:uppercase placeholder:tracking-[0.04em] placeholder:text-black/45 outline-none transition focus:border-black focus:ring-0 sm:py-5 sm:text-xl md:text-2xl disabled:opacity-60";
+
+type SubmitState = "idle" | "loading" | "success" | "error";
 
 export default function ContactSection() {
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<SubmitState>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
+    if (status === "loading") return;
+
+    const form = e.currentTarget;
+    const data = new FormData(form);
     const name = String(data.get("name") || "").trim();
     const email = String(data.get("email") || "").trim();
     const phone = String(data.get("phone") || "").trim();
     const goal = String(data.get("goal") || "").trim();
 
-    const subject = encodeURIComponent(
-      `Hybrid Pro enquiry, ${name || "New lead"}`,
-    );
-    const body = encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nGoal:\n${goal}`,
-    );
-    window.location.href = `mailto:hello@hybridpro.fit?subject=${subject}&body=${body}`;
-    setSent(true);
+    setStatus("loading");
+    setErrorMessage("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, goal }),
+      });
+
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+      };
+
+      if (!res.ok) {
+        throw new Error(json.error || "Something went wrong. Please try again.");
+      }
+
+      setStatus("success");
+      form.reset();
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.",
+      );
+    }
   };
+
+  const buttonLabel =
+    status === "loading"
+      ? "Sending…"
+      : status === "success"
+        ? "Message sent"
+        : "Send message";
 
   return (
     <section
@@ -85,6 +118,7 @@ export default function ContactSection() {
               required
               autoComplete="name"
               placeholder="YOUR NAME"
+              disabled={status === "loading"}
               className={fieldClass}
             />
 
@@ -100,6 +134,7 @@ export default function ContactSection() {
                   required
                   autoComplete="email"
                   placeholder="EMAIL ADDRESS"
+                  disabled={status === "loading"}
                   className={fieldClass}
                 />
               </div>
@@ -113,6 +148,7 @@ export default function ContactSection() {
                   type="tel"
                   autoComplete="tel"
                   placeholder="PHONE NUMBER"
+                  disabled={status === "loading"}
                   className={fieldClass}
                 />
               </div>
@@ -127,18 +163,35 @@ export default function ContactSection() {
               required
               rows={4}
               placeholder="WHAT’S YOUR GOAL?"
+              disabled={status === "loading"}
               className={`${fieldClass} min-h-[6.5rem] resize-none sm:min-h-[7.5rem]`}
             />
 
             <button
               type="submit"
-              className="mt-1 inline-flex items-center justify-center rounded-full bg-black px-8 py-4 text-base font-semibold text-[color:var(--brand-green)] transition hover:-translate-y-0.5 sm:py-5 sm:text-lg"
+              disabled={status === "loading"}
+              className="mt-1 inline-flex items-center justify-center rounded-full bg-black px-8 py-4 text-base font-semibold text-[color:var(--brand-green)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 sm:py-5 sm:text-lg"
             >
-              {sent ? "Opening mail…" : "Send message"}
+              {buttonLabel}
               <span aria-hidden className="ml-2">
-                →
+                {status === "success" ? "✓" : "→"}
               </span>
             </button>
+
+            {status === "success" && (
+              <p className="text-sm font-medium text-black/70 sm:text-base">
+                Thanks — check your inbox for a confirmation from Hybrid Pro.
+              </p>
+            )}
+            {status === "error" && (
+              <p className="text-sm font-medium text-black/80 sm:text-base" role="alert">
+                {errorMessage} Or email{" "}
+                <a href="mailto:hello@hybridpro.fit" className="underline">
+                  hello@hybridpro.fit
+                </a>
+                .
+              </p>
+            )}
           </form>
         </Reveal>
       </div>
