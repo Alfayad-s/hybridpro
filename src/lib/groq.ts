@@ -1,5 +1,7 @@
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "llama-3.3-70b-versatile";
+/** llama-3.3-70b-versatile was shut down Aug 16, 2026 — use Groq's recommended replacement. */
+const DEFAULT_MODEL =
+  process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b";
 
 /** Status codes that should trigger trying the next API key. */
 const FAILOVER_STATUSES = new Set([401, 403, 429, 500, 502, 503, 504]);
@@ -75,6 +77,14 @@ export async function groqChatCompletion(
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
         const message = `Groq key ${i + 1}/${keys.length} failed (${res.status}): ${errText.slice(0, 200)}`;
+
+        // Model ID mistakes won't be fixed by rotating keys — fail fast.
+        if (
+          res.status === 404 &&
+          /model_not_found|does not exist/i.test(errText)
+        ) {
+          throw new Error(message);
+        }
 
         if (FAILOVER_STATUSES.has(res.status) && i < keys.length - 1) {
           console.warn(`[groq] ${message} — switching key`);
