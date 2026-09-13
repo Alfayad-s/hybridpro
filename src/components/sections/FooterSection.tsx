@@ -99,8 +99,8 @@ export default function FooterSection() {
           </Link>
         </div>
 
-        {/* Desktop brand mark — left bottom, clear of portrait */}
-        <HybridProMark className="relative z-10 mt-auto hidden w-[min(58%,64rem)] flex-nowrap items-end overflow-hidden pt-4 text-left text-[clamp(8rem,17vw,20rem)] leading-[0.72] tracking-[-0.03em] text-[#111111] uppercase select-none md:flex lg:text-[clamp(9rem,16vw,22rem)]" />
+        {/* Desktop brand mark — left bottom, scales cleanly across laptop → large screens */}
+        <HybridProMark className="relative z-10 mt-auto hidden w-[min(52%,30rem)] justify-between pt-2 text-left text-[clamp(4.25rem,8.5vw,6.75rem)] leading-[0.78] tracking-[-0.02em] text-[#111111] uppercase select-none md:flex lg:w-[min(54%,40rem)] lg:text-[clamp(5.75rem,10vw,10rem)] xl:w-[min(56%,50rem)] xl:text-[clamp(7.5rem,12vw,14rem)] 2xl:w-[min(58%,60rem)] 2xl:text-[clamp(10rem,14vw,20rem)]" />
       </Reveal>
 
       <div className="mx-auto flex w-full max-w-6xl shrink-0 flex-col items-center gap-2 px-1 pt-4 text-center text-[0.65rem] tracking-[0.18em] text-[color:var(--muted-soft)] uppercase md:flex-row md:items-center md:justify-between md:gap-3 md:text-left md:tracking-[0.22em]">
