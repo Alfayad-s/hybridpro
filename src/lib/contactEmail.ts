@@ -134,7 +134,7 @@ export function buildContactThankYouEmail(payload: ContactPayload, siteUrl: stri
                 <span style="color:#ededed;font-weight:600;">Akash &amp; Hybrid Pro</span>
               </p>
               <p style="margin:18px 0 0;font-size:12px;color:#555;">
-                <a href="${safeSite}" style="color:#777;text-decoration:underline;">hybridpro.fit</a>
+                <a href="${safeSite}" style="color:#777;text-decoration:underline;">hybridpro.in</a>
                 ·
                 <a href="mailto:hello@hybridpro.fit" style="color:#777;text-decoration:underline;">hello@hybridpro.fit</a>
               </p>

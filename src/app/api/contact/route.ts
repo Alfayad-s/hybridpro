@@ -18,7 +18,7 @@ function getSiteUrl() {
   if (fromEnv && !/localhost|127\.0\.0\.1/.test(fromEnv)) {
     return fromEnv;
   }
-  return "https://hybriddemo.vercel.app";
+  return "https://hybridpro.in";
 }
 
 function parsePayload(body: unknown): ContactPayload | null {
