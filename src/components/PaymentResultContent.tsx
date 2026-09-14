@@ -112,8 +112,8 @@ function SuccessBody() {
         setState("ok");
         setMessage(
           data.planName
-            ? `${data.planName} is active for 30 days. Open the Hybrid Pro app and sign in with the same email to start training.`
-            : "Payment confirmed. Open the Hybrid Pro app and sign in with the same email to start training.",
+            ? `${data.planName} is active for 30 days. Opening the Hybrid Pro app…`
+            : "Payment confirmed. Opening the Hybrid Pro app…",
         );
       } catch (error) {
         if (cancelled) return;
@@ -131,6 +131,16 @@ function SuccessBody() {
       cancelled = true;
     };
   }, [email, merchantOrderReference, orderId, planId, userId]);
+
+  const appHomeUrl = `${GYM_APP_URL}/dashboard?welcome=1${email ? `&email=${encodeURIComponent(email)}` : ""}`;
+
+  useEffect(() => {
+    if (state !== "ok") return;
+    const timer = window.setTimeout(() => {
+      window.location.assign(appHomeUrl);
+    }, 1600);
+    return () => window.clearTimeout(timer);
+  }, [appHomeUrl, state]);
 
   return (
     <div className="mx-auto flex min-h-[70dvh] max-w-lg flex-col items-center justify-center px-5 py-28 text-center">
@@ -171,7 +181,7 @@ function SuccessBody() {
       )}
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         <a
-          href={`${GYM_APP_URL}/login?welcome=1${email ? `&email=${encodeURIComponent(email)}` : ""}`}
+          href={appHomeUrl}
           className="inline-flex rounded-full px-6 py-3 text-sm font-bold text-black"
           style={{ background: FLUORO_GREEN }}
         >
