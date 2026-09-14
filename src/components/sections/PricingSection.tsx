@@ -108,12 +108,20 @@ export default function PricingSection() {
                 }}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h3
-                    className="text-xl font-semibold tracking-tight sm:text-2xl"
-                    style={{ color: titleColor }}
-                  >
-                    {plan.name}
-                  </h3>
+                  <div>
+                    <p
+                      className="text-[0.65rem] font-bold tracking-[0.22em] uppercase"
+                      style={{ color: accent }}
+                    >
+                      {plan.company} · {plan.category}
+                    </p>
+                    <h3
+                      className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl"
+                      style={{ color: titleColor }}
+                    >
+                      {plan.name}
+                    </h3>
+                  </div>
                   {plan.saveLabel && (
                     <span
                       className="relative -mt-1 -mr-1 shrink-0 rounded-full px-3 py-1.5 text-xs font-bold text-black"

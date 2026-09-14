@@ -27,6 +27,20 @@ function getAppUrl() {
   return "http://localhost:3000";
 }
 
+function buildCallbackUrl(
+  appUrl: string,
+  path: string,
+  query?: Record<string, string>,
+) {
+  const url = new URL(path, `${appUrl}/`);
+  if (query) {
+    for (const [key, value] of Object.entries(query)) {
+      if (value) url.searchParams.set(key, value);
+    }
+  }
+  return url.toString();
+}
+
 function requestHeaders(extra?: Record<string, string>) {
   return {
     accept: "application/json",
@@ -68,6 +82,8 @@ export type CreateCheckoutInput = {
   productCode: string;
   productName: string;
   customer: PineLabsCustomer;
+  metadata?: Record<string, string>;
+  successQuery?: Record<string, string>;
 };
 
 type TokenResult = { token: string; baseUrl: string };
@@ -279,7 +295,7 @@ export async function createPineLabsCheckout(input: CreateCheckoutInput) {
     pre_auth: false,
     allowed_payment_methods: ["CARD", "UPI", "NETBANKING", "WALLET"],
     notes: input.notes,
-    callback_url: `${appUrl}/payment/success`,
+    callback_url: buildCallbackUrl(appUrl, "/payment/success", input.successQuery),
     failure_callback_url: `${appUrl}/payment/failure`,
     purchase_details: {
       customer: {
@@ -302,6 +318,7 @@ export async function createPineLabsCheckout(input: CreateCheckoutInput) {
       merchant_metadata: {
         plan_name: input.productName,
         customer_name: fullName,
+        ...input.metadata,
       },
     },
   };
@@ -369,4 +386,84 @@ export function isPineLabsConfigured() {
     process.env.PINELABS_CLIENT_ID?.trim() &&
       process.env.PINELABS_CLIENT_SECRET?.trim(),
   );
+}
+
+export async function getPineLabsOrder(orderId: string) {
+  const { token, baseUrl } = await getPineLabsAccessToken();
+  const res = await fetch(`${baseUrl}/api/checkout/v1/orders/${orderId}`, {
+    method: "GET",
+    headers: requestHeaders({
+      Authorization: `Bearer ${token}`,
+    }),
+    cache: "no-store",
+  });
+
+  const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!res.ok) {
+    throw new Error(`${readErrorMessage(data, res.status)} (host: ${baseUrl})`);
+  }
+  return data;
+}
+
+export function isPineLabsOrderPaid(data: Record<string, unknown>) {
+  const candidates = [
+    data.order_status,
+    data.status,
+    data.payment_status,
+    data.transaction_status,
+  ];
+  const status = candidates
+    .map((value) => (typeof value === "string" ? value.toUpperCase() : ""))
+    .join(" ");
+
+  return [
+    "PROCESSED",
+    "PROCESSED_SUCCESS",
+    "SUCCESS",
+    "PAID",
+    "CHARGED",
+    "CAPTURED",
+    "COMPLETED",
+  ].some((token) => status.includes(token));
+}
+
+export function readPineLabsMetadata(data: Record<string, unknown>) {
+  const purchase =
+    data.purchase_details && typeof data.purchase_details === "object"
+      ? (data.purchase_details as Record<string, unknown>)
+      : {};
+  const metadata =
+    purchase.merchant_metadata && typeof purchase.merchant_metadata === "object"
+      ? (purchase.merchant_metadata as Record<string, unknown>)
+      : data.merchant_metadata && typeof data.merchant_metadata === "object"
+        ? (data.merchant_metadata as Record<string, unknown>)
+        : {};
+  const customer =
+    purchase.customer && typeof purchase.customer === "object"
+      ? (purchase.customer as Record<string, unknown>)
+      : {};
+
+  const product = Array.isArray(purchase.product) ? purchase.product[0] : null;
+  const productCode =
+    product && typeof product === "object"
+      ? String((product as Record<string, unknown>).product_code || "")
+      : "";
+
+  return {
+    email:
+      (typeof metadata.email === "string" && metadata.email) ||
+      (typeof customer.email_id === "string" && customer.email_id) ||
+      "",
+    mobile:
+      (typeof metadata.mobile === "string" && metadata.mobile) ||
+      (typeof customer.mobile_number === "string" && customer.mobile_number) ||
+      "",
+    planId:
+      (typeof metadata.plan_id === "string" && metadata.plan_id) || productCode,
+    userId: typeof metadata.user_id === "string" ? metadata.user_id : "",
+    merchantOrderReference:
+      (typeof data.merchant_order_reference === "string" &&
+        data.merchant_order_reference) ||
+      "",
+  };
 }

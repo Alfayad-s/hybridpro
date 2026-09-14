@@ -1,8 +1,11 @@
-export type PricingPlanId = "self-guided" | "hybrid-coaching" | "elite";
+export type PricingPlanId = "foundation" | "performance" | "elite";
 
 export type PricingPlan = {
   id: PricingPlanId;
+  company: "Hybrid Pro";
+  category: string;
   name: string;
+  shortName: string;
   saveLabel: string | null;
   originalPrice: string;
   price: string;
@@ -17,76 +20,92 @@ export type PricingPlan = {
   featured: boolean;
 };
 
+export const COMPANY_NAME = "Hybrid Pro";
+
 export const pricingPlans: PricingPlan[] = [
   {
-    id: "self-guided",
-    name: "Self-guided",
-    saveLabel: null,
+    id: "foundation",
+    company: COMPANY_NAME,
+    category: "Training plan",
+    name: "Hybrid Pro Foundation",
+    shortName: "Foundation",
+    saveLabel: "Save 10%",
     originalPrice: "₹4,999",
     price: "₹3,999",
     amountPaise: 3999_00,
     cadence: "/ month",
     billingNote: "Billed monthly · cancel anytime",
-    blurb:
-      "Structured Hybrid Pro programming you run on your own schedule, with app tracking built in.",
+    blurb: "Build healthy habits. Start your Hybrid Pro journey.",
     included: [
-      "Full program library",
-      "App-based tracking",
+      "Full program library (workout + nutrition)",
+      "App-based tracking (workouts, meals, progress)",
       "Monthly plan refresh",
       "Progressive overload templates",
+      "Basic video form reviews (up to 2 per week)",
+      "Nutrition guide (general guidance)",
+      "Weekly check-ins via app",
     ],
     excluded: [
-      "Video form reviews",
-      "Direct coach messaging",
-      "Weekly video call",
+      "Custom coach programming",
+      "Personalised nutrition plan",
+      "Unlimited form reviews",
     ],
-    cta: "Buy Self-guided",
+    cta: "Buy Hybrid Pro Foundation",
     featured: false,
   },
   {
-    id: "hybrid-coaching",
-    name: "Hybrid Coaching",
-    saveLabel: "Save 20%",
+    id: "performance",
+    company: COMPANY_NAME,
+    category: "Personalised coaching",
+    name: "Hybrid Pro Performance",
+    shortName: "Performance",
+    saveLabel: "Save 15%",
     originalPrice: "₹14,999",
     price: "₹11,999",
     amountPaise: 11999_00,
     cadence: "/ month",
     billingNote: "Most popular · billed monthly",
-    blurb:
-      "The full system, a personalised plan plus a coach in your corner for form, nutrition, and accountability.",
+    blurb: "Personalised plans. Real results. Hybrid Pro coaching in your corner.",
     included: [
-      "Custom weekly programming",
-      "Video form reviews",
-      "Nutrition targets",
-      "Direct message support",
-      "App-based tracking",
-      "Monthly plan adjustments",
+      "Custom workout programming",
+      "Personalised nutrition plan (macros + meal guidance)",
+      "App-based tracking (workouts, meals, progress)",
+      "Bi-weekly plan reviews",
+      "Video form reviews (up to 4 per month)",
+      "Weekly check-ins via app + message",
+      "Nutrition targets (calorie + macro guidance)",
+      "Direct message support (2–3 times per week)",
     ],
-    excluded: ["Weekly video call", "Competition prep"],
-    cta: "Buy Hybrid Coaching",
+    excluded: ["Unlimited form reviews", "Priority 24h support"],
+    cta: "Buy Hybrid Pro Performance",
     featured: true,
   },
   {
     id: "elite",
-    name: "1-to-1 Elite",
-    saveLabel: "Save 15%",
+    company: COMPANY_NAME,
+    category: "Elite coaching",
+    name: "Hybrid Pro Elite",
+    shortName: "Elite",
+    saveLabel: "Save 20%",
     originalPrice: "₹29,999",
     price: "₹24,999",
     amountPaise: 24999_00,
     cadence: "/ month",
     billingNote: "Limited spots · billed monthly",
-    blurb:
-      "Deep, high-touch coaching for serious goals, with weekly calls and priority support from Akash.",
+    blurb: "Maximum support. Elite Hybrid Pro results.",
     included: [
-      "Everything in Hybrid Coaching",
-      "Weekly video call",
-      "Competition prep",
-      "24h response time",
-      "Custom nutrition coaching",
-      "Priority form reviews",
+      "Fully customised training plan",
+      "Personalised nutrition (macro + micro + meal plan)",
+      "App-based tracking including body composition",
+      "Weekly plan adjustments",
+      "Unlimited video form reviews",
+      "Nutrition and habit coaching",
+      "Unlimited direct messages",
+      "Monthly progress assessment",
+      "Priority support (faster response)",
     ],
     excluded: [],
-    cta: "Buy 1-to-1 Elite",
+    cta: "Buy Hybrid Pro Elite",
     featured: false,
   },
 ];

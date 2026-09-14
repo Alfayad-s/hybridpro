@@ -12,6 +12,7 @@ type Body = {
   firstName?: string;
   lastName?: string;
   mobile?: string;
+  userId?: string;
 };
 
 export async function POST(request: Request) {
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
   const firstName = body.firstName?.trim() || "";
   const mobile = (body.mobile || "").replace(/\D/g, "");
   const lastName = body.lastName?.trim() || undefined;
+  const userId = body.userId?.trim() || undefined;
 
   if (!email || !email.includes("@")) {
     return NextResponse.json({ error: "Valid email is required" }, { status: 400 });
@@ -69,6 +71,18 @@ export async function POST(request: Request) {
         firstName,
         lastName,
         mobile: mobile.slice(-10),
+      },
+      metadata: {
+        plan_id: plan.id,
+        email,
+        mobile: mobile.slice(-10),
+        ...(userId ? { user_id: userId } : {}),
+      },
+      successQuery: {
+        plan: plan.id,
+        email,
+        ref: merchantOrderReference,
+        ...(userId ? { userId } : {}),
       },
     });
 

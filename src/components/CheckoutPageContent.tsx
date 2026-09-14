@@ -14,10 +14,12 @@ function CheckoutForm() {
   const router = useRouter();
   const planId = (searchParams.get("plan") || "") as PricingPlanId;
   const plan = useMemo(() => getPricingPlan(planId), [planId]);
+  const presetEmail = searchParams.get("email") || "";
+  const userId = searchParams.get("userId") || "";
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(presetEmail);
   const [mobile, setMobile] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,7 @@ function CheckoutForm() {
           lastName: lastName.trim(),
           email: email.trim(),
           mobile: mobile.trim(),
+          ...(userId ? { userId } : {}),
         }),
       });
       const data = (await res.json()) as {

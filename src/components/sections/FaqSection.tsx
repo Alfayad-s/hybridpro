@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: "Is nutrition included?",
-    a: "Yes, Hybrid Coaching and 1-to-1 Elite include personalised nutrition targets, meal structure, and adjustments in your check-ins. See the Nutrition section for how meal planning works alongside training. Self-guided includes general guidelines; a deeper nutrition ebook is coming in the shop.",
+    a: "Yes. Hybrid Pro Performance and Hybrid Pro Elite include personalised nutrition targets, meal structure, and adjustments in your check-ins. Hybrid Pro Foundation includes a general nutrition guide and meal logging in the app.",
   },
 ];
 
