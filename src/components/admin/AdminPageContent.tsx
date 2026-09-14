@@ -1,7 +1,7 @@
 "use client";
 
 import AdminShell from "@/components/admin/AdminShell";
-import { AdminStatusBadge, adminInputClass } from "@/components/admin/adminUi";
+import { AdminStatusBadge, adminInputClass, formatInrFromPaise } from "@/components/admin/adminUi";
 import BrandLogo from "@/components/BrandLogo";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import { pricingPlans } from "@/lib/pricingPlans";
@@ -16,6 +16,10 @@ type ClientRow = {
   planName: string;
   status: string;
   expiresAt: string | null;
+  paymentCount?: number;
+  totalPaidPaise?: number;
+  lastAmountPaise?: number;
+  lastPaidAt?: string | null;
 };
 
 type Stats = {
@@ -23,6 +27,9 @@ type Stats = {
   active: number;
   expired: number;
   byPlan: Record<string, number>;
+  paidOrders?: number;
+  paidClients?: number;
+  revenuePaise?: number;
 };
 
 export default function AdminPageContent() {
@@ -36,15 +43,17 @@ export default function AdminPageContent() {
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("active");
   const [grantError, setGrantError] = useState<string | null>(null);
   const [grant, setGrant] = useState({ email: "", mobile: "", planId: "performance" });
   const [busy, setBusy] = useState(false);
 
-  const loadDashboard = async () => {
+  const loadDashboard = async (next?: { q?: string; status?: string }) => {
+    const search = next?.q ?? q;
+    const st = next?.status ?? status;
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (status) params.set("status", status);
+    if (search) params.set("q", search);
+    if (st) params.set("status", st);
     const [clientsRes, statsRes] = await Promise.all([
       fetch(`/api/admin/clients?${params}`, { cache: "no-store" }),
       fetch("/api/admin/stats", { cache: "no-store" }),
@@ -247,14 +256,31 @@ export default function AdminPageContent() {
 
           <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
-              ["Active", stats?.active ?? 0],
+              ["Active clients", stats?.active ?? 0],
+              ["Paid clients", stats?.paidClients ?? 0],
+              ["Collected", formatInrFromPaise(stats?.revenuePaise ?? 0)],
+              ["Paid orders", stats?.paidOrders ?? 0],
               ["Foundation", stats?.byPlan?.foundation ?? 0],
               ["Performance", stats?.byPlan?.performance ?? 0],
               ["Elite", stats?.byPlan?.elite ?? 0],
+              ["Expired", stats?.expired ?? 0],
             ].map(([label, value]) => (
-              <div
+              <button
                 key={String(label)}
-                className="rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-3.5 sm:p-4"
+                type="button"
+                onClick={() => {
+                  let next = status;
+                  if (label === "Active clients") next = "active";
+                  else if (label === "Expired") next = "expired";
+                  else if (label === "Paid clients" || label === "Paid orders" || label === "Collected") {
+                    next = "";
+                  } else {
+                    return;
+                  }
+                  setStatus(next);
+                  void loadDashboard({ status: next });
+                }}
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-3.5 text-left sm:p-4"
               >
                 <p className="text-[0.6rem] tracking-[0.16em] text-[color:var(--muted)] uppercase sm:text-[0.65rem] sm:tracking-[0.2em]">
                   {label}
@@ -268,7 +294,7 @@ export default function AdminPageContent() {
                 >
                   {value}
                 </p>
-              </div>
+              </button>
             ))}
           </section>
 
@@ -327,6 +353,23 @@ export default function AdminPageContent() {
           </section>
 
           <section className="space-y-4">
+            <div>
+              <h2
+                className="text-xl uppercase tracking-[0.02em] sm:text-2xl"
+                style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+              >
+                {status === "active"
+                  ? "Active clients"
+                  : status === "expired"
+                    ? "Expired clients"
+                    : status === "cancelled"
+                      ? "Cancelled clients"
+                      : "All clients"}
+              </h2>
+              <p className="mt-1 text-sm text-[color:var(--muted)]">
+                Paid amount, last payment, and 30-day access for each client.
+              </p>
+            </div>
             <form onSubmit={onSearch} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <input
                 value={q}
@@ -370,17 +413,28 @@ export default function AdminPageContent() {
                   </div>
                   <div className="mt-3 flex items-center justify-between gap-3 text-sm">
                     <span className="truncate">{client.planName}</span>
-                    <span className="shrink-0 text-[color:var(--muted)]">
-                      {client.expiresAt
-                        ? new Date(client.expiresAt).toLocaleDateString()
-                        : "No expiry"}
+                    <span className="shrink-0 font-semibold" style={{ color: FLUORO_GREEN }}>
+                      {(client.paymentCount ?? 0) > 0
+                        ? formatInrFromPaise(client.totalPaidPaise ?? 0)
+                        : client.paymentCount == null
+                          ? "—"
+                          : "Unpaid"}
                     </span>
                   </div>
+                  <p className="mt-2 text-xs text-[color:var(--muted)]">
+                    {client.lastPaidAt
+                      ? `Last paid ${new Date(client.lastPaidAt).toLocaleDateString()}`
+                      : "No payment recorded"}
+                    {" · "}
+                    {client.expiresAt
+                      ? `Expires ${new Date(client.expiresAt).toLocaleDateString()}`
+                      : "No expiry"}
+                  </p>
                 </Link>
               ))}
               {clients.length === 0 && (
                 <p className="rounded-2xl border border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--muted)]">
-                  No clients yet. Grant access or wait for a website checkout.
+                  No {status === "active" ? "active " : ""}clients yet. Grant access or wait for a website checkout.
                 </p>
               )}
             </div>
@@ -392,6 +446,8 @@ export default function AdminPageContent() {
                     <th className="px-4 py-3 font-medium">Client</th>
                     <th className="px-4 py-3 font-medium">Plan</th>
                     <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Paid</th>
+                    <th className="px-4 py-3 font-medium">Last payment</th>
                     <th className="px-4 py-3 font-medium">Expires</th>
                     <th className="px-4 py-3 font-medium"></th>
                   </tr>
@@ -408,6 +464,24 @@ export default function AdminPageContent() {
                       <td className="px-4 py-3">{client.planName}</td>
                       <td className="px-4 py-3">
                         <AdminStatusBadge status={client.status} />
+                      </td>
+                      <td className="px-4 py-3">
+                        {(client.paymentCount ?? 0) > 0 ? (
+                          <div>
+                            <p>{formatInrFromPaise(client.totalPaidPaise ?? 0)}</p>
+                            <p className="text-xs text-[color:var(--muted)]">
+                              {client.paymentCount}{" "}
+                              {client.paymentCount === 1 ? "order" : "orders"}
+                            </p>
+                          </div>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {client.lastPaidAt
+                          ? new Date(client.lastPaidAt).toLocaleString()
+                          : "—"}
                       </td>
                       <td className="px-4 py-3">
                         {client.expiresAt
@@ -428,10 +502,10 @@ export default function AdminPageContent() {
                   {clients.length === 0 && (
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={7}
                         className="px-4 py-10 text-center text-[color:var(--muted)]"
                       >
-                        No clients yet. Grant access or wait for a website checkout.
+                        No {status === "active" ? "active " : ""}clients yet. Grant access or wait for a website checkout.
                       </td>
                     </tr>
                   )}

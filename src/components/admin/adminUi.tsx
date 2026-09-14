@@ -1,6 +1,10 @@
 export const adminInputClass =
   "h-12 w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 text-base outline-none focus:border-[color:var(--brand-green)] sm:text-sm";
 
+export function formatInrFromPaise(paise: number) {
+  return `₹${(paise / 100).toLocaleString("en-IN")}`;
+}
+
 export function AdminStatusBadge({ status }: { status: string }) {
   const tone =
     status === "active" || status === "new"

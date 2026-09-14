@@ -1,7 +1,7 @@
 "use client";
 
 import AdminShell from "@/components/admin/AdminShell";
-import { AdminStatusBadge } from "@/components/admin/adminUi";
+import { AdminStatusBadge, formatInrFromPaise } from "@/components/admin/adminUi";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -74,6 +74,11 @@ export default function AdminClientDetail() {
   };
 
   const sub = detail?.subscription;
+  const totalPaidPaise =
+    detail?.payments
+      .filter((payment) => payment.status === "paid")
+      .reduce((sum, payment) => sum + payment.amountPaise, 0) ?? 0;
+  const paidCount = detail?.payments.filter((payment) => payment.status === "paid").length ?? 0;
 
   return (
     <AdminShell>
@@ -102,6 +107,11 @@ export default function AdminClientDetail() {
             </h1>
             <p className="text-[color:var(--muted)]">{sub.mobile || "No mobile on file"}</p>
             <p className="text-base sm:text-lg">{sub.planName}</p>
+            <p className="text-lg font-semibold" style={{ color: FLUORO_GREEN }}>
+              {paidCount > 0
+                ? `${formatInrFromPaise(totalPaidPaise)} paid · ${paidCount} ${paidCount === 1 ? "order" : "orders"}`
+                : "No payment recorded"}
+            </p>
             <p className="text-sm text-[color:var(--muted)]">
               {sub.startsAt
                 ? `Started ${new Date(sub.startsAt).toLocaleDateString()}`
@@ -154,9 +164,12 @@ export default function AdminClientDetail() {
                 className="rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-4"
               >
                 <p className="text-sm font-medium">
-                  ₹{(payment.amountPaise / 100).toLocaleString("en-IN")}
+                  {formatInrFromPaise(payment.amountPaise)}
                 </p>
-                <p className="mt-1 capitalize text-sm">{payment.planId}</p>
+                <p className="mt-1 flex items-center gap-2 capitalize text-sm">
+                  <span>{payment.planId}</span>
+                  <AdminStatusBadge status={payment.status} />
+                </p>
                 <p className="mt-1 text-xs text-[color:var(--muted)]">
                   {new Date(payment.paidAt).toLocaleString()}
                 </p>
@@ -177,6 +190,7 @@ export default function AdminClientDetail() {
                 <th className="px-5 py-2 font-medium">Date</th>
                 <th className="px-5 py-2 font-medium">Plan</th>
                 <th className="px-5 py-2 font-medium">Amount</th>
+                <th className="px-5 py-2 font-medium">Status</th>
                 <th className="px-5 py-2 font-medium">Ref</th>
               </tr>
             </thead>
@@ -186,7 +200,10 @@ export default function AdminClientDetail() {
                   <td className="px-5 py-3">{new Date(payment.paidAt).toLocaleString()}</td>
                   <td className="px-5 py-3 capitalize">{payment.planId}</td>
                   <td className="px-5 py-3">
-                    ₹{(payment.amountPaise / 100).toLocaleString("en-IN")}
+                    {formatInrFromPaise(payment.amountPaise)}
+                  </td>
+                  <td className="px-5 py-3">
+                    <AdminStatusBadge status={payment.status} />
                   </td>
                   <td className="px-5 py-3 break-all text-[color:var(--muted)]">
                     {payment.pineOrderId}
@@ -195,7 +212,7 @@ export default function AdminClientDetail() {
               ))}
               {detail && detail.payments.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-6 text-[color:var(--muted)]">
+                  <td colSpan={5} className="px-5 py-6 text-[color:var(--muted)]">
                     No payments recorded.
                   </td>
                 </tr>
