@@ -81,3 +81,25 @@ export async function getAppSubscriptionStatus(email: string) {
   }
   return data;
 }
+
+export async function saveContactSubmission(input: {
+  name: string;
+  email: string;
+  phone?: string;
+  goal: string;
+}) {
+  const res = await fetch(`${getHybridBackendUrl()}/api/contact/submissions`, {
+    method: "POST",
+    headers: internalHeaders(),
+    body: JSON.stringify(input),
+    cache: "no-store",
+  });
+  const data = (await res.json().catch(() => ({}))) as {
+    error?: string;
+    message?: string;
+  };
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `Contact save failed (${res.status})`);
+  }
+  return data;
+}

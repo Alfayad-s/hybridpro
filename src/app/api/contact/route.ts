@@ -3,6 +3,7 @@ import {
   buildContactThankYouEmail,
   type ContactPayload,
 } from "@/lib/contactEmail";
+import { saveContactSubmission } from "@/lib/hybridAppApi";
 import { readFile } from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
@@ -36,14 +37,6 @@ function parsePayload(body: unknown): ContactPayload | null {
 }
 
 export async function POST(request: Request) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "Email service is not configured" },
-      { status: 503 },
-    );
-  }
-
   let body: unknown;
   try {
     body = await request.json();
@@ -57,6 +50,26 @@ export async function POST(request: Request) {
       { error: "Please provide a valid name, email, and goal" },
       { status: 400 },
     );
+  }
+
+  try {
+    await saveContactSubmission(payload);
+  } catch (err) {
+    console.error("[contact] backend save failed", err);
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "Could not save your message. Please try again.",
+      },
+      { status: 502 },
+    );
+  }
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ ok: true });
   }
 
   const from =
@@ -103,10 +116,7 @@ export async function POST(request: Request) {
 
     if (userError) {
       console.error("[contact] thank-you send failed", userError);
-      return NextResponse.json(
-        { error: userError.message || "Failed to send confirmation email" },
-        { status: 502 },
-      );
+      return NextResponse.json({ ok: true });
     }
 
     // Team notification — don't fail the user flow if this secondary send fails

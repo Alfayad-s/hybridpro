@@ -33,6 +33,11 @@ export default function AdminShell({ children, onLogout }: AdminShellProps) {
       label: "Clients",
       match: (path: string) => path === "/admin" || path.startsWith("/admin/clients"),
     },
+    {
+      href: "/admin/contacts",
+      label: "Contact",
+      match: (path: string) => path.startsWith("/admin/contacts"),
+    },
   ];
 
   return (
