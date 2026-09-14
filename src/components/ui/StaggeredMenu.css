@@ -272,12 +272,11 @@
 .sm-panel-item {
   position: relative;
   color: var(--foreground);
-  font-weight: 600;
+  font-weight: 800;
   font-size: clamp(2.4rem, 10vw, 3.5rem);
   cursor: pointer;
   line-height: 1.05;
-  /* Bebas Neue is condensed — it needs open tracking, not negative. */
-  letter-spacing: 0.055em;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
   transition:
     background 0.25s,

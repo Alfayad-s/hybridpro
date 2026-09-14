@@ -43,7 +43,7 @@ export function Eyebrow({ children }: { children: ReactNode }) {
 export function SectionTitle({ children }: { children: ReactNode }) {
   return (
     <h2
-      className="max-w-3xl text-4xl leading-[0.95] tracking-[0.02em] text-[var(--foreground)] uppercase sm:text-6xl md:text-7xl"
+      className="max-w-3xl text-4xl font-extrabold leading-[0.95] tracking-tight text-[var(--foreground)] uppercase sm:text-6xl md:text-7xl"
       style={{ fontFamily: "var(--font-bebas), sans-serif" }}
     >
       {children}

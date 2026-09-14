@@ -1,19 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Bebas_Neue, Great_Vibes, Inter } from "next/font/google";
+import { Great_Vibes, Outfit } from "next/font/google";
 import SplashScreen from "@/components/SplashScreen";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const outfit = Outfit({
   subsets: ["latin"],
+  variable: "--font-outfit",
   display: "swap",
-});
-
-const bebasNeue = Bebas_Neue({
-  weight: "400",
-  variable: "--font-bebas",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const greatVibes = Great_Vibes({
@@ -83,7 +78,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${bebasNeue.variable} ${greatVibes.variable} h-full antialiased`}
+      className={`${outfit.variable} ${outfit.className} ${greatVibes.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

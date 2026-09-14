@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: "Body Assessment · Hybrid Pro",
   description:
     "Complete your Hybrid Pro body assessment and get a personalized training and nutrition result from Akash.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function AssessmentPage() {
