@@ -1,6 +1,7 @@
 "use client";
 
 import AdminShell from "@/components/admin/AdminShell";
+import { AdminStatusBadge, adminInputClass } from "@/components/admin/adminUi";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
@@ -14,9 +15,6 @@ type Submission = {
   status: string;
   createdAt: string;
 };
-
-const inputClass =
-  "w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none focus:border-[color:var(--brand-green)]";
 
 export default function AdminContactsContent() {
   const [rows, setRows] = useState<Submission[]>([]);
@@ -59,13 +57,13 @@ export default function AdminContactsContent() {
 
   return (
     <AdminShell>
-      <div className="mx-auto max-w-6xl space-y-8">
-        <header>
+      <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8">
+        <header className="hidden lg:block">
           <p className="text-[0.7rem] tracking-[0.35em] text-[color:var(--muted)] uppercase">
             Hybrid Pro
           </p>
           <h1
-            className="mt-2 text-4xl leading-[0.95] tracking-[0.02em] uppercase sm:text-5xl"
+            className="mt-2 text-5xl leading-[0.95] tracking-[0.02em] uppercase"
             style={{ fontFamily: "var(--font-bebas), sans-serif" }}
           >
             Contact submissions
@@ -74,18 +72,21 @@ export default function AdminContactsContent() {
             Messages from the website contact form.
           </p>
         </header>
+        <p className="text-sm text-[color:var(--muted)] lg:hidden">
+          Messages from the website contact form.
+        </p>
 
-        <form onSubmit={onSearch} className="flex flex-wrap gap-3">
+        <form onSubmit={onSearch} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search name, email, or goal"
-            className={`min-w-[220px] flex-1 ${inputClass} bg-[var(--card)]`}
+            className={`flex-1 ${adminInputClass} bg-[var(--card)]`}
           />
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className={`${inputClass} w-auto bg-[var(--card)]`}
+            className={`${adminInputClass} bg-[var(--card)] sm:w-36`}
           >
             <option value="">All</option>
             <option value="new">New</option>
@@ -93,7 +94,7 @@ export default function AdminContactsContent() {
           </select>
           <button
             type="submit"
-            className="rounded-full border border-[color:var(--border)] px-4 py-2 text-sm"
+            className="h-12 rounded-full border border-[color:var(--border)] px-5 text-sm sm:w-auto"
           >
             Filter
           </button>
@@ -101,8 +102,35 @@ export default function AdminContactsContent() {
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        <div className="overflow-x-auto rounded-[1.75rem] border border-[color:var(--border)]">
-          <table className="w-full min-w-[720px] text-left text-sm">
+        <div className="space-y-3 md:hidden">
+          {rows.map((row) => (
+            <Link
+              key={row.id}
+              href={`/admin/contacts/${row.id}`}
+              className="block rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{row.name}</p>
+                  <p className="mt-0.5 truncate text-xs text-[color:var(--muted)]">{row.email}</p>
+                </div>
+                <AdminStatusBadge status={row.status} />
+              </div>
+              <p className="mt-3 line-clamp-2 text-sm">{row.goal}</p>
+              <p className="mt-2 text-xs text-[color:var(--muted)]">
+                {new Date(row.createdAt).toLocaleString()}
+              </p>
+            </Link>
+          ))}
+          {rows.length === 0 && (
+            <p className="rounded-2xl border border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--muted)]">
+              No contact submissions yet.
+            </p>
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto rounded-[1.75rem] border border-[color:var(--border)] md:block">
+          <table className="w-full text-left text-sm">
             <thead className="bg-[var(--card)] text-[color:var(--muted)]">
               <tr>
                 <th className="px-4 py-3 font-medium">When</th>
@@ -127,7 +155,9 @@ export default function AdminContactsContent() {
                     )}
                   </td>
                   <td className="max-w-[280px] truncate px-4 py-3">{row.goal}</td>
-                  <td className="px-4 py-3 capitalize">{row.status}</td>
+                  <td className="px-4 py-3">
+                    <AdminStatusBadge status={row.status} />
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/contacts/${row.id}`}

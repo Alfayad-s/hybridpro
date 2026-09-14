@@ -1,6 +1,7 @@
 "use client";
 
 import AdminShell from "@/components/admin/AdminShell";
+import { AdminStatusBadge } from "@/components/admin/adminUi";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -76,8 +77,8 @@ export default function AdminClientDetail() {
 
   return (
     <AdminShell>
-      <div className="mx-auto max-w-3xl space-y-6">
-        <Link href="/admin" className="text-sm text-[color:var(--muted)]">
+      <div className="mx-auto max-w-3xl space-y-5 sm:space-y-6">
+        <Link href="/admin" className="inline-flex min-h-11 items-center text-sm text-[color:var(--muted)]">
           ← All clients
         </Link>
 
@@ -86,20 +87,21 @@ export default function AdminClientDetail() {
         )}
 
         {sub && (
-          <section className="space-y-3 rounded-[1.75rem] border border-[color:var(--border)] bg-[var(--card)] p-6">
-            <p className="text-[0.7rem] tracking-[0.35em] text-[color:var(--muted)] uppercase">
-              Hybrid Pro
-            </p>
+          <section className="space-y-3 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--card)] p-4 sm:rounded-[1.75rem] sm:p-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[0.65rem] tracking-[0.28em] text-[color:var(--muted)] uppercase sm:text-[0.7rem] sm:tracking-[0.35em]">
+                Hybrid Pro
+              </p>
+              <AdminStatusBadge status={sub.status} />
+            </div>
             <h1
-              className="text-4xl leading-[0.95] tracking-[0.02em] uppercase"
+              className="break-all text-2xl leading-[0.95] tracking-[0.02em] uppercase sm:text-4xl"
               style={{ fontFamily: "var(--font-bebas), sans-serif" }}
             >
               {sub.email}
             </h1>
             <p className="text-[color:var(--muted)]">{sub.mobile || "No mobile on file"}</p>
-            <p className="text-lg">
-              {sub.planName} · <span className="capitalize">{sub.status}</span>
-            </p>
+            <p className="text-base sm:text-lg">{sub.planName}</p>
             <p className="text-sm text-[color:var(--muted)]">
               {sub.startsAt
                 ? `Started ${new Date(sub.startsAt).toLocaleDateString()}`
@@ -114,12 +116,12 @@ export default function AdminClientDetail() {
                 Next plan after this period: {sub.nextPlanId}
               </p>
             )}
-            <div className="flex flex-wrap gap-3 pt-2">
+            <div className="grid grid-cols-1 gap-3 pt-2 sm:flex sm:flex-wrap">
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => void act("extend")}
-                className="rounded-full px-5 py-2.5 text-sm font-bold text-black disabled:opacity-60"
+                className="h-12 rounded-full px-5 text-sm font-bold text-black disabled:opacity-60 sm:min-w-[10rem]"
                 style={{ background: FLUORO_GREEN }}
               >
                 Extend 30 days
@@ -128,7 +130,7 @@ export default function AdminClientDetail() {
                 type="button"
                 disabled={busy}
                 onClick={() => void act("cancel")}
-                className="rounded-full border border-[color:var(--border)] px-5 py-2.5 text-sm disabled:opacity-60"
+                className="h-12 rounded-full border border-[color:var(--border)] px-5 text-sm disabled:opacity-60 sm:min-w-[10rem]"
               >
                 Cancel access
               </button>
@@ -138,14 +140,38 @@ export default function AdminClientDetail() {
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        <section className="overflow-hidden rounded-[1.75rem] border border-[color:var(--border)]">
+        <section className="overflow-hidden rounded-[1.5rem] border border-[color:var(--border)] sm:rounded-[1.75rem]">
           <h2
-            className="px-5 py-4 text-2xl uppercase tracking-[0.02em]"
+            className="px-4 py-4 text-xl uppercase tracking-[0.02em] sm:px-5 sm:text-2xl"
             style={{ fontFamily: "var(--font-bebas), sans-serif" }}
           >
             Payments
           </h2>
-          <table className="w-full text-left text-sm">
+          <div className="space-y-3 px-4 pb-4 md:hidden">
+            {detail?.payments.map((payment) => (
+              <article
+                key={payment.id}
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-4"
+              >
+                <p className="text-sm font-medium">
+                  ₹{(payment.amountPaise / 100).toLocaleString("en-IN")}
+                </p>
+                <p className="mt-1 capitalize text-sm">{payment.planId}</p>
+                <p className="mt-1 text-xs text-[color:var(--muted)]">
+                  {new Date(payment.paidAt).toLocaleString()}
+                </p>
+                {payment.pineOrderId && (
+                  <p className="mt-1 break-all text-xs text-[color:var(--muted)]">
+                    {payment.pineOrderId}
+                  </p>
+                )}
+              </article>
+            ))}
+            {detail && detail.payments.length === 0 && (
+              <p className="pb-2 text-sm text-[color:var(--muted)]">No payments recorded.</p>
+            )}
+          </div>
+          <table className="hidden w-full text-left text-sm md:table">
             <thead className="text-[color:var(--muted)]">
               <tr>
                 <th className="px-5 py-2 font-medium">Date</th>
@@ -162,7 +188,9 @@ export default function AdminClientDetail() {
                   <td className="px-5 py-3">
                     ₹{(payment.amountPaise / 100).toLocaleString("en-IN")}
                   </td>
-                  <td className="px-5 py-3 text-[color:var(--muted)]">{payment.pineOrderId}</td>
+                  <td className="px-5 py-3 break-all text-[color:var(--muted)]">
+                    {payment.pineOrderId}
+                  </td>
                 </tr>
               ))}
               {detail && detail.payments.length === 0 && (

@@ -1,6 +1,7 @@
 "use client";
 
 import AdminShell from "@/components/admin/AdminShell";
+import { AdminStatusBadge, adminInputClass } from "@/components/admin/adminUi";
 import BrandLogo from "@/components/BrandLogo";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import { pricingPlans } from "@/lib/pricingPlans";
@@ -23,9 +24,6 @@ type Stats = {
   expired: number;
   byPlan: Record<string, number>;
 };
-
-const inputClass =
-  "w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none focus:border-[color:var(--brand-green)]";
 
 export default function AdminPageContent() {
   const [ready, setReady] = useState(false);
@@ -152,7 +150,7 @@ export default function AdminPageContent() {
 
   if (!ready) {
     return (
-      <main className="min-h-dvh bg-[var(--background)] px-5 py-16 text-center text-[color:var(--muted)]">
+      <main className="flex min-h-dvh items-center justify-center bg-[var(--background)] px-4 text-center text-[color:var(--muted)]">
         Loading admin…
       </main>
     );
@@ -161,22 +159,22 @@ export default function AdminPageContent() {
   if (!authenticated) {
     return (
       <main className="min-h-dvh bg-[var(--background)] text-[var(--foreground)]">
-        <div className="mx-auto flex min-h-dvh max-w-md items-center px-5">
+        <div className="mx-auto flex min-h-dvh max-w-md items-center px-4 py-8 sm:px-5">
           <form
             onSubmit={onLogin}
-            className="w-full rounded-[1.75rem] border border-[color:var(--border)] bg-[var(--card)] p-6 sm:p-8"
+            className="w-full rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--card)] p-5 sm:rounded-[1.75rem] sm:p-8"
           >
-            <div className="mb-6 flex items-center gap-3">
-              <BrandLogo className="h-8 w-auto text-[var(--foreground)]" title="" />
-              <div>
-                <p className="text-[0.7rem] tracking-[0.35em] text-[color:var(--muted)] uppercase">
+            <div className="mb-5 flex items-center gap-3 sm:mb-6">
+              <BrandLogo className="h-8 w-auto shrink-0 text-[var(--foreground)]" title="" />
+              <div className="min-w-0">
+                <p className="text-[0.65rem] tracking-[0.28em] text-[color:var(--muted)] uppercase sm:text-[0.7rem] sm:tracking-[0.35em]">
                   Coach access
                 </p>
                 <p className="text-sm font-semibold">Hybrid Pro admin</p>
               </div>
             </div>
             <h1
-              className="text-4xl leading-[0.95] tracking-[0.02em] uppercase"
+              className="text-3xl leading-[0.95] tracking-[0.02em] uppercase sm:text-4xl"
               style={{ fontFamily: "var(--font-bebas), sans-serif" }}
             >
               Sign in
@@ -189,9 +187,11 @@ export default function AdminPageContent() {
               <input
                 required
                 type="email"
+                autoComplete="email"
+                inputMode="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
+                className={adminInputClass}
               />
             </label>
             <label className="mt-4 block text-sm">
@@ -199,9 +199,10 @@ export default function AdminPageContent() {
               <input
                 required
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
+                className={adminInputClass}
               />
             </label>
             {loginError && (
@@ -212,7 +213,7 @@ export default function AdminPageContent() {
             <button
               type="submit"
               disabled={loginBusy}
-              className="mt-6 inline-flex w-full items-center justify-center rounded-full px-6 py-4 text-sm font-bold text-black disabled:opacity-50"
+              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full px-6 text-sm font-bold text-black disabled:opacity-50"
               style={{ background: FLUORO_GREEN }}
             >
               {loginBusy ? "Signing in…" : "Enter admin"}
@@ -225,13 +226,13 @@ export default function AdminPageContent() {
 
   return (
     <AdminShell onLogout={logout}>
-      <div className="mx-auto max-w-6xl space-y-8">
-        <header>
+      <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8">
+        <header className="hidden lg:block">
           <p className="text-[0.7rem] tracking-[0.35em] text-[color:var(--muted)] uppercase">
             Hybrid Pro
           </p>
           <h1
-            className="mt-2 text-4xl leading-[0.95] tracking-[0.02em] uppercase sm:text-5xl"
+            className="mt-2 text-5xl leading-[0.95] tracking-[0.02em] uppercase"
             style={{ fontFamily: "var(--font-bebas), sans-serif" }}
           >
             Clients
@@ -240,8 +241,11 @@ export default function AdminPageContent() {
             Plans and 30-day access in one place.
           </p>
         </header>
+        <p className="text-sm text-[color:var(--muted)] lg:hidden">
+          Plans and 30-day access in one place.
+        </p>
 
-          <section className="grid gap-3 sm:grid-cols-4">
+          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
               ["Active", stats?.active ?? 0],
               ["Foundation", stats?.byPlan?.foundation ?? 0],
@@ -250,13 +254,13 @@ export default function AdminPageContent() {
             ].map(([label, value]) => (
               <div
                 key={String(label)}
-                className="rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-4"
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-3.5 sm:p-4"
               >
-                <p className="text-[0.65rem] tracking-[0.2em] text-[color:var(--muted)] uppercase">
+                <p className="text-[0.6rem] tracking-[0.16em] text-[color:var(--muted)] uppercase sm:text-[0.65rem] sm:tracking-[0.2em]">
                   {label}
                 </p>
                 <p
-                  className="mt-2 text-4xl tracking-[0.02em]"
+                  className="mt-1.5 text-3xl tracking-[0.02em] sm:mt-2 sm:text-4xl"
                   style={{
                     color: FLUORO_GREEN,
                     fontFamily: "var(--font-bebas), sans-serif",
@@ -268,9 +272,9 @@ export default function AdminPageContent() {
             ))}
           </section>
 
-          <section className="rounded-[1.75rem] border border-[color:var(--border)] bg-[var(--card)] p-5 sm:p-6">
+          <section className="rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--card)] p-4 sm:rounded-[1.75rem] sm:p-6">
             <h2
-              className="text-2xl uppercase tracking-[0.02em]"
+              className="text-xl uppercase tracking-[0.02em] sm:text-2xl"
               style={{ fontFamily: "var(--font-bebas), sans-serif" }}
             >
               Grant access
@@ -285,21 +289,24 @@ export default function AdminPageContent() {
               <input
                 required
                 type="email"
+                inputMode="email"
                 placeholder="Client email"
                 value={grant.email}
                 onChange={(e) => setGrant((s) => ({ ...s, email: e.target.value }))}
-                className={inputClass}
+                className={adminInputClass}
               />
               <input
+                type="tel"
+                inputMode="tel"
                 placeholder="Mobile (optional)"
                 value={grant.mobile}
                 onChange={(e) => setGrant((s) => ({ ...s, mobile: e.target.value }))}
-                className={inputClass}
+                className={adminInputClass}
               />
               <select
                 value={grant.planId}
                 onChange={(e) => setGrant((s) => ({ ...s, planId: e.target.value }))}
-                className={`${inputClass} bg-[var(--background)]`}
+                className={`${adminInputClass} bg-[var(--background)]`}
               >
                 {pricingPlans.map((plan) => (
                   <option key={plan.id} value={plan.id}>
@@ -310,7 +317,7 @@ export default function AdminPageContent() {
               <button
                 type="submit"
                 disabled={busy}
-                className="rounded-full px-5 py-3 text-sm font-bold text-black disabled:opacity-60"
+                className="h-12 rounded-full px-5 text-sm font-bold text-black disabled:opacity-60 md:min-w-[9.5rem]"
                 style={{ background: FLUORO_GREEN }}
               >
                 {busy ? "Saving…" : "Grant 30 days"}
@@ -320,17 +327,17 @@ export default function AdminPageContent() {
           </section>
 
           <section className="space-y-4">
-            <form onSubmit={onSearch} className="flex flex-wrap gap-3">
+            <form onSubmit={onSearch} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search email or mobile"
-                className={`min-w-[220px] flex-1 ${inputClass} bg-[var(--card)]`}
+                className={`flex-1 ${adminInputClass} bg-[var(--card)]`}
               />
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className={`${inputClass} w-auto bg-[var(--card)]`}
+                className={`${adminInputClass} bg-[var(--card)] sm:w-44`}
               >
                 <option value="">All statuses</option>
                 <option value="active">Active</option>
@@ -339,14 +346,47 @@ export default function AdminPageContent() {
               </select>
               <button
                 type="submit"
-                className="rounded-full border border-[color:var(--border)] px-4 py-2 text-sm"
+                className="h-12 rounded-full border border-[color:var(--border)] px-5 text-sm sm:w-auto"
               >
                 Filter
               </button>
             </form>
 
-            <div className="overflow-x-auto rounded-[1.75rem] border border-[color:var(--border)]">
-              <table className="w-full min-w-[720px] text-left text-sm">
+            <div className="space-y-3 md:hidden">
+              {clients.map((client) => (
+                <Link
+                  key={client.id}
+                  href={`/admin/clients/${client.id}`}
+                  className="block rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{client.email}</p>
+                      {client.mobile && (
+                        <p className="mt-0.5 text-xs text-[color:var(--muted)]">{client.mobile}</p>
+                      )}
+                    </div>
+                    <AdminStatusBadge status={client.status} />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate">{client.planName}</span>
+                    <span className="shrink-0 text-[color:var(--muted)]">
+                      {client.expiresAt
+                        ? new Date(client.expiresAt).toLocaleDateString()
+                        : "No expiry"}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+              {clients.length === 0 && (
+                <p className="rounded-2xl border border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--muted)]">
+                  No clients yet. Grant access or wait for a website checkout.
+                </p>
+              )}
+            </div>
+
+            <div className="hidden overflow-x-auto rounded-[1.75rem] border border-[color:var(--border)] md:block">
+              <table className="w-full text-left text-sm">
                 <thead className="bg-[var(--card)] text-[color:var(--muted)]">
                   <tr>
                     <th className="px-4 py-3 font-medium">Client</th>
@@ -360,13 +400,15 @@ export default function AdminPageContent() {
                   {clients.map((client) => (
                     <tr key={client.id} className="border-t border-[color:var(--border)]">
                       <td className="px-4 py-3">
-                        <p>{client.email}</p>
+                        <p className="max-w-[18rem] truncate">{client.email}</p>
                         {client.mobile && (
                           <p className="text-xs text-[color:var(--muted)]">{client.mobile}</p>
                         )}
                       </td>
                       <td className="px-4 py-3">{client.planName}</td>
-                      <td className="px-4 py-3 capitalize">{client.status}</td>
+                      <td className="px-4 py-3">
+                        <AdminStatusBadge status={client.status} />
+                      </td>
                       <td className="px-4 py-3">
                         {client.expiresAt
                           ? new Date(client.expiresAt).toLocaleDateString()

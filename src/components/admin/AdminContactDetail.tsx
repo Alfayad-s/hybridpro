@@ -1,6 +1,7 @@
 "use client";
 
 import AdminShell from "@/components/admin/AdminShell";
+import { AdminStatusBadge } from "@/components/admin/adminUi";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -45,33 +46,46 @@ export default function AdminContactDetail() {
 
   return (
     <AdminShell>
-      <div className="mx-auto max-w-3xl space-y-6">
-        <Link href="/admin/contacts" className="text-sm text-[color:var(--muted)]">
+      <div className="mx-auto max-w-3xl space-y-5 sm:space-y-6">
+        <Link
+          href="/admin/contacts"
+          className="inline-flex min-h-11 items-center text-sm text-[color:var(--muted)]"
+        >
           ← All submissions
         </Link>
         {!row && !error && <p className="text-[color:var(--muted)]">Loading…</p>}
         {error && <p className="text-sm text-red-500">{error}</p>}
         {row && (
-          <section className="space-y-4 rounded-[1.75rem] border border-[color:var(--border)] bg-[var(--card)] p-6">
-            <p className="text-[0.7rem] tracking-[0.35em] text-[color:var(--muted)] uppercase">
-              {row.status === "new" ? "New enquiry" : "Read"}
-            </p>
+          <section className="space-y-4 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--card)] p-4 sm:rounded-[1.75rem] sm:p-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[0.65rem] tracking-[0.28em] text-[color:var(--muted)] uppercase sm:text-[0.7rem] sm:tracking-[0.35em]">
+                {row.status === "new" ? "New enquiry" : "Read"}
+              </p>
+              <AdminStatusBadge status={row.status} />
+            </div>
             <h1
-              className="text-4xl leading-[0.95] tracking-[0.02em] uppercase"
+              className="break-words text-3xl leading-[0.95] tracking-[0.02em] uppercase sm:text-4xl"
               style={{ fontFamily: "var(--font-bebas), sans-serif" }}
             >
               {row.name}
             </h1>
-            <p>
-              <a href={`mailto:${row.email}`} style={{ color: FLUORO_GREEN }}>
+            <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap">
+              <a
+                href={`mailto:${row.email}`}
+                className="inline-flex h-12 items-center justify-center rounded-full border border-[color:var(--border)] px-4 text-sm font-semibold"
+                style={{ color: FLUORO_GREEN }}
+              >
                 {row.email}
               </a>
-            </p>
-            {row.phone && (
-              <p>
-                <a href={`tel:${row.phone}`}>{row.phone}</a>
-              </p>
-            )}
+              {row.phone && (
+                <a
+                  href={`tel:${row.phone}`}
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-[color:var(--border)] px-4 text-sm"
+                >
+                  {row.phone}
+                </a>
+              )}
+            </div>
             <p className="text-sm text-[color:var(--muted)]">
               {new Date(row.createdAt).toLocaleString()}
             </p>
@@ -79,7 +93,7 @@ export default function AdminContactDetail() {
               <p className="text-[0.65rem] tracking-[0.2em] text-[color:var(--muted)] uppercase">
                 Goal
               </p>
-              <p className="mt-2 whitespace-pre-wrap">{row.goal}</p>
+              <p className="mt-2 whitespace-pre-wrap break-words">{row.goal}</p>
             </div>
           </section>
         )}

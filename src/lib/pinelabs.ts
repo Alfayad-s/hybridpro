@@ -19,12 +19,31 @@ function getCandidateBaseUrls() {
   return [preferred, ...others];
 }
 
-function getAppUrl() {
-  const explicit = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (explicit) return explicit.replace(/\/$/, "");
-  const vercel = process.env.VERCEL_URL?.trim();
-  if (vercel) return `https://${vercel.replace(/\/$/, "")}`;
+const PUBLIC_SITE_URL = "https://hybridpro.in";
+
+function isUnusablePublicUrl(url: string) {
+  return /localhost|127\.0\.0\.1|\.vercel\.app/i.test(url);
+}
+
+/** Domain Pine Labs must redirect to — never *.vercel.app (that shows Vercel’s page). */
+export function getPublicSiteUrl() {
+  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  const app = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, "");
+  const onVercel = Boolean(process.env.VERCEL);
+
+  if (onVercel) {
+    if (site && !isUnusablePublicUrl(site)) return site;
+    if (app && !isUnusablePublicUrl(app)) return app;
+    return PUBLIC_SITE_URL;
+  }
+
+  if (app) return app;
+  if (site && !isUnusablePublicUrl(site)) return site;
   return "http://localhost:3000";
+}
+
+function getAppUrl() {
+  return getPublicSiteUrl();
 }
 
 function buildCallbackUrl(
@@ -295,8 +314,13 @@ export async function createPineLabsCheckout(input: CreateCheckoutInput) {
     pre_auth: false,
     allowed_payment_methods: ["CARD", "UPI", "NETBANKING", "WALLET"],
     notes: input.notes,
-    callback_url: buildCallbackUrl(appUrl, "/payment/success", input.successQuery),
-    failure_callback_url: `${appUrl}/payment/failure`,
+    callback_url: buildCallbackUrl(appUrl, "/api/payments/callback", {
+      ...input.successQuery,
+      welcome: "1",
+    }),
+    failure_callback_url: buildCallbackUrl(appUrl, "/api/payments/callback", {
+      status: "failed",
+    }),
     purchase_details: {
       customer: {
         email_id: input.customer.email,

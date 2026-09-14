@@ -112,8 +112,8 @@ function SuccessBody() {
         setState("ok");
         setMessage(
           data.planName
-            ? `${data.planName} is active for 30 days. Open the Hybrid Pro app and sign in with the same email.`
-            : "Your Hybrid Pro plan is active for 30 days. Open the app and sign in with the same email.",
+            ? `${data.planName} is active for 30 days. Open the Hybrid Pro app and sign in with the same email to start training.`
+            : "Payment confirmed. Open the Hybrid Pro app and sign in with the same email to start training.",
         );
       } catch (error) {
         if (cancelled) return;
@@ -135,6 +135,15 @@ function SuccessBody() {
   return (
     <div className="mx-auto flex min-h-[70dvh] max-w-lg flex-col items-center justify-center px-5 py-28 text-center">
       <BrandLogo className="mb-8 h-12 w-auto text-[var(--foreground)]" title="" />
+      {state === "ok" && (
+        <div
+          className="mb-5 grid h-16 w-16 place-items-center rounded-full text-2xl font-bold text-black"
+          style={{ background: FLUORO_GREEN }}
+          aria-hidden
+        >
+          ✓
+        </div>
+      )}
       <p
         className="text-[0.7rem] tracking-[0.35em] uppercase"
         style={{ color: state === "error" ? "var(--muted)" : FLUORO_GREEN }}
@@ -149,7 +158,7 @@ function SuccessBody() {
         className="mt-3 text-4xl uppercase tracking-[0.02em] sm:text-5xl"
         style={{ fontFamily: "var(--font-bebas), sans-serif" }}
       >
-        {state === "ok" ? "You’re in" : state === "loading" ? "One moment" : "Almost there"}
+        {state === "ok" ? "Welcome to Hybrid Pro" : state === "loading" ? "One moment" : "Almost there"}
       </h1>
       <p className="mt-4 text-[color:var(--muted)]">{message}</p>
       {planName && state === "ok" && (
@@ -162,7 +171,7 @@ function SuccessBody() {
       )}
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         <a
-          href={`${GYM_APP_URL}/login${email ? `?email=${encodeURIComponent(email)}` : ""}`}
+          href={`${GYM_APP_URL}/login?welcome=1${email ? `&email=${encodeURIComponent(email)}` : ""}`}
           className="inline-flex rounded-full px-6 py-3 text-sm font-bold text-black"
           style={{ background: FLUORO_GREEN }}
         >
