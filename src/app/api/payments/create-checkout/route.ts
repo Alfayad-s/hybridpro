@@ -1,3 +1,5 @@
+import { checkoutCookieHeader } from "@/lib/checkoutCookie";
+import { saveCheckoutIntent } from "@/lib/hybridAppApi";
 import { createPineLabsCheckout, isPineLabsConfigured } from "@/lib/pinelabs";
 import { getPricingPlan } from "@/lib/pricingPlans";
 import { randomUUID } from "crypto";
@@ -92,13 +94,38 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({
+    try {
+      await saveCheckoutIntent({
+        pineOrderId: checkout.orderId,
+        merchantOrderReference,
+        email,
+        mobile: mobile.slice(-10),
+        planId: plan.id,
+        userId,
+      });
+    } catch (error) {
+      console.error("[checkout] intent", error);
+    }
+
+    const response = NextResponse.json({
       redirectUrl: checkout.redirectUrl,
       orderId: checkout.orderId,
       merchantOrderReference,
       planId: plan.id,
       amount: plan.price,
     });
+    response.headers.append(
+      "Set-Cookie",
+      checkoutCookieHeader({
+        orderId: checkout.orderId,
+        merchantOrderReference,
+        email,
+        mobile: mobile.slice(-10),
+        planId: plan.id,
+        userId,
+      }),
+    );
+    return response;
   } catch (err) {
     console.error("[pinelabs]", err);
     return NextResponse.json(

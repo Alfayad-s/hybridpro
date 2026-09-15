@@ -42,7 +42,17 @@ export function getPublicSiteUrl() {
   return "http://localhost:3000";
 }
 
-function getAppUrl() {
+function getPaymentCallbackBase() {
+  const override = process.env.PAYMENT_CALLBACK_BASE_URL?.trim().replace(/\/$/, "");
+  if (override) return override;
+  const backend = (
+    process.env.HYBRID_BACKEND_URL ||
+    process.env.HYBRID_APP_API_URL ||
+    ""
+  )
+    .trim()
+    .replace(/\/$/, "");
+  if (backend && !/localhost|127\.0\.0\.1/i.test(backend)) return backend;
   return getPublicSiteUrl();
 }
 
@@ -299,7 +309,6 @@ export async function getPineLabsAccessToken(): Promise<TokenResult> {
 
 export async function createPineLabsCheckout(input: CreateCheckoutInput) {
   const { token, baseUrl } = await getPineLabsAccessToken();
-  const appUrl = getAppUrl();
   const fullName = [input.customer.firstName, input.customer.lastName]
     .filter(Boolean)
     .join(" ");
@@ -314,11 +323,10 @@ export async function createPineLabsCheckout(input: CreateCheckoutInput) {
     pre_auth: false,
     allowed_payment_methods: ["CARD", "UPI", "NETBANKING", "WALLET"],
     notes: input.notes,
-    callback_url: buildCallbackUrl(appUrl, "/api/payments/callback", {
+    callback_url: buildCallbackUrl(getPaymentCallbackBase(), "/api/payments/callback", {
       ...input.successQuery,
-      welcome: "1",
     }),
-    failure_callback_url: buildCallbackUrl(appUrl, "/api/payments/callback", {
+    failure_callback_url: buildCallbackUrl(getPaymentCallbackBase(), "/api/payments/callback", {
       status: "failed",
     }),
     purchase_details: {
@@ -412,21 +420,40 @@ export function isPineLabsConfigured() {
   );
 }
 
-export async function getPineLabsOrder(orderId: string) {
+export async function getPineLabsOrder(
+  orderId: string,
+  merchantOrderReference?: string,
+) {
   const { token, baseUrl } = await getPineLabsAccessToken();
-  const res = await fetch(`${baseUrl}/api/checkout/v1/orders/${orderId}`, {
-    method: "GET",
-    headers: requestHeaders({
-      Authorization: `Bearer ${token}`,
-    }),
-    cache: "no-store",
-  });
-
-  const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!res.ok) {
-    throw new Error(`${readErrorMessage(data, res.status)} (host: ${baseUrl})`);
+  const paths = [
+    `/api/checkout/v1/orders/${encodeURIComponent(orderId)}`,
+    `/api/pay/v1/orders/${encodeURIComponent(orderId)}`,
+    `/checkout/v1/orders/${encodeURIComponent(orderId)}`,
+    `/api/checkout/v1/order/${encodeURIComponent(orderId)}`,
+  ];
+  if (merchantOrderReference) {
+    paths.push(
+      `/api/checkout/v1/orders?merchant_order_reference=${encodeURIComponent(merchantOrderReference)}`,
+    );
   }
-  return data;
+
+  const attempts: string[] = [];
+  for (const path of paths) {
+    const res = await fetch(`${baseUrl}${path}`, {
+      method: "GET",
+      headers: requestHeaders({
+        Authorization: `Bearer ${token}`,
+      }),
+      cache: "no-store",
+    });
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (res.ok) return data;
+    attempts.push(`${path} → ${res.status}`);
+  }
+
+  throw new Error(
+    `Pine Labs request failed (${attempts.at(-1)?.split(" → ").at(-1) || "404"}) (host: ${baseUrl}; tried ${attempts.join(", ")})`,
+  );
 }
 
 export function isPineLabsOrderPaid(data: Record<string, unknown>) {

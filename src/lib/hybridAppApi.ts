@@ -41,50 +41,109 @@ function internalHeaders() {
   };
 }
 
-export type ActivatePayload = {
-  pineOrderId: string;
+export async function saveCheckoutIntent(payload: {
+  pineOrderId?: string;
   merchantOrderReference: string;
   email: string;
   mobile?: string;
   planId: string;
-  amountPaise: number;
   userId?: string;
-};
-
-export async function activateAppSubscription(payload: ActivatePayload) {
-  const res = await fetch(`${getHybridBackendUrl()}/api/subscriptions/activate`, {
+}) {
+  const res = await fetch(`${getHybridBackendUrl()}/api/subscriptions/intent`, {
     method: "POST",
     headers: internalHeaders(),
     body: JSON.stringify(payload),
     cache: "no-store",
   });
-
-  const data = (await res.json().catch(() => ({}))) as {
-    error?: string;
-    alreadyProcessed?: boolean;
-    subscription?: unknown;
-  };
-
+  const data = (await res.json().catch(() => ({}))) as { error?: string };
   if (!res.ok) {
-    throw new Error(data.error || `App activate failed (${res.status})`);
+    throw new Error(data.error || `Checkout intent failed (${res.status})`);
   }
-
   return data;
 }
 
-export async function getAppSubscriptionStatus(email: string) {
-  const url = new URL("/api/subscriptions/status", `${getHybridBackendUrl()}/`);
-  url.searchParams.set("email", email);
+export async function getCheckoutIntent(input: {
+  pineOrderId?: string;
+  merchantOrderReference?: string;
+}) {
+  const url = new URL("/api/subscriptions/intent", `${getHybridBackendUrl()}/`);
+  if (input.pineOrderId) url.searchParams.set("pineOrderId", input.pineOrderId);
+  if (input.merchantOrderReference) url.searchParams.set("ref", input.merchantOrderReference);
   const res = await fetch(url, {
     headers: internalHeaders(),
     cache: "no-store",
   });
   const data = (await res.json().catch(() => ({}))) as {
     error?: string;
+    subscription?: {
+      email?: string;
+      planId?: string;
+      userId?: string | null;
+      mobile?: string | null;
+      merchantOrderReference?: string | null;
+    } | null;
+  };
+  if (!res.ok) {
+    throw new Error(data.error || `Checkout intent lookup failed (${res.status})`);
+  }
+  return data.subscription ?? null;
+}
+
+export async function confirmBackendPayment(payload: {
+  orderId: string;
+  email?: string | null;
+  planId?: string | null;
+  userId?: string | null;
+  merchantOrderReference?: string | null;
+  mobile?: string | null;
+}) {
+  const res = await fetch(`${getHybridBackendUrl()}/api/payments/confirm`, {
+    method: "POST",
+    headers: internalHeaders(),
+    body: JSON.stringify({
+      pineOrderId: payload.orderId,
+      orderId: payload.orderId,
+      email: payload.email,
+      planId: payload.planId,
+      userId: payload.userId,
+      merchantOrderReference: payload.merchantOrderReference,
+      mobile: payload.mobile,
+    }),
+    cache: "no-store",
+  });
+  const data = (await res.json().catch(() => ({}))) as {
+    error?: string;
+    ok?: boolean;
+    reason?: string;
+    email?: string | null;
+    planId?: string | null;
+    planName?: string | null;
+    alreadyProcessed?: boolean;
     subscription?: unknown;
   };
   if (!res.ok) {
-    throw new Error(data.error || `App status failed (${res.status})`);
+    throw new Error(data.error || `Payment confirm failed (${res.status})`);
+  }
+  return data;
+}
+
+export async function getAppPlanStatus(input: { email?: string; userId?: string }) {
+  const url = new URL("/api/subscriptions/plan", `${getHybridBackendUrl()}/`);
+  if (input.email) url.searchParams.set("email", input.email);
+  if (input.userId) url.searchParams.set("userId", input.userId);
+  const res = await fetch(url, {
+    headers: internalHeaders(),
+    cache: "no-store",
+  });
+  const data = (await res.json().catch(() => ({}))) as {
+    error?: string;
+    active?: boolean;
+    planId?: string | null;
+    planName?: string | null;
+    subscription?: unknown;
+  };
+  if (!res.ok) {
+    throw new Error(data.error || `App plan failed (${res.status})`);
   }
   return data;
 }

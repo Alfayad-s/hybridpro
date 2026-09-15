@@ -80,11 +80,28 @@ function CheckoutForm() {
       });
       const data = (await res.json()) as {
         redirectUrl?: string;
+        orderId?: string;
+        merchantOrderReference?: string;
         error?: string;
       };
 
       if (!res.ok || !data.redirectUrl) {
         throw new Error(data.error || "Could not start payment");
+      }
+
+      try {
+        sessionStorage.setItem(
+          "hp_checkout",
+          JSON.stringify({
+            orderId: data.orderId,
+            merchantOrderReference: data.merchantOrderReference,
+            email: lockedEmail,
+            planId: plan.id,
+            userId,
+          }),
+        );
+      } catch {
+        /* ignore private-mode storage */
       }
 
       window.location.href = data.redirectUrl;

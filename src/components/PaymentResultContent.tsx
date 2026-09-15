@@ -71,15 +71,23 @@ function SuccessBody() {
   const planId = params.get("plan");
   const userId = params.get("userId");
   const merchantOrderReference = params.get("ref");
+  const alreadyActivated = params.get("activated") === "1";
   const [state, setState] = useState<"loading" | "ok" | "error">(
-    orderId ? "loading" : "error",
+    alreadyActivated ? "ok" : orderId ? "loading" : "error",
   );
   const [message, setMessage] = useState(
-    "Confirming your Hybrid Pro plan and unlocking the app…",
+    alreadyActivated
+      ? "Payment confirmed. Opening the Hybrid Pro app…"
+      : "Confirming your Hybrid Pro plan and unlocking the app…",
   );
   const [planName, setPlanName] = useState<string | null>(null);
+  const [unlockedEmail, setUnlockedEmail] = useState(email);
 
   useEffect(() => {
+    if (alreadyActivated) {
+      setState("ok");
+      return;
+    }
     if (!orderId) {
       setState("error");
       setMessage("We could not find a payment order on this page. Contact Akash if you were charged.");
@@ -88,27 +96,44 @@ function SuccessBody() {
 
     let cancelled = false;
     const activate = async () => {
+      let stored: {
+        email?: string;
+        planId?: string;
+        userId?: string;
+        merchantOrderReference?: string;
+        orderId?: string;
+      } | null = null;
+      try {
+        stored = JSON.parse(sessionStorage.getItem("hp_checkout") || "null") as typeof stored;
+      } catch {
+        stored = null;
+      }
+      const storedMatches = stored?.orderId && stored.orderId === orderId ? stored : null;
+
       try {
         const res = await fetch("/api/payments/activate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             orderId,
-            email,
-            planId,
-            userId,
-            merchantOrderReference,
+            email: email || storedMatches?.email,
+            planId: planId || storedMatches?.planId,
+            userId: userId || storedMatches?.userId,
+            merchantOrderReference:
+              merchantOrderReference || storedMatches?.merchantOrderReference,
           }),
         });
         const data = (await res.json()) as {
           error?: string;
           planName?: string;
+          email?: string;
         };
         if (!res.ok) {
           throw new Error(data.error || "Could not unlock app access");
         }
         if (cancelled) return;
         setPlanName(data.planName || null);
+        if (data.email) setUnlockedEmail(data.email);
         setState("ok");
         setMessage(
           data.planName
@@ -130,9 +155,13 @@ function SuccessBody() {
     return () => {
       cancelled = true;
     };
-  }, [email, merchantOrderReference, orderId, planId, userId]);
+  }, [alreadyActivated, email, merchantOrderReference, orderId, planId, userId]);
 
-  const appHomeUrl = `${GYM_APP_URL}/dashboard?welcome=1${email ? `&email=${encodeURIComponent(email)}` : ""}`;
+  const appHomeUrl = `${GYM_APP_URL}/dashboard${
+    state === "ok"
+      ? `?welcome=1${unlockedEmail ? `&email=${encodeURIComponent(unlockedEmail)}` : ""}`
+      : ""
+  }`;
 
   useEffect(() => {
     if (state !== "ok") return;

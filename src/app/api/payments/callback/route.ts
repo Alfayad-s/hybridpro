@@ -1,7 +1,9 @@
+import { confirmBackendPayment, getHybridAppUrl } from "@/lib/hybridAppApi";
 import { getPublicSiteUrl } from "@/lib/pinelabs";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function readValue(
   source: URLSearchParams | Record<string, unknown>,
@@ -37,21 +39,20 @@ function collectParams(source: URLSearchParams | Record<string, unknown>) {
   };
 }
 
-function destination(params: ReturnType<typeof collectParams>) {
-  const failed =
-    params.status.toLowerCase() === "failed" ||
-    params.status.toLowerCase() === "failure" ||
-    params.status.toLowerCase() === "cancelled";
-  const url = new URL(
-    failed ? "/payment/failure" : "/payment/success",
-    `${getPublicSiteUrl()}/`,
-  );
+function appWelcomeUrl(email?: string) {
+  const url = new URL("/dashboard", `${getHybridAppUrl()}/`);
+  url.searchParams.set("welcome", "1");
+  if (email) url.searchParams.set("email", email);
+  return url;
+}
+
+function websiteUrl(path: string, params: ReturnType<typeof collectParams>) {
+  const url = new URL(path, `${getPublicSiteUrl()}/`);
   if (params.order_id) url.searchParams.set("order_id", params.order_id);
   if (params.email) url.searchParams.set("email", params.email);
   if (params.plan) url.searchParams.set("plan", params.plan);
   if (params.userId) url.searchParams.set("userId", params.userId);
   if (params.ref) url.searchParams.set("ref", params.ref);
-  if (!failed) url.searchParams.set("welcome", "1");
   return url;
 }
 
@@ -60,7 +61,41 @@ async function handle(request: NextRequest, extra?: Record<string, unknown>) {
   request.nextUrl.searchParams.forEach((value, key) => {
     merged[key] = value;
   });
-  return NextResponse.redirect(destination(collectParams(merged)), 303);
+  const params = collectParams(merged);
+  const failed =
+    params.status.toLowerCase() === "failed" ||
+    params.status.toLowerCase() === "failure" ||
+    params.status.toLowerCase() === "cancelled";
+
+  if (failed) {
+    return NextResponse.redirect(websiteUrl("/payment/failure", params), 303);
+  }
+
+  if (params.order_id) {
+    try {
+      const result = await confirmBackendPayment({
+        orderId: params.order_id,
+        email: params.email,
+        planId: params.plan,
+        userId: params.userId,
+        merchantOrderReference: params.ref,
+      });
+      if (result.ok !== false) {
+        return NextResponse.redirect(appWelcomeUrl(result.email || params.email), 303);
+      }
+      return NextResponse.redirect(websiteUrl("/payment/failure", params), 303);
+    } catch (error) {
+      console.error("[payments/callback] activate", error);
+      const url = websiteUrl("/payment/success", params);
+      url.searchParams.set(
+        "activate_error",
+        error instanceof Error ? error.message : "Could not unlock app access",
+      );
+      return NextResponse.redirect(url, 303);
+    }
+  }
+
+  return NextResponse.redirect(websiteUrl("/payment/success", params), 303);
 }
 
 export async function GET(request: NextRequest) {
