@@ -4,6 +4,7 @@ import BrandLogo from "@/components/BrandLogo";
 import SiteNavbar from "@/components/SiteNavbar";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
+import { getHybridAppLoginUrl } from "@/lib/hybridAppApi";
 import { getPricingPlan, type PricingPlanId } from "@/lib/pricingPlans";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,12 +15,12 @@ function CheckoutForm() {
   const router = useRouter();
   const planId = (searchParams.get("plan") || "") as PricingPlanId;
   const plan = useMemo(() => getPricingPlan(planId), [planId]);
-  const presetEmail = searchParams.get("email") || "";
-  const userId = searchParams.get("userId") || "";
+  const lockedEmail = (searchParams.get("email") || "").trim();
+  const userId = (searchParams.get("userId") || "").trim();
+  const emailLocked = Boolean(lockedEmail && userId);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState(presetEmail);
   const [mobile, setMobile] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +48,20 @@ function CheckoutForm() {
     );
   }
 
+  if (!emailLocked) {
+    return (
+      <div className="mx-auto max-w-lg px-5 py-28 text-center text-[color:var(--muted)]">
+        Redirecting to sign in…
+      </div>
+    );
+  }
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!emailLocked) {
+      setError("Sign in is required before checkout");
+      return;
+    }
     setError(null);
     setLoading(true);
 
@@ -60,9 +73,9 @@ function CheckoutForm() {
           planId: plan.id,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
-          email: email.trim(),
+          email: lockedEmail,
           mobile: mobile.trim(),
-          ...(userId ? { userId } : {}),
+          userId,
         }),
       });
       const data = (await res.json()) as {
@@ -167,10 +180,30 @@ function CheckoutForm() {
           <input
             required
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none focus:border-[color:var(--brand-green)]"
+            readOnly
+            value={lockedEmail}
+            autoComplete="email"
+            className="w-full cursor-default rounded-xl border border-[color:var(--border)] bg-[var(--background)] px-4 py-3 text-[var(--foreground)] outline-none"
           />
+          <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
+            Checkout is locked to the email you signed in with.
+            {emailLocked ? (
+              <>
+                {" "}
+                To use a different address,{" "}
+                <a
+                  href={getHybridAppLoginUrl(undefined, {
+                    checkoutPlan: plan.id,
+                    reauth: true,
+                  })}
+                  className="font-semibold text-[var(--foreground)] underline underline-offset-2"
+                >
+                  sign in again with that email
+                </a>
+                .
+              </>
+            ) : null}
+          </p>
         </label>
 
         <label className="mt-4 block text-sm">

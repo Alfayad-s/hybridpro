@@ -11,13 +11,20 @@ export function getHybridBackendUrl() {
 
 export function getHybridAppUrl() {
   return (
-    process.env.HYBRID_APP_PUBLIC_URL?.trim().replace(/\/$/, "") || DEFAULT_APP_URL
+    process.env.HYBRID_APP_PUBLIC_URL?.trim().replace(/\/$/, "") ||
+    process.env.NEXT_PUBLIC_HYBRID_APP_URL?.trim().replace(/\/$/, "") ||
+    DEFAULT_APP_URL
   );
 }
 
-export function getHybridAppLoginUrl(email?: string | null) {
+export function getHybridAppLoginUrl(
+  email?: string | null,
+  options?: { checkoutPlan?: string | null; reauth?: boolean },
+) {
   const url = new URL("/login", `${getHybridAppUrl()}/`);
   if (email) url.searchParams.set("email", email);
+  if (options?.checkoutPlan) url.searchParams.set("checkout", options.checkoutPlan);
+  if (options?.reauth) url.searchParams.set("reauth", "1");
   return url.toString();
 }
 

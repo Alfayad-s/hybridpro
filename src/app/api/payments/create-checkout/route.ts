@@ -56,6 +56,12 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Sign in is required before checkout" },
+      { status: 401 },
+    );
+  }
 
   const merchantOrderReference = `hp-${plan.id}-${Date.now()}-${randomUUID().slice(0, 8)}`;
 

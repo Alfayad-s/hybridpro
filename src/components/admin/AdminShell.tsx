@@ -73,7 +73,7 @@ export default function AdminShell({ children, onLogout }: AdminShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[min(18rem,88vw)] flex-col border-r border-[color:var(--border)] bg-[var(--card)] px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] transition-transform duration-200 lg:static lg:w-64 lg:translate-x-0 lg:pt-5 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[min(18rem,88vw)] flex-col border-r border-[color:var(--border)] bg-white px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[8px_0_24px_rgba(17,17,17,0.08)] transition-transform duration-200 dark:bg-black dark:shadow-[8px_0_24px_rgba(0,0,0,0.45)] lg:static lg:w-64 lg:translate-x-0 lg:bg-[var(--background)] lg:pt-5 lg:shadow-none ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >

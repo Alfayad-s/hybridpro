@@ -16,6 +16,9 @@ type ClientRow = {
   planName: string;
   status: string;
   expiresAt: string | null;
+  fullName?: string | null;
+  avatarUrl?: string | null;
+  appLinked?: boolean;
   paymentCount?: number;
   totalPaidPaise?: number;
   lastAmountPaise?: number;
@@ -367,14 +370,14 @@ export default function AdminPageContent() {
                       : "All clients"}
               </h2>
               <p className="mt-1 text-sm text-[color:var(--muted)]">
-                Paid amount, last payment, and 30-day access for each client.
+                Paid amount, last payment, and whether they have signed into the app.
               </p>
             </div>
             <form onSubmit={onSearch} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search email or mobile"
+                placeholder="Search name, email, or mobile"
                 className={`flex-1 ${adminInputClass} bg-[var(--card)]`}
               />
               <select
@@ -403,11 +406,32 @@ export default function AdminPageContent() {
                   className="block rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{client.email}</p>
-                      {client.mobile && (
-                        <p className="mt-0.5 text-xs text-[color:var(--muted)]">{client.mobile}</p>
+                    <div className="flex min-w-0 items-center gap-3">
+                      {client.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={client.avatarUrl}
+                          alt=""
+                          className="h-10 w-10 shrink-0 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[color:var(--border)] text-sm font-semibold">
+                          {(client.fullName || client.email).slice(0, 1).toUpperCase()}
+                        </span>
                       )}
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{client.fullName || client.email}</p>
+                        {client.fullName ? (
+                          <p className="mt-0.5 truncate text-xs text-[color:var(--muted)]">
+                            {client.email}
+                          </p>
+                        ) : client.mobile ? (
+                          <p className="mt-0.5 text-xs text-[color:var(--muted)]">{client.mobile}</p>
+                        ) : null}
+                        <p className="mt-0.5 text-[0.65rem] text-[color:var(--muted)]">
+                          {client.appLinked ? "App account linked" : "Has not signed into the app"}
+                        </p>
+                      </div>
                     </div>
                     <AdminStatusBadge status={client.status} />
                   </div>
@@ -456,10 +480,35 @@ export default function AdminPageContent() {
                   {clients.map((client) => (
                     <tr key={client.id} className="border-t border-[color:var(--border)]">
                       <td className="px-4 py-3">
-                        <p className="max-w-[18rem] truncate">{client.email}</p>
-                        {client.mobile && (
-                          <p className="text-xs text-[color:var(--muted)]">{client.mobile}</p>
-                        )}
+                        <div className="flex min-w-0 items-center gap-3">
+                          {client.avatarUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={client.avatarUrl}
+                              alt=""
+                              className="h-9 w-9 shrink-0 rounded-full object-cover"
+                            />
+                          ) : (
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[color:var(--border)] text-xs font-semibold">
+                              {(client.fullName || client.email).slice(0, 1).toUpperCase()}
+                            </span>
+                          )}
+                          <div className="min-w-0">
+                            <p className="max-w-[18rem] truncate font-medium">
+                              {client.fullName || client.email}
+                            </p>
+                            {client.fullName ? (
+                              <p className="truncate text-xs text-[color:var(--muted)]">
+                                {client.email}
+                              </p>
+                            ) : client.mobile ? (
+                              <p className="text-xs text-[color:var(--muted)]">{client.mobile}</p>
+                            ) : null}
+                            <p className="text-[0.65rem] text-[color:var(--muted)]">
+                              {client.appLinked ? "App account linked" : "Has not signed into the app"}
+                            </p>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-4 py-3">{client.planName}</td>
                       <td className="px-4 py-3">

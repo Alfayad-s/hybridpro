@@ -17,6 +17,10 @@ type Detail = {
     startsAt: string | null;
     expiresAt: string | null;
     nextPlanId: string | null;
+    userId?: string | null;
+    fullName?: string | null;
+    avatarUrl?: string | null;
+    appLinked?: boolean;
   };
   payments: {
     id: string;
@@ -93,19 +97,47 @@ export default function AdminClientDetail() {
 
         {sub && (
           <section className="space-y-3 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--card)] p-4 sm:rounded-[1.75rem] sm:p-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[0.65rem] tracking-[0.28em] text-[color:var(--muted)] uppercase sm:text-[0.7rem] sm:tracking-[0.35em]">
-                Hybrid Pro
-              </p>
-              <AdminStatusBadge status={sub.status} />
+            <div className="flex flex-wrap items-start gap-4">
+              {sub.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={sub.avatarUrl}
+                  alt=""
+                  className="h-16 w-16 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[color:var(--border)] text-xl font-semibold">
+                  {(sub.fullName || sub.email).slice(0, 1).toUpperCase()}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[0.65rem] tracking-[0.28em] text-[color:var(--muted)] uppercase sm:text-[0.7rem] sm:tracking-[0.35em]">
+                    Hybrid Pro
+                  </p>
+                  <AdminStatusBadge status={sub.status} />
+                  <span
+                    className={`inline-flex rounded-full px-2.5 py-1 text-[0.7rem] font-semibold ${
+                      sub.appLinked
+                        ? "bg-[color:var(--brand-green)]/15 text-[color:var(--foreground)]"
+                        : "bg-[color:var(--border)]/60 text-[color:var(--muted)]"
+                    }`}
+                  >
+                    {sub.appLinked ? "App account linked" : "Not signed in yet"}
+                  </span>
+                </div>
+                <h1
+                  className="mt-2 break-words text-2xl leading-[0.95] tracking-[0.02em] uppercase sm:text-4xl"
+                  style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+                >
+                  {sub.fullName || sub.email}
+                </h1>
+                {sub.fullName ? (
+                  <p className="mt-2 break-all text-[color:var(--muted)]">{sub.email}</p>
+                ) : null}
+                <p className="text-[color:var(--muted)]">{sub.mobile || "No mobile on file"}</p>
+              </div>
             </div>
-            <h1
-              className="break-all text-2xl leading-[0.95] tracking-[0.02em] uppercase sm:text-4xl"
-              style={{ fontFamily: "var(--font-bebas), sans-serif" }}
-            >
-              {sub.email}
-            </h1>
-            <p className="text-[color:var(--muted)]">{sub.mobile || "No mobile on file"}</p>
             <p className="text-base sm:text-lg">{sub.planName}</p>
             <p className="text-lg font-semibold" style={{ color: FLUORO_GREEN }}>
               {paidCount > 0
