@@ -45,14 +45,6 @@ export function getPublicSiteUrl() {
 function getPaymentCallbackBase() {
   const override = process.env.PAYMENT_CALLBACK_BASE_URL?.trim().replace(/\/$/, "");
   if (override) return override;
-  const backend = (
-    process.env.HYBRID_BACKEND_URL ||
-    process.env.HYBRID_APP_API_URL ||
-    ""
-  )
-    .trim()
-    .replace(/\/$/, "");
-  if (backend && !/localhost|127\.0\.0\.1/i.test(backend)) return backend;
   return getPublicSiteUrl();
 }
 
@@ -420,20 +412,24 @@ export function isPineLabsConfigured() {
   );
 }
 
+function unwrapPineLabsOrder(data: Record<string, unknown>) {
+  const inner = data.data;
+  if (inner && typeof inner === "object" && !Array.isArray(inner)) {
+    return inner as Record<string, unknown>;
+  }
+  return data;
+}
+
 export async function getPineLabsOrder(
   orderId: string,
   merchantOrderReference?: string,
 ) {
   const { token, baseUrl } = await getPineLabsAccessToken();
-  const paths = [
-    `/api/checkout/v1/orders/${encodeURIComponent(orderId)}`,
-    `/api/pay/v1/orders/${encodeURIComponent(orderId)}`,
-    `/checkout/v1/orders/${encodeURIComponent(orderId)}`,
-    `/api/checkout/v1/order/${encodeURIComponent(orderId)}`,
-  ];
+  const ids = [...new Set([orderId, orderId.toLowerCase()].filter(Boolean))];
+  const paths = ids.flatMap((id) => [`/api/pay/v1/orders/${encodeURIComponent(id)}`]);
   if (merchantOrderReference) {
     paths.push(
-      `/api/checkout/v1/orders?merchant_order_reference=${encodeURIComponent(merchantOrderReference)}`,
+      `/api/pay/v1/orders/reference/${encodeURIComponent(merchantOrderReference)}`,
     );
   }
 
@@ -447,21 +443,31 @@ export async function getPineLabsOrder(
       cache: "no-store",
     });
     const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-    if (res.ok) return data;
+    if (res.ok) return unwrapPineLabsOrder(data);
     attempts.push(`${path} → ${res.status}`);
   }
 
   throw new Error(
-    `Pine Labs request failed (${attempts.at(-1)?.split(" → ").at(-1) || "404"}) (host: ${baseUrl}; tried ${attempts.join(", ")})`,
+    `Pine Labs order lookup failed (${attempts.at(-1)?.split(" → ").at(-1) || "404"}) (host: ${baseUrl}; tried ${attempts.join(", ")})`,
   );
 }
 
 export function isPineLabsOrderPaid(data: Record<string, unknown>) {
+  const order = unwrapPineLabsOrder(data);
+  const payments = Array.isArray(order.payments) ? order.payments : [];
+  const paymentStatus = payments
+    .map((item) =>
+      item && typeof item === "object" && typeof (item as { status?: unknown }).status === "string"
+        ? (item as { status: string }).status
+        : "",
+    )
+    .join(" ");
   const candidates = [
-    data.order_status,
-    data.status,
-    data.payment_status,
-    data.transaction_status,
+    order.order_status,
+    order.status,
+    order.payment_status,
+    order.transaction_status,
+    paymentStatus,
   ];
   const status = candidates
     .map((value) => (typeof value === "string" ? value.toUpperCase() : ""))
@@ -479,15 +485,16 @@ export function isPineLabsOrderPaid(data: Record<string, unknown>) {
 }
 
 export function readPineLabsMetadata(data: Record<string, unknown>) {
+  const order = unwrapPineLabsOrder(data);
   const purchase =
-    data.purchase_details && typeof data.purchase_details === "object"
-      ? (data.purchase_details as Record<string, unknown>)
+    order.purchase_details && typeof order.purchase_details === "object"
+      ? (order.purchase_details as Record<string, unknown>)
       : {};
   const metadata =
     purchase.merchant_metadata && typeof purchase.merchant_metadata === "object"
       ? (purchase.merchant_metadata as Record<string, unknown>)
-      : data.merchant_metadata && typeof data.merchant_metadata === "object"
-        ? (data.merchant_metadata as Record<string, unknown>)
+      : order.merchant_metadata && typeof order.merchant_metadata === "object"
+        ? (order.merchant_metadata as Record<string, unknown>)
         : {};
   const customer =
     purchase.customer && typeof purchase.customer === "object"
@@ -503,6 +510,7 @@ export function readPineLabsMetadata(data: Record<string, unknown>) {
   return {
     email:
       (typeof metadata.email === "string" && metadata.email) ||
+      (typeof metadata.email_id === "string" && metadata.email_id) ||
       (typeof customer.email_id === "string" && customer.email_id) ||
       "",
     mobile:
@@ -513,8 +521,8 @@ export function readPineLabsMetadata(data: Record<string, unknown>) {
       (typeof metadata.plan_id === "string" && metadata.plan_id) || productCode,
     userId: typeof metadata.user_id === "string" ? metadata.user_id : "",
     merchantOrderReference:
-      (typeof data.merchant_order_reference === "string" &&
-        data.merchant_order_reference) ||
+      (typeof order.merchant_order_reference === "string" &&
+        order.merchant_order_reference) ||
       "",
   };
 }

@@ -96,19 +96,24 @@ function SuccessBody() {
 
     let cancelled = false;
     const activate = async () => {
-      let stored: {
+      type StoredCheckout = {
         email?: string;
         planId?: string;
         userId?: string;
         merchantOrderReference?: string;
         orderId?: string;
-      } | null = null;
+      };
+      let stored: StoredCheckout | null = null;
       try {
-        stored = JSON.parse(sessionStorage.getItem("hp_checkout") || "null") as typeof stored;
+        const parsed = JSON.parse(sessionStorage.getItem("hp_checkout") || "null") as unknown;
+        if (parsed && typeof parsed === "object") {
+          stored = parsed as StoredCheckout;
+        }
       } catch {
         stored = null;
       }
-      const storedMatches = stored?.orderId && stored.orderId === orderId ? stored : null;
+      const storedMatches =
+        stored && stored.orderId === orderId ? stored : null;
 
       try {
         const res = await fetch("/api/payments/activate", {
@@ -144,9 +149,11 @@ function SuccessBody() {
         if (cancelled) return;
         setState("error");
         setMessage(
-          error instanceof Error
-            ? error.message
-            : "Payment succeeded, but app access is not unlocked yet. Contact Akash with your order id.",
+          error instanceof Error && /pine labs|404/i.test(error.message)
+            ? "Payment succeeded. Unlocking your plan from the checkout record…"
+            : error instanceof Error
+              ? error.message
+              : "Payment succeeded, but app access is not unlocked yet. Contact Akash with your order id.",
         );
       }
     };

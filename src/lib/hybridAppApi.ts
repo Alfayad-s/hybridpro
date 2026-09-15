@@ -97,21 +97,46 @@ export async function confirmBackendPayment(payload: {
   merchantOrderReference?: string | null;
   mobile?: string | null;
 }) {
-  const res = await fetch(`${getHybridBackendUrl()}/api/payments/confirm`, {
+  let email = payload.email?.trim().toLowerCase() || "";
+  let planId = payload.planId?.trim() || "";
+  let userId = payload.userId?.trim() || "";
+  let mobile = payload.mobile?.trim() || "";
+  let merchantOrderReference = payload.merchantOrderReference?.trim() || "";
+
+  if (!email || !planId || !merchantOrderReference) {
+    try {
+      const intent = await getCheckoutIntent({
+        pineOrderId: payload.orderId,
+        merchantOrderReference: merchantOrderReference || undefined,
+      });
+      if (intent) {
+        email = email || (intent.email || "").trim().toLowerCase();
+        planId = planId || (intent.planId || "").trim();
+        userId = userId || (intent.userId || "").trim();
+        mobile = mobile || (intent.mobile || "").trim();
+        merchantOrderReference =
+          merchantOrderReference || (intent.merchantOrderReference || "").trim();
+      }
+    } catch (error) {
+      console.error("[confirmBackendPayment] intent", error);
+    }
+  }
+
+  const confirmRes = await fetch(`${getHybridBackendUrl()}/api/payments/confirm`, {
     method: "POST",
     headers: internalHeaders(),
     body: JSON.stringify({
       pineOrderId: payload.orderId,
       orderId: payload.orderId,
-      email: payload.email,
-      planId: payload.planId,
-      userId: payload.userId,
-      merchantOrderReference: payload.merchantOrderReference,
-      mobile: payload.mobile,
+      email,
+      planId,
+      userId: userId || undefined,
+      merchantOrderReference,
+      mobile: mobile || undefined,
     }),
     cache: "no-store",
   });
-  const data = (await res.json().catch(() => ({}))) as {
+  const confirmData = (await confirmRes.json().catch(() => ({}))) as {
     error?: string;
     ok?: boolean;
     reason?: string;
@@ -121,10 +146,48 @@ export async function confirmBackendPayment(payload: {
     alreadyProcessed?: boolean;
     subscription?: unknown;
   };
-  if (!res.ok) {
-    throw new Error(data.error || `Payment confirm failed (${res.status})`);
+
+  if (confirmRes.ok) return confirmData;
+  if (confirmRes.status !== 404) {
+    throw new Error(confirmData.error || `Payment confirm failed (${confirmRes.status})`);
   }
-  return data;
+
+  const { getPricingPlan } = await import("@/lib/pricingPlans");
+  const plan = getPricingPlan(planId);
+  if (!email.includes("@") || !plan) {
+    throw new Error(confirmData.error || "Could not confirm this payment");
+  }
+
+  const activateRes = await fetch(`${getHybridBackendUrl()}/api/subscriptions/activate`, {
+    method: "POST",
+    headers: internalHeaders(),
+    body: JSON.stringify({
+      pineOrderId: payload.orderId,
+      merchantOrderReference: merchantOrderReference || `hp-${payload.orderId}`,
+      email,
+      mobile: mobile || undefined,
+      planId: plan.id,
+      amountPaise: plan.amountPaise,
+      userId: userId || undefined,
+    }),
+    cache: "no-store",
+  });
+  const activateData = (await activateRes.json().catch(() => ({}))) as {
+    error?: string;
+    alreadyProcessed?: boolean;
+    subscription?: unknown;
+  };
+  if (!activateRes.ok) {
+    throw new Error(activateData.error || `App activate failed (${activateRes.status})`);
+  }
+  return {
+    ok: true,
+    email,
+    planId: plan.id,
+    planName: plan.name,
+    alreadyProcessed: activateData.alreadyProcessed,
+    subscription: activateData.subscription,
+  };
 }
 
 export async function getAppPlanStatus(input: { email?: string; userId?: string }) {

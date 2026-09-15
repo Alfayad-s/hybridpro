@@ -68,6 +68,14 @@ export async function POST(request: Request) {
   const merchantOrderReference = `hp-${plan.id}-${Date.now()}-${randomUUID().slice(0, 8)}`;
 
   try {
+    await saveCheckoutIntent({
+      merchantOrderReference,
+      email,
+      mobile: mobile.slice(-10),
+      planId: plan.id,
+      userId,
+    });
+
     const checkout = await createPineLabsCheckout({
       merchantOrderReference,
       amountPaise: plan.amountPaise,
@@ -94,18 +102,14 @@ export async function POST(request: Request) {
       },
     });
 
-    try {
-      await saveCheckoutIntent({
-        pineOrderId: checkout.orderId,
-        merchantOrderReference,
-        email,
-        mobile: mobile.slice(-10),
-        planId: plan.id,
-        userId,
-      });
-    } catch (error) {
-      console.error("[checkout] intent", error);
-    }
+    await saveCheckoutIntent({
+      pineOrderId: checkout.orderId,
+      merchantOrderReference,
+      email,
+      mobile: mobile.slice(-10),
+      planId: plan.id,
+      userId,
+    });
 
     const response = NextResponse.json({
       redirectUrl: checkout.redirectUrl,

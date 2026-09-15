@@ -1,8 +1,5 @@
 import { confirmBackendPayment } from "@/lib/hybridAppApi";
-import {
-  getPineLabsOrder,
-  isPineLabsOrderPaid,
-} from "@/lib/pinelabs";
+import { getPineLabsOrder, isPineLabsOrderPaid } from "@/lib/pinelabs";
 
 export type ConfirmPaidOrderInput = {
   orderId: string;
@@ -15,11 +12,14 @@ export type ConfirmPaidOrderInput = {
 
 export async function confirmPaidOrderAndActivate(input: ConfirmPaidOrderInput) {
   const orderId = input.orderId.trim();
-  const merchantOrderReference = input.merchantOrderReference?.trim() || "";
+  if (!orderId) throw new Error("orderId is required");
 
   try {
-    const order = await getPineLabsOrder(orderId, merchantOrderReference || undefined);
-    if (order && !isPineLabsOrderPaid(order)) {
+    const order = await getPineLabsOrder(
+      orderId,
+      input.merchantOrderReference?.trim() || undefined,
+    );
+    if (!isPineLabsOrderPaid(order)) {
       throw new Error("Payment is not confirmed yet. Try again in a moment.");
     }
   } catch (error) {
@@ -32,7 +32,7 @@ export async function confirmPaidOrderAndActivate(input: ConfirmPaidOrderInput) 
     email: input.email,
     planId: input.planId,
     userId: input.userId,
-    merchantOrderReference: merchantOrderReference || undefined,
+    merchantOrderReference: input.merchantOrderReference?.trim() || undefined,
     mobile: input.mobile,
   });
 
