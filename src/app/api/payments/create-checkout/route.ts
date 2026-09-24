@@ -15,6 +15,7 @@ type Body = {
   lastName?: string;
   mobile?: string;
   userId?: string;
+  source?: string;
 };
 
 export async function POST(request: Request) {
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
   const mobile = (body.mobile || "").replace(/\D/g, "");
   const lastName = body.lastName?.trim() || undefined;
   const userId = body.userId?.trim() || undefined;
+  const source = body.source?.trim() || undefined;
 
   if (!email || !email.includes("@")) {
     return NextResponse.json({ error: "Valid email is required" }, { status: 400 });
@@ -99,6 +101,7 @@ export async function POST(request: Request) {
         email,
         ref: merchantOrderReference,
         ...(userId ? { userId } : {}),
+        ...(source === "flutter" || source === "app" ? { source: "flutter" } : {}),
       },
     });
 

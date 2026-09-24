@@ -1,12 +1,18 @@
-const DEFAULT_BACKEND_URL = "http://localhost:3002";
+const DEFAULT_LOCAL_BACKEND_URL = "http://localhost:3002";
+const DEFAULT_REMOTE_BACKEND_URL = "https://api.hybridpro.in";
 const DEFAULT_APP_URL = "https://app.hybridpro.in";
 
 export function getHybridBackendUrl() {
-  return (
+  // Explicit env always wins so website + Flutter can share https://api.hybridpro.in.
+  const configured =
     process.env.HYBRID_BACKEND_URL?.trim().replace(/\/$/, "") ||
-    process.env.HYBRID_APP_API_URL?.trim().replace(/\/$/, "") ||
-    DEFAULT_BACKEND_URL
-  );
+    process.env.HYBRID_APP_API_URL?.trim().replace(/\/$/, "");
+  if (configured) return configured;
+
+  if (process.env.NODE_ENV !== "production") {
+    return DEFAULT_LOCAL_BACKEND_URL;
+  }
+  return DEFAULT_REMOTE_BACKEND_URL;
 }
 
 export function getHybridAppUrl() {

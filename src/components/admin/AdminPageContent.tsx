@@ -1,7 +1,12 @@
 "use client";
 
+import AdminClientCard from "@/components/admin/AdminClientCard";
 import AdminShell from "@/components/admin/AdminShell";
-import { AdminStatusBadge, adminInputClass, formatInrFromPaise } from "@/components/admin/adminUi";
+import {
+  adminInputClass,
+  formatDaysRemaining,
+  formatInrFromPaise,
+} from "@/components/admin/adminUi";
 import BrandLogo from "@/components/BrandLogo";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import { pricingPlans } from "@/lib/pricingPlans";
@@ -16,23 +21,31 @@ type ClientRow = {
   planName: string;
   status: string;
   expiresAt: string | null;
+  daysRemaining?: number | null;
   fullName?: string | null;
   avatarUrl?: string | null;
   appLinked?: boolean;
   paymentCount?: number;
   totalPaidPaise?: number;
+  grantCount?: number;
+  totalGrantedPaise?: number;
   lastAmountPaise?: number;
   lastPaidAt?: string | null;
+  startsAt?: string | null;
+  expiringSoon?: boolean;
 };
 
 type Stats = {
   total: number;
   active: number;
   expired: number;
+  expiringSoon?: number;
   byPlan: Record<string, number>;
   paidOrders?: number;
   paidClients?: number;
   revenuePaise?: number;
+  grantedOrders?: number;
+  grantedPaise?: number;
 };
 
 export default function AdminPageContent() {
@@ -47,16 +60,27 @@ export default function AdminPageContent() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("active");
+  const [planId, setPlanId] = useState("");
+  const [expiringSoon, setExpiringSoon] = useState(false);
   const [grantError, setGrantError] = useState<string | null>(null);
   const [grant, setGrant] = useState({ email: "", mobile: "", planId: "performance" });
   const [busy, setBusy] = useState(false);
 
-  const loadDashboard = async (next?: { q?: string; status?: string }) => {
+  const loadDashboard = async (next?: {
+    q?: string;
+    status?: string;
+    planId?: string;
+    expiringSoon?: boolean;
+  }) => {
     const search = next?.q ?? q;
     const st = next?.status ?? status;
+    const plan = next?.planId ?? planId;
+    const expiring = next?.expiringSoon ?? expiringSoon;
     const params = new URLSearchParams();
     if (search) params.set("q", search);
     if (st) params.set("status", st);
+    if (plan) params.set("planId", plan);
+    if (expiring) params.set("expiringSoon", "1");
     const [clientsRes, statsRes] = await Promise.all([
       fetch(`/api/admin/clients?${params}`, { cache: "no-store" }),
       fetch("/api/admin/stats", { cache: "no-store" }),
@@ -128,7 +152,8 @@ export default function AdminPageContent() {
 
   const onSearch = async (event: FormEvent) => {
     event.preventDefault();
-    await loadDashboard();
+    setExpiringSoon(false);
+    await loadDashboard({ expiringSoon: false });
   };
 
   const onGrant = async (event: FormEvent) => {
@@ -238,7 +263,7 @@ export default function AdminPageContent() {
 
   return (
     <AdminShell onLogout={logout}>
-      <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8">
+      <div className="w-full space-y-6 sm:space-y-8">
         <header className="hidden lg:block">
           <p className="text-[0.7rem] tracking-[0.35em] text-[color:var(--muted)] uppercase">
             Hybrid Pro
@@ -257,33 +282,69 @@ export default function AdminPageContent() {
           Plans and 30-day access in one place.
         </p>
 
-          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {[
-              ["Active clients", stats?.active ?? 0],
-              ["Paid clients", stats?.paidClients ?? 0],
-              ["Collected", formatInrFromPaise(stats?.revenuePaise ?? 0)],
-              ["Paid orders", stats?.paidOrders ?? 0],
-              ["Foundation", stats?.byPlan?.foundation ?? 0],
-              ["Performance", stats?.byPlan?.performance ?? 0],
-              ["Elite", stats?.byPlan?.elite ?? 0],
-              ["Expired", stats?.expired ?? 0],
-            ].map(([label, value]) => (
+        <section className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+            {(
+              [
+                ["Active clients", stats?.active ?? 0, "active"],
+                ["Paid clients", stats?.paidClients ?? 0, "paid"],
+                ["Collected", formatInrFromPaise(stats?.revenuePaise ?? 0), "collected"],
+                ["Paid orders", stats?.paidOrders ?? 0, "orders"],
+                ["Foundation", stats?.byPlan?.foundation ?? 0, "foundation"],
+                ["Performance", stats?.byPlan?.performance ?? 0, "performance"],
+                ["Elite", stats?.byPlan?.elite ?? 0, "elite"],
+                ["Expiring soon", stats?.expiringSoon ?? 0, "expiring"],
+                ["Expired", stats?.expired ?? 0, "expired"],
+                ["Granted", formatInrFromPaise(stats?.grantedPaise ?? 0), "granted"],
+              ] as const
+            ).map(([label, value, key]) => (
               <button
-                key={String(label)}
+                key={key}
                 type="button"
                 onClick={() => {
-                  let next = status;
-                  if (label === "Active clients") next = "active";
-                  else if (label === "Expired") next = "expired";
-                  else if (label === "Paid clients" || label === "Paid orders" || label === "Collected") {
-                    next = "";
+                  let nextStatus = status;
+                  let nextPlan = planId;
+                  let nextExpiring = false;
+                  if (key === "active") {
+                    nextStatus = "active";
+                    nextPlan = "";
+                  } else if (key === "expired") {
+                    nextStatus = "expired";
+                    nextPlan = "";
+                  } else if (key === "paid" || key === "orders" || key === "collected") {
+                    window.location.href = "/admin/payments";
+                    return;
+                  } else if (key === "granted") {
+                    window.location.href = "/admin/payments?status=granted";
+                    return;
+                  } else if (key === "expiring") {
+                    nextStatus = "active";
+                    nextPlan = "";
+                    nextExpiring = true;
+                  } else if (key === "foundation" || key === "performance" || key === "elite") {
+                    nextStatus = "active";
+                    nextPlan = key;
                   } else {
                     return;
                   }
-                  setStatus(next);
-                  void loadDashboard({ status: next });
+                  setStatus(nextStatus);
+                  setPlanId(nextPlan);
+                  setExpiringSoon(nextExpiring);
+                  void loadDashboard({
+                    status: nextStatus,
+                    planId: nextPlan,
+                    expiringSoon: nextExpiring,
+                  });
                 }}
-                className="rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-3.5 text-left sm:p-4"
+                className={`rounded-2xl border bg-[var(--card)] p-3.5 text-left sm:p-4 ${
+                  (key === "active" && status === "active" && !planId && !expiringSoon) ||
+                  (key === "expired" && status === "expired") ||
+                  (key === "expiring" && expiringSoon) ||
+                  ((key === "foundation" || key === "performance" || key === "elite") &&
+                    planId === key &&
+                    !expiringSoon)
+                    ? "border-[color:var(--brand-green)]"
+                    : "border-[color:var(--border)]"
+                }`}
               >
                 <p className="text-[0.6rem] tracking-[0.16em] text-[color:var(--muted)] uppercase sm:text-[0.65rem] sm:tracking-[0.2em]">
                   {label}
@@ -301,7 +362,7 @@ export default function AdminPageContent() {
             ))}
           </section>
 
-          <section className="rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--card)] p-4 sm:rounded-[1.75rem] sm:p-6">
+        <section className="w-full rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--card)] p-4 sm:rounded-[1.75rem] sm:p-6">
             <h2
               className="text-xl uppercase tracking-[0.02em] sm:text-2xl"
               style={{ fontFamily: "var(--font-bebas), sans-serif" }}
@@ -355,22 +416,26 @@ export default function AdminPageContent() {
             {grantError && <p className="mt-3 text-sm text-red-500">{grantError}</p>}
           </section>
 
-          <section className="space-y-4">
+        <section className="w-full space-y-4">
             <div>
               <h2
                 className="text-xl uppercase tracking-[0.02em] sm:text-2xl"
                 style={{ fontFamily: "var(--font-bebas), sans-serif" }}
               >
-                {status === "active"
-                  ? "Active clients"
-                  : status === "expired"
-                    ? "Expired clients"
-                    : status === "cancelled"
-                      ? "Cancelled clients"
-                      : "All clients"}
+                {expiringSoon
+                  ? "Expiring in 7 days"
+                  : planId && status === "active"
+                    ? `Active ${planId} clients`
+                    : status === "active"
+                      ? "Active clients"
+                      : status === "expired"
+                        ? "Expired clients"
+                        : status === "cancelled"
+                          ? "Cancelled clients"
+                          : "All clients"}
               </h2>
               <p className="mt-1 text-sm text-[color:var(--muted)]">
-                Paid amount, last payment, and whether they have signed into the app.
+                Plan, days remaining, paid amount, and whether they have signed into the app.
               </p>
             </div>
             <form onSubmit={onSearch} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -390,6 +455,16 @@ export default function AdminPageContent() {
                 <option value="expired">Expired</option>
                 <option value="cancelled">Cancelled</option>
               </select>
+              <select
+                value={planId}
+                onChange={(e) => setPlanId(e.target.value)}
+                className={`${adminInputClass} bg-[var(--card)] sm:w-44`}
+              >
+                <option value="">All plans</option>
+                <option value="foundation">Foundation</option>
+                <option value="performance">Performance</option>
+                <option value="elite">Elite</option>
+              </select>
               <button
                 type="submit"
                 className="h-12 rounded-full border border-[color:var(--border)] px-5 text-sm sm:w-auto"
@@ -398,168 +473,80 @@ export default function AdminPageContent() {
               </button>
             </form>
 
-            <div className="space-y-3 md:hidden">
-              {clients.map((client) => (
-                <Link
-                  key={client.id}
-                  href={`/admin/clients/${client.id}`}
-                  className="block rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      {client.avatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={client.avatarUrl}
-                          alt=""
-                          className="h-10 w-10 shrink-0 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[color:var(--border)] text-sm font-semibold">
-                          {(client.fullName || client.email).slice(0, 1).toUpperCase()}
-                        </span>
-                      )}
-                      <div className="min-w-0">
-                        <p className="truncate font-medium">{client.fullName || client.email}</p>
-                        {client.fullName ? (
-                          <p className="mt-0.5 truncate text-xs text-[color:var(--muted)]">
-                            {client.email}
+            {!expiringSoon &&
+              clients.some(
+                (client) =>
+                  client.expiringSoon ||
+                  (client.status === "active" &&
+                    client.daysRemaining != null &&
+                    client.daysRemaining <= 7),
+              ) && (
+                <section className="rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--card)] p-4 sm:p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3
+                      className="text-lg uppercase tracking-[0.02em] sm:text-xl"
+                      style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+                    >
+                      Expiring in 7 days
+                    </h3>
+                    <button
+                      type="button"
+                      className="text-sm font-semibold"
+                      style={{ color: FLUORO_GREEN }}
+                      onClick={() => {
+                        setStatus("active");
+                        setPlanId("");
+                        setExpiringSoon(true);
+                        void loadDashboard({
+                          status: "active",
+                          planId: "",
+                          expiringSoon: true,
+                        });
+                      }}
+                    >
+                      View all
+                    </button>
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {clients
+                      .filter(
+                        (client) =>
+                          client.expiringSoon ||
+                          (client.status === "active" &&
+                            client.daysRemaining != null &&
+                            client.daysRemaining <= 7),
+                      )
+                      .slice(0, 8)
+                      .map((client) => (
+                        <Link
+                          key={client.id}
+                          href={`/admin/clients/${client.id}`}
+                          className="min-w-0 rounded-2xl border border-[color:var(--border)] p-3"
+                        >
+                          <p className="truncate text-sm font-medium">
+                            {client.fullName || client.email}
                           </p>
-                        ) : client.mobile ? (
-                          <p className="mt-0.5 text-xs text-[color:var(--muted)]">{client.mobile}</p>
-                        ) : null}
-                        <p className="mt-0.5 text-[0.65rem] text-[color:var(--muted)]">
-                          {client.appLinked ? "App account linked" : "Has not signed into the app"}
-                        </p>
-                      </div>
-                    </div>
-                    <AdminStatusBadge status={client.status} />
+                          <p className="mt-1 truncate text-xs text-[color:var(--muted)]">
+                            {client.planName}
+                          </p>
+                          <p className="mt-2 text-sm font-semibold" style={{ color: FLUORO_GREEN }}>
+                            {formatDaysRemaining(client.daysRemaining) || "Expiring soon"}
+                          </p>
+                        </Link>
+                      ))}
                   </div>
-                  <div className="mt-3 flex items-center justify-between gap-3 text-sm">
-                    <span className="truncate">{client.planName}</span>
-                    <span className="shrink-0 font-semibold" style={{ color: FLUORO_GREEN }}>
-                      {(client.paymentCount ?? 0) > 0
-                        ? formatInrFromPaise(client.totalPaidPaise ?? 0)
-                        : client.paymentCount == null
-                          ? "—"
-                          : "Unpaid"}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-[color:var(--muted)]">
-                    {client.lastPaidAt
-                      ? `Last paid ${new Date(client.lastPaidAt).toLocaleDateString()}`
-                      : "No payment recorded"}
-                    {" · "}
-                    {client.expiresAt
-                      ? `Expires ${new Date(client.expiresAt).toLocaleDateString()}`
-                      : "No expiry"}
-                  </p>
-                </Link>
+                </section>
+              )}
+
+            <div className="grid w-full grid-cols-1 gap-3 sm:gap-4">
+              {clients.map((client) => (
+                <AdminClientCard key={client.id} client={client} />
               ))}
               {clients.length === 0 && (
-                <p className="rounded-2xl border border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--muted)]">
+                <p className="rounded-[1.5rem] border border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--muted)]">
                   No {status === "active" ? "active " : ""}clients yet. Grant access or wait for a website checkout.
                 </p>
               )}
-            </div>
-
-            <div className="hidden overflow-x-auto rounded-[1.75rem] border border-[color:var(--border)] md:block">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-[var(--card)] text-[color:var(--muted)]">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Client</th>
-                    <th className="px-4 py-3 font-medium">Plan</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Paid</th>
-                    <th className="px-4 py-3 font-medium">Last payment</th>
-                    <th className="px-4 py-3 font-medium">Expires</th>
-                    <th className="px-4 py-3 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clients.map((client) => (
-                    <tr key={client.id} className="border-t border-[color:var(--border)]">
-                      <td className="px-4 py-3">
-                        <div className="flex min-w-0 items-center gap-3">
-                          {client.avatarUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={client.avatarUrl}
-                              alt=""
-                              className="h-9 w-9 shrink-0 rounded-full object-cover"
-                            />
-                          ) : (
-                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[color:var(--border)] text-xs font-semibold">
-                              {(client.fullName || client.email).slice(0, 1).toUpperCase()}
-                            </span>
-                          )}
-                          <div className="min-w-0">
-                            <p className="max-w-[18rem] truncate font-medium">
-                              {client.fullName || client.email}
-                            </p>
-                            {client.fullName ? (
-                              <p className="truncate text-xs text-[color:var(--muted)]">
-                                {client.email}
-                              </p>
-                            ) : client.mobile ? (
-                              <p className="text-xs text-[color:var(--muted)]">{client.mobile}</p>
-                            ) : null}
-                            <p className="text-[0.65rem] text-[color:var(--muted)]">
-                              {client.appLinked ? "App account linked" : "Has not signed into the app"}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">{client.planName}</td>
-                      <td className="px-4 py-3">
-                        <AdminStatusBadge status={client.status} />
-                      </td>
-                      <td className="px-4 py-3">
-                        {(client.paymentCount ?? 0) > 0 ? (
-                          <div>
-                            <p>{formatInrFromPaise(client.totalPaidPaise ?? 0)}</p>
-                            <p className="text-xs text-[color:var(--muted)]">
-                              {client.paymentCount}{" "}
-                              {client.paymentCount === 1 ? "order" : "orders"}
-                            </p>
-                          </div>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {client.lastPaidAt
-                          ? new Date(client.lastPaidAt).toLocaleString()
-                          : "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        {client.expiresAt
-                          ? new Date(client.expiresAt).toLocaleDateString()
-                          : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/admin/clients/${client.id}`}
-                          className="font-semibold"
-                          style={{ color: FLUORO_GREEN }}
-                        >
-                          Open
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                  {clients.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        className="px-4 py-10 text-center text-[color:var(--muted)]"
-                      >
-                        No {status === "active" ? "active " : ""}clients yet. Grant access or wait for a website checkout.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
             </div>
           </section>
         </div>

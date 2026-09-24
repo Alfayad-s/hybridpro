@@ -72,12 +72,16 @@ function SuccessBody() {
   const userId = params.get("userId");
   const merchantOrderReference = params.get("ref");
   const alreadyActivated = params.get("activated") === "1";
+  const fromFlutterApp =
+    params.get("source") === "flutter" ||
+    params.get("source") === "app" ||
+    (params.get("ref") || "").startsWith("hp-");
   const [state, setState] = useState<"loading" | "ok" | "error">(
     alreadyActivated ? "ok" : orderId ? "loading" : "error",
   );
   const [message, setMessage] = useState(
     alreadyActivated
-      ? "Payment confirmed. Opening the Hybrid Pro app…"
+      ? "Payment confirmed. Verifying your plan…"
       : "Confirming your Hybrid Pro plan and unlocking the app…",
   );
   const [planName, setPlanName] = useState<string | null>(null);
@@ -164,19 +168,25 @@ function SuccessBody() {
     };
   }, [alreadyActivated, email, merchantOrderReference, orderId, planId, userId]);
 
-  const appHomeUrl = `${GYM_APP_URL}/dashboard${
-    state === "ok"
-      ? `?welcome=1${unlockedEmail ? `&email=${encodeURIComponent(unlockedEmail)}` : ""}`
-      : ""
-  }`;
+  const appHomeUrl = fromFlutterApp
+    ? `in.hybridpro.app://checkout-callback?welcome=1${
+        unlockedEmail ? `&email=${encodeURIComponent(unlockedEmail)}` : ""
+      }${planId ? `&plan=${encodeURIComponent(planId)}` : ""}`
+    : `${GYM_APP_URL}/dashboard${
+        state === "ok"
+          ? `?welcome=1${unlockedEmail ? `&email=${encodeURIComponent(unlockedEmail)}` : ""}`
+          : ""
+      }`;
 
+  // Always bounce back into the native app after activation (WebView + Safari).
   useEffect(() => {
     if (state !== "ok") return;
+    const delay = fromFlutterApp ? 700 : 1600;
     const timer = window.setTimeout(() => {
       window.location.assign(appHomeUrl);
-    }, 1600);
+    }, delay);
     return () => window.clearTimeout(timer);
-  }, [appHomeUrl, state]);
+  }, [appHomeUrl, fromFlutterApp, state]);
 
   return (
     <div className="mx-auto flex min-h-[70dvh] max-w-lg flex-col items-center justify-center px-5 py-28 text-center">

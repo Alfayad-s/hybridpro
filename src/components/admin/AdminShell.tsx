@@ -34,15 +34,28 @@ export default function AdminShell({ children, onLogout }: AdminShellProps) {
       match: (path: string) => path === "/admin" || path.startsWith("/admin/clients"),
     },
     {
+      href: "/admin/exercises",
+      label: "Exercises",
+      match: (path: string) => path.startsWith("/admin/exercises"),
+    },
+    {
+      href: "/admin/payments",
+      label: "Payments",
+      match: (path: string) => path.startsWith("/admin/payments"),
+    },
+    {
       href: "/admin/contacts",
       label: "Contact",
       match: (path: string) => path.startsWith("/admin/contacts"),
     },
   ];
 
-  const pageTitle =
-    pathname.startsWith("/admin/contacts")
-      ? "Contact"
+  const pageTitle = pathname.startsWith("/admin/contacts")
+    ? "Contact"
+    : pathname.startsWith("/admin/exercises")
+      ? "Exercises"
+      : pathname.startsWith("/admin/payments")
+      ? "Payments"
       : pathname.startsWith("/admin/clients")
         ? "Client"
         : "Clients";
@@ -141,7 +154,7 @@ export default function AdminShell({ children, onLogout }: AdminShellProps) {
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 w-full flex-1">
         <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-[color:var(--border)] bg-[var(--background)]/90 px-4 py-2.5 pt-[max(0.65rem,env(safe-area-inset-top))] backdrop-blur-md lg:hidden">
           <button
             type="button"

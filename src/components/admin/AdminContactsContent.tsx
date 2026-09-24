@@ -91,6 +91,7 @@ export default function AdminContactsContent() {
             <option value="">All</option>
             <option value="new">New</option>
             <option value="read">Read</option>
+            <option value="converted">Converted</option>
           </select>
           <button
             type="submit"

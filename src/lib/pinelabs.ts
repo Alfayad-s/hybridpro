@@ -2,21 +2,20 @@ import { createHmac, randomUUID } from "crypto";
 
 const UAT_BASE = "https://pluraluat.v2.pinepg.in";
 const PROD_BASE = "https://api.pluralpay.in";
-const LEGACY_PROD = "https://api.pluralonline.com";
 
 function getPreferredBaseUrl() {
-  if (process.env.PINELABS_BASE_URL?.trim()) {
-    return process.env.PINELABS_BASE_URL.trim().replace(/\/$/, "");
-  }
-  return process.env.PINELABS_ENV === "production" ? PROD_BASE : UAT_BASE;
+  const override = process.env.PINELABS_BASE_URL?.trim().replace(/\/$/, "");
+  if (override) return override;
+  const env = process.env.PINELABS_ENV?.trim().toLowerCase();
+  return env === "production" || env === "prod" ? PROD_BASE : UAT_BASE;
 }
 
 function getCandidateBaseUrls() {
   const preferred = getPreferredBaseUrl();
-  const others = [UAT_BASE, PROD_BASE, LEGACY_PROD].filter(
-    (u) => u !== preferred,
-  );
-  return [preferred, ...others];
+  // Never cross-fallback UAT ↔ production: credentials only work on one side.
+  // A wrong PINELABS_ENV previously authenticated on UAT after a prod 401 and
+  // surfaced confusing "unexpected error (host: pluraluat…)" messages.
+  return [preferred];
 }
 
 const PUBLIC_SITE_URL = "https://hybridpro.in";
@@ -37,15 +36,19 @@ export function getPublicSiteUrl() {
     return PUBLIC_SITE_URL;
   }
 
-  if (app) return app;
+  // Prefer a public HTTPS host so Pine Labs callbacks work from a real device.
+  if (app && !isUnusablePublicUrl(app)) return app;
   if (site && !isUnusablePublicUrl(site)) return site;
+  if (app) return app;
   return "http://localhost:3000";
 }
 
 function getPaymentCallbackBase() {
   const override = process.env.PAYMENT_CALLBACK_BASE_URL?.trim().replace(/\/$/, "");
-  if (override) return override;
-  return getPublicSiteUrl();
+  if (override && !isUnusablePublicUrl(override)) return override;
+  const publicUrl = getPublicSiteUrl();
+  if (!isUnusablePublicUrl(publicUrl)) return publicUrl;
+  return PUBLIC_SITE_URL;
 }
 
 function buildCallbackUrl(
@@ -359,7 +362,14 @@ export async function createPineLabsCheckout(input: CreateCheckoutInput) {
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
 
   if (!res.ok || typeof data.redirect_url !== "string" || !data.redirect_url) {
-    throw new Error(`${readErrorMessage(data, res.status)} (host: ${baseUrl})`);
+    const detail = readErrorMessage(data, res.status);
+    const code =
+      (typeof data.response_code === "number" && data.response_code) ||
+      (typeof data.code === "string" && data.code) ||
+      res.status;
+    throw new Error(
+      `${detail} (host: ${baseUrl}; code: ${code}). Confirm PINELABS_ENV matches your dashboard (uat vs production) and keys are for Online Payments.`,
+    );
   }
 
   return {

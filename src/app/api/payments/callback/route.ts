@@ -30,6 +30,7 @@ function collectParams(source: URLSearchParams | Record<string, unknown>) {
     email: readValue(source, ["email", "email_id"]),
     plan: readValue(source, ["plan", "planId", "plan_id"]),
     userId: readValue(source, ["userId", "user_id"]),
+    source: readValue(source, ["source"]),
     ref: readValue(source, [
       "ref",
       "merchant_order_reference",
@@ -46,13 +47,17 @@ function appWelcomeUrl(email?: string) {
   return url;
 }
 
-function websiteUrl(path: string, params: ReturnType<typeof collectParams>) {
+function websiteUrl(
+  path: string,
+  params: ReturnType<typeof collectParams> & { source?: string },
+) {
   const url = new URL(path, `${getPublicSiteUrl()}/`);
   if (params.order_id) url.searchParams.set("order_id", params.order_id);
   if (params.email) url.searchParams.set("email", params.email);
   if (params.plan) url.searchParams.set("plan", params.plan);
   if (params.userId) url.searchParams.set("userId", params.userId);
   if (params.ref) url.searchParams.set("ref", params.ref);
+  if (params.source) url.searchParams.set("source", params.source);
   return url;
 }
 
@@ -62,6 +67,11 @@ async function handle(request: NextRequest, extra?: Record<string, unknown>) {
     merged[key] = value;
   });
   const params = collectParams(merged);
+  const fromApp =
+    params.source === "flutter" ||
+    params.source === "app" ||
+    // Pine Labs sometimes drops query params; Flutter checkouts use hp- refs.
+    params.ref.startsWith("hp-");
   const failed =
     params.status.toLowerCase() === "failed" ||
     params.status.toLowerCase() === "failure" ||
@@ -81,12 +91,24 @@ async function handle(request: NextRequest, extra?: Record<string, unknown>) {
         merchantOrderReference: params.ref,
       });
       if (result.ok !== false) {
+        if (fromApp) {
+          const url = websiteUrl("/payment/success", {
+            ...params,
+            source: "flutter",
+          });
+          url.searchParams.set("activated", "1");
+          url.searchParams.set("source", "flutter");
+          return NextResponse.redirect(url, 303);
+        }
         return NextResponse.redirect(appWelcomeUrl(result.email || params.email), 303);
       }
       return NextResponse.redirect(websiteUrl("/payment/failure", params), 303);
     } catch (error) {
       console.error("[payments/callback] activate", error);
-      const url = websiteUrl("/payment/success", params);
+      const url = websiteUrl("/payment/success", {
+        ...params,
+        ...(fromApp ? { source: "flutter" } : {}),
+      });
       url.searchParams.set(
         "activate_error",
         error instanceof Error ? error.message : "Could not unlock app access",
@@ -95,7 +117,13 @@ async function handle(request: NextRequest, extra?: Record<string, unknown>) {
     }
   }
 
-  return NextResponse.redirect(websiteUrl("/payment/success", params), 303);
+  return NextResponse.redirect(
+    websiteUrl("/payment/success", {
+      ...params,
+      ...(fromApp ? { source: "flutter" } : {}),
+    }),
+    303,
+  );
 }
 
 export async function GET(request: NextRequest) {

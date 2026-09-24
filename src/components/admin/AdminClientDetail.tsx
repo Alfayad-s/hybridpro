@@ -1,8 +1,11 @@
 "use client";
 
+import AdminAssignWorkout, { type AssignedPlan } from "@/components/admin/AdminAssignWorkout";
+import AdminCoachDesk, { type CoachCheckin } from "@/components/admin/AdminCoachDesk";
 import AdminShell from "@/components/admin/AdminShell";
-import { AdminStatusBadge, formatInrFromPaise } from "@/components/admin/adminUi";
+import { AdminStatusBadge, adminInputClass, formatDaysRemaining, formatInrFromPaise } from "@/components/admin/adminUi";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
+import { pricingPlans } from "@/lib/pricingPlans";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,16 +15,28 @@ type Detail = {
     id: string;
     email: string;
     mobile: string | null;
+    planId?: string;
     planName: string;
     status: string;
     startsAt: string | null;
     expiresAt: string | null;
+    daysRemaining?: number | null;
     nextPlanId: string | null;
     userId?: string | null;
     fullName?: string | null;
     avatarUrl?: string | null;
     appLinked?: boolean;
   };
+  events?: {
+    id: string;
+    action: string;
+    planId: string;
+    planName: string;
+    startsAt: string | null;
+    expiresAt: string | null;
+    amountPaise: number | null;
+    createdAt: string;
+  }[];
   payments: {
     id: string;
     planId: string;
@@ -30,6 +45,10 @@ type Detail = {
     status: string;
     paidAt: string;
   }[];
+  notes?: string;
+  notesUpdatedAt?: string | null;
+  checkins?: CoachCheckin[];
+  assignedPlans?: AssignedPlan[];
 };
 
 export default function AdminClientDetail() {
@@ -38,6 +57,7 @@ export default function AdminClientDetail() {
   const [detail, setDetail] = useState<Detail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [planId, setPlanId] = useState("performance");
 
   const load = async () => {
     const res = await fetch(`/api/admin/clients/${params.id}`, { cache: "no-store" });
@@ -51,6 +71,7 @@ export default function AdminClientDetail() {
       return;
     }
     setDetail(data);
+    if (data.subscription?.planId) setPlanId(data.subscription.planId);
   };
 
   useEffect(() => {
@@ -58,14 +79,14 @@ export default function AdminClientDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
-  const act = async (action: "extend" | "cancel") => {
+  const act = async (action: "extend" | "cancel" | "change_plan") => {
     setBusy(true);
     setError(null);
     try {
       const res = await fetch(`/api/admin/clients/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, days: 30 }),
+        body: JSON.stringify({ action, days: 30, planId }),
       });
       const data = (await res.json()) as { error?: string; message?: string };
       if (!res.ok) throw new Error(data.error || data.message || "Update failed");
@@ -83,6 +104,8 @@ export default function AdminClientDetail() {
       .filter((payment) => payment.status === "paid")
       .reduce((sum, payment) => sum + payment.amountPaise, 0) ?? 0;
   const paidCount = detail?.payments.filter((payment) => payment.status === "paid").length ?? 0;
+  const grantedCount = detail?.payments.filter((payment) => payment.status === "granted").length ?? 0;
+  const events = detail?.events ?? [];
 
   return (
     <AdminShell>
@@ -142,7 +165,9 @@ export default function AdminClientDetail() {
             <p className="text-lg font-semibold" style={{ color: FLUORO_GREEN }}>
               {paidCount > 0
                 ? `${formatInrFromPaise(totalPaidPaise)} paid · ${paidCount} ${paidCount === 1 ? "order" : "orders"}`
-                : "No payment recorded"}
+                : grantedCount > 0
+                  ? "Coach-granted access · no checkout collected"
+                  : "No payment recorded"}
             </p>
             <p className="text-sm text-[color:var(--muted)]">
               {sub.startsAt
@@ -152,13 +177,36 @@ export default function AdminClientDetail() {
               {sub.expiresAt
                 ? `Expires ${new Date(sub.expiresAt).toLocaleDateString()}`
                 : "No expiry"}
+              {formatDaysRemaining(sub.daysRemaining)
+                ? ` · ${formatDaysRemaining(sub.daysRemaining)}`
+                : ""}
             </p>
             {sub.nextPlanId && (
               <p className="text-sm text-[color:var(--muted)]">
                 Next plan after this period: {sub.nextPlanId}
               </p>
             )}
-            <div className="grid grid-cols-1 gap-3 pt-2 sm:flex sm:flex-wrap">
+            <div className="grid grid-cols-1 gap-3 pt-2 sm:flex sm:flex-wrap sm:items-center">
+              <select
+                value={planId}
+                onChange={(e) => setPlanId(e.target.value)}
+                disabled={busy}
+                className={`${adminInputClass} bg-[var(--background)] sm:max-w-[16rem]`}
+              >
+                {pricingPlans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.shortName}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={busy || planId === sub.planId}
+                onClick={() => void act("change_plan")}
+                className="h-12 rounded-full border border-[color:var(--border)] px-5 text-sm disabled:opacity-60 sm:min-w-[10rem]"
+              >
+                Change plan
+              </button>
               <button
                 type="button"
                 disabled={busy}
@@ -181,6 +229,98 @@ export default function AdminClientDetail() {
         )}
 
         {error && <p className="text-sm text-red-500">{error}</p>}
+
+        {detail?.subscription && (
+          <AdminAssignWorkout
+            clientId={detail.subscription.id}
+            appLinked={Boolean(detail.subscription.appLinked || detail.subscription.userId)}
+            plans={detail.assignedPlans ?? []}
+            onAssigned={(plan) =>
+              setDetail((current) =>
+                current
+                  ? {
+                      ...current,
+                      assignedPlans: [
+                        plan,
+                        ...(current.assignedPlans ?? []).map((item) => ({ ...item, isActive: false })),
+                      ],
+                    }
+                  : current,
+              )
+            }
+          />
+        )}
+
+        {detail?.subscription && (
+          <AdminCoachDesk
+            clientId={detail.subscription.id}
+            notes={detail.notes ?? ""}
+            notesUpdatedAt={detail.notesUpdatedAt ?? null}
+            checkins={detail.checkins ?? []}
+            onNotesSaved={(notes, notesUpdatedAt) =>
+              setDetail((current) =>
+                current ? { ...current, notes, notesUpdatedAt } : current,
+              )
+            }
+            onCheckinSaved={(checkin) =>
+              setDetail((current) =>
+                current
+                  ? {
+                      ...current,
+                      checkins: [
+                        checkin,
+                        ...(current.checkins ?? []).filter((item) => item.id !== checkin.id),
+                      ],
+                    }
+                  : current,
+              )
+            }
+          />
+        )}
+
+        {detail && (
+        <section className="overflow-hidden rounded-[1.5rem] border border-[color:var(--border)] sm:rounded-[1.75rem]">
+          <h2
+            className="px-4 py-4 text-xl uppercase tracking-[0.02em] sm:px-5 sm:text-2xl"
+            style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+          >
+            Subscription history
+          </h2>
+          <div className="space-y-3 px-4 pb-4">
+            {events.map((event) => (
+              <article
+                key={event.id}
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-4"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <AdminStatusBadge status={event.action} />
+                  <p className="text-sm font-medium">{event.planName}</p>
+                </div>
+                <p className="mt-2 text-xs text-[color:var(--muted)]">
+                  {new Date(event.createdAt).toLocaleString()}
+                  {event.startsAt
+                    ? ` · ${new Date(event.startsAt).toLocaleDateString()} – ${
+                        event.expiresAt
+                          ? new Date(event.expiresAt).toLocaleDateString()
+                          : "open"
+                      }`
+                    : ""}
+                </p>
+                {event.amountPaise != null && event.amountPaise > 0 && (
+                  <p className="mt-1 text-sm" style={{ color: FLUORO_GREEN }}>
+                    {formatInrFromPaise(event.amountPaise)}
+                  </p>
+                )}
+              </article>
+            ))}
+            {events.length === 0 && (
+              <p className="pb-2 text-sm text-[color:var(--muted)]">
+                No plan changes recorded yet. New checkouts, grants, extends, and cancels will show here.
+              </p>
+            )}
+          </div>
+        </section>
+        )}
 
         <section className="overflow-hidden rounded-[1.5rem] border border-[color:var(--border)] sm:rounded-[1.75rem]">
           <h2
