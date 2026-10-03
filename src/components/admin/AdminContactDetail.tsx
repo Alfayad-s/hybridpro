@@ -3,7 +3,7 @@
 import AdminShell from "@/components/admin/AdminShell";
 import { AdminStatusBadge, adminInputClass } from "@/components/admin/adminUi";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
-import { pricingPlans } from "@/lib/pricingPlans";
+import { accessDaysForPlan, pricingPlans } from "@/lib/pricingPlans";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -168,7 +168,7 @@ export default function AdminContactDetail() {
             ) : (
               <form onSubmit={(event) => void grantAccess(event)} className="space-y-3">
                 <p className="text-sm text-[color:var(--muted)]">
-                  Start 30 days of app access for this enquiry without checkout.
+                  Start app access for this enquiry without checkout.
                 </p>
                 <select
                   value={planId}
@@ -187,7 +187,7 @@ export default function AdminContactDetail() {
                   className="h-12 w-full rounded-full px-5 text-sm font-bold text-black disabled:opacity-60 sm:w-auto"
                   style={{ background: FLUORO_GREEN }}
                 >
-                  {busy ? "Granting…" : "Grant 30 days"}
+                  {busy ? "Granting…" : `Grant ${accessDaysForPlan(planId)} days`}
                 </button>
               </form>
             )}

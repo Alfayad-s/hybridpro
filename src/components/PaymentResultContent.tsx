@@ -146,7 +146,7 @@ function SuccessBody() {
         setState("ok");
         setMessage(
           data.planName
-            ? `${data.planName} is active for 30 days. Opening the Hybrid Pro app…`
+            ? `${data.planName} is active for ${planId === "hyrox" ? 90 : 30} days. Opening the Hybrid Pro app…`
             : "Payment confirmed. Opening the Hybrid Pro app…",
         );
       } catch (error) {

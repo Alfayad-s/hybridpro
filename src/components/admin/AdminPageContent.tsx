@@ -9,7 +9,7 @@ import {
 } from "@/components/admin/adminUi";
 import BrandLogo from "@/components/BrandLogo";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
-import { pricingPlans } from "@/lib/pricingPlans";
+import { accessDaysForPlan, pricingPlans } from "@/lib/pricingPlans";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -217,7 +217,7 @@ export default function AdminPageContent() {
               Sign in
             </h1>
             <p className="mt-3 text-sm text-[color:var(--muted)]">
-              Enter your coach credentials to manage clients and 30-day access.
+              Enter your coach credentials to manage clients and plan access.
             </p>
             <label className="mt-6 block text-sm">
               <span className="mb-1.5 block text-[color:var(--muted)]">Email</span>
@@ -275,11 +275,11 @@ export default function AdminPageContent() {
             Clients
           </h1>
           <p className="mt-3 text-sm text-[color:var(--muted)]">
-            Plans and 30-day access in one place.
+            Plans and plan access in one place.
           </p>
         </header>
         <p className="text-sm text-[color:var(--muted)] lg:hidden">
-          Plans and 30-day access in one place.
+          Plans and plan access in one place.
         </p>
 
         <section className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
@@ -292,6 +292,7 @@ export default function AdminPageContent() {
                 ["Foundation", stats?.byPlan?.foundation ?? 0, "foundation"],
                 ["Performance", stats?.byPlan?.performance ?? 0, "performance"],
                 ["Elite", stats?.byPlan?.elite ?? 0, "elite"],
+                ["Hyrox", stats?.byPlan?.hyrox ?? 0, "hyrox"],
                 ["Expiring soon", stats?.expiringSoon ?? 0, "expiring"],
                 ["Expired", stats?.expired ?? 0, "expired"],
                 ["Granted", formatInrFromPaise(stats?.grantedPaise ?? 0), "granted"],
@@ -320,7 +321,7 @@ export default function AdminPageContent() {
                     nextStatus = "active";
                     nextPlan = "";
                     nextExpiring = true;
-                  } else if (key === "foundation" || key === "performance" || key === "elite") {
+                  } else if (key === "foundation" || key === "performance" || key === "elite" || key === "hyrox") {
                     nextStatus = "active";
                     nextPlan = key;
                   } else {
@@ -339,7 +340,7 @@ export default function AdminPageContent() {
                   (key === "active" && status === "active" && !planId && !expiringSoon) ||
                   (key === "expired" && status === "expired") ||
                   (key === "expiring" && expiringSoon) ||
-                  ((key === "foundation" || key === "performance" || key === "elite") &&
+                  ((key === "foundation" || key === "performance" || key === "elite" || key === "hyrox") &&
                     planId === key &&
                     !expiringSoon)
                     ? "border-[color:var(--brand-green)]"
@@ -410,7 +411,7 @@ export default function AdminPageContent() {
                 className="h-12 rounded-full px-5 text-sm font-bold text-black disabled:opacity-60 md:min-w-[9.5rem]"
                 style={{ background: FLUORO_GREEN }}
               >
-                {busy ? "Saving…" : "Grant 30 days"}
+                {busy ? "Saving…" : `Grant ${accessDaysForPlan(grant.planId)} days`}
               </button>
             </form>
             {grantError && <p className="mt-3 text-sm text-red-500">{grantError}</p>}
@@ -464,6 +465,7 @@ export default function AdminPageContent() {
                 <option value="foundation">Foundation</option>
                 <option value="performance">Performance</option>
                 <option value="elite">Elite</option>
+                <option value="hyrox">Hyrox</option>
               </select>
               <button
                 type="submit"

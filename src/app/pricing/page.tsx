@@ -3,6 +3,7 @@ import FooterSection from "@/components/sections/FooterSection";
 import PricingSection from "@/components/sections/PricingSection";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Pricing · Hybrid Pro",
@@ -15,7 +16,9 @@ export default function PricingPage() {
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNavbar />
       <ThemeGlassToggle />
-      <PricingSection />
+      <Suspense>
+        <PricingSection />
+      </Suspense>
       <FooterSection />
     </main>
   );

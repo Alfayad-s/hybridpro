@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: "Is nutrition included?",
-    a: "Yes. Hybrid Pro Performance and Hybrid Pro Elite include personalised nutrition targets, meal structure, and adjustments in your check-ins. Hybrid Pro Foundation includes a general nutrition guide and meal logging in the app.",
+    a: "Performance and Elite include personalised nutrition and meal logging. Foundation and Hyrox do not include meals. Hyrox is the 12-week race plan with a group chat.",
   },
 ];
 

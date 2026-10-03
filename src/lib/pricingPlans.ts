@@ -1,4 +1,4 @@
-export type PricingPlanId = "foundation" | "performance" | "elite";
+export type PricingPlanId = "foundation" | "performance" | "elite" | "hyrox";
 
 export type PricingPlan = {
   id: PricingPlanId;
@@ -37,12 +37,11 @@ export const pricingPlans: PricingPlan[] = [
     billingNote: "Billed monthly · cancel anytime",
     blurb: "Build healthy habits. Start your Hybrid Pro journey.",
     included: [
-      "Full program library (workout + nutrition)",
-      "App-based tracking (workouts, meals, progress)",
+      "Full workout program library",
+      "App-based tracking (workouts and progress)",
       "Monthly plan refresh",
       "Progressive overload templates",
       "Basic video form reviews (up to 2 per week)",
-      "Nutrition guide (general guidance)",
       "Weekly check-ins via app",
     ],
     excluded: [
@@ -74,7 +73,7 @@ export const pricingPlans: PricingPlan[] = [
       "Video form reviews (up to 4 per month)",
       "Weekly check-ins via app + message",
       "Nutrition targets (calorie + macro guidance)",
-      "Direct message support (2–3 times per week)",
+      "Direct message support",
     ],
     excluded: ["Unlimited form reviews", "Priority 24h support"],
     cta: "Buy Hybrid Pro Performance",
@@ -101,6 +100,7 @@ export const pricingPlans: PricingPlan[] = [
       "Unlimited video form reviews",
       "Nutrition and habit coaching",
       "Unlimited direct messages",
+      "10 one-to-one gym sessions",
       "Monthly progress assessment",
       "Priority support (faster response)",
     ],
@@ -108,8 +108,40 @@ export const pricingPlans: PricingPlan[] = [
     cta: "Buy Hybrid Pro Elite",
     featured: false,
   },
+  {
+    id: "hyrox",
+    company: COMPANY_NAME,
+    category: "Race prep",
+    name: "Hybrid Pro Hyrox",
+    shortName: "Hyrox",
+    saveLabel: null,
+    originalPrice: "₹3,500",
+    price: "₹3,500",
+    amountPaise: 3500_00,
+    cadence: "/ 90 days",
+    billingNote: "90 days of access · beginner to race day",
+    blurb: "3 months · ₹3,500 · beginner to race day.",
+    included: [
+      "12-week Hyrox workouts",
+      "Mark each session finished and log RPE",
+      "Open Hyrox group chat",
+      "Home, workout, progress, and store",
+    ],
+    excluded: ["Meal logging", "Private coach chat"],
+    cta: "Buy Hybrid Pro Hyrox",
+    featured: false,
+  },
 ];
 
 export function getPricingPlan(id: string): PricingPlan | undefined {
   return pricingPlans.find((p) => p.id === id);
+}
+
+export function isPricingPlanId(id: string): id is PricingPlanId {
+  return pricingPlans.some((plan) => plan.id === id);
+}
+
+/** Foundation, Performance, and Elite last 30 days. Hyrox lasts 90 days. */
+export function accessDaysForPlan(planId: string | null | undefined): number {
+  return planId === "hyrox" ? 90 : 30;
 }

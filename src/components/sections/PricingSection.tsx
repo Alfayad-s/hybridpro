@@ -3,6 +3,7 @@
 import { useTheme } from "@/components/ThemeProvider";
 import { pricingPlans } from "@/lib/pricingPlans";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Eyebrow,
   FLUORO_GREEN,
@@ -49,7 +50,21 @@ function CrossIcon({ color }: { color: string }) {
   );
 }
 
+function checkoutHref(
+  planId: string,
+  params: { get(name: string): string | null },
+) {
+  const next = new URLSearchParams();
+  next.set("plan", planId);
+  for (const key of ["email", "userId", "source"]) {
+    const value = params.get(key);
+    if (value) next.set(key, value);
+  }
+  return `/checkout?${next.toString()}`;
+}
+
 export default function PricingSection() {
+  const params = useSearchParams();
   const { theme } = useTheme();
   const isLight = theme === "light";
 
@@ -74,14 +89,14 @@ export default function PricingSection() {
     <SectionShell id="pricing">
       <Reveal>
         <Eyebrow>Coaching pricing</Eyebrow>
-        <SectionTitle>Live coaching. Cancel anytime.</SectionTitle>
+        <SectionTitle>Choose your Hybrid Pro plan.</SectionTitle>
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
-          Ongoing coaching with Akash, live guidance, accountability, and plans
-          shaped around your goals. Secure checkout powered by Pine Labs.
+          Foundation, Performance, and Elite are 30 days. Hyrox is 90 days,
+          beginner to race day. Secure checkout powered by Pine Labs.
         </p>
       </Reveal>
 
-      <div className="mt-12 grid gap-6 sm:mt-16 md:grid-cols-3 md:gap-5 lg:gap-6">
+      <div className="mt-12 grid gap-6 sm:mt-16 md:grid-cols-2 md:gap-5 xl:grid-cols-4 lg:gap-6">
         {pricingPlans.map((plan, i) => (
           <Reveal key={plan.id} delay={0.08 * i}>
             <article
@@ -137,6 +152,7 @@ export default function PricingSection() {
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-end gap-x-3 gap-y-1">
+                  {plan.originalPrice !== plan.price && (
                   <span
                     className="text-3xl font-medium line-through decoration-2"
                     style={{
@@ -146,6 +162,7 @@ export default function PricingSection() {
                   >
                     {plan.originalPrice}
                   </span>
+                  )}
                   <span
                     className="text-5xl leading-none tracking-[0.02em] sm:text-6xl"
                     style={{
@@ -203,7 +220,7 @@ export default function PricingSection() {
                 </ul>
 
                 <Link
-                  href={`/checkout?plan=${plan.id}`}
+                  href={checkoutHref(plan.id, params)}
                   className="mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3.5 text-center text-sm font-bold transition hover:-translate-y-0.5"
                   style={{ background: ctaBg, color: ctaColor }}
                   onMouseEnter={(e) => {

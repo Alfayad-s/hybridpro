@@ -5,7 +5,7 @@ import AdminCoachDesk, { type CoachCheckin } from "@/components/admin/AdminCoach
 import AdminShell from "@/components/admin/AdminShell";
 import { AdminStatusBadge, adminInputClass, formatDaysRemaining, formatInrFromPaise } from "@/components/admin/adminUi";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
-import { pricingPlans } from "@/lib/pricingPlans";
+import { accessDaysForPlan, pricingPlans } from "@/lib/pricingPlans";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -86,7 +86,7 @@ export default function AdminClientDetail() {
       const res = await fetch(`/api/admin/clients/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, days: 30, planId }),
+        body: JSON.stringify({ action, days: accessDaysForPlan(planId), planId }),
       });
       const data = (await res.json()) as { error?: string; message?: string };
       if (!res.ok) throw new Error(data.error || data.message || "Update failed");
@@ -214,7 +214,7 @@ export default function AdminClientDetail() {
                 className="h-12 rounded-full px-5 text-sm font-bold text-black disabled:opacity-60 sm:min-w-[10rem]"
                 style={{ background: FLUORO_GREEN }}
               >
-                Extend 30 days
+                Extend {accessDaysForPlan(sub.planId ?? planId)} days
               </button>
               <button
                 type="button"

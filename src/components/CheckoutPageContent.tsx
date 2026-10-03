@@ -17,6 +17,7 @@ function CheckoutForm() {
   const plan = useMemo(() => getPricingPlan(planId), [planId]);
   const lockedEmail = (searchParams.get("email") || "").trim();
   const userId = (searchParams.get("userId") || "").trim();
+  const source = (searchParams.get("source") || "").trim();
   const emailLocked = Boolean(lockedEmail && userId);
 
   const [firstName, setFirstName] = useState("");
@@ -76,6 +77,9 @@ function CheckoutForm() {
           email: lockedEmail,
           mobile: mobile.trim(),
           userId,
+          ...(source === "flutter" || source === "app"
+            ? { source: "flutter" }
+            : {}),
         }),
       });
       const data = (await res.json()) as {
