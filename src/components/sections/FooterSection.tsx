@@ -105,12 +105,20 @@ export default function FooterSection() {
 
       <div className="mx-auto flex w-full max-w-6xl shrink-0 flex-col items-center gap-2 px-1 pt-4 text-center text-[0.65rem] tracking-[0.18em] text-[color:var(--muted-soft)] uppercase md:flex-row md:items-center md:justify-between md:gap-3 md:text-left md:tracking-[0.22em]">
         <span>© {new Date().getFullYear()} Hybrid Pro</span>
-        <a
-          href="mailto:hello@hybridpro.fit"
-          className="transition hover:text-[var(--foreground)]"
-        >
-          hello@hybridpro.fit
-        </a>
+        <span className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 md:justify-end">
+          <Link href="/privacy" className="transition hover:text-[var(--foreground)]">
+            Privacy
+          </Link>
+          <Link href="/delete-account" className="transition hover:text-[var(--foreground)]">
+            Delete account
+          </Link>
+          <a
+            href="mailto:hello@hybridpro.fit"
+            className="transition hover:text-[var(--foreground)]"
+          >
+            hello@hybridpro.fit
+          </a>
+        </span>
       </div>
     </footer>
   );

@@ -171,7 +171,9 @@ function SuccessBody() {
   const appHomeUrl = fromFlutterApp
     ? `in.hybridpro.app://checkout-callback?welcome=1${
         unlockedEmail ? `&email=${encodeURIComponent(unlockedEmail)}` : ""
-      }${planId ? `&plan=${encodeURIComponent(planId)}` : ""}`
+      }${planId ? `&plan=${encodeURIComponent(planId)}` : ""}${
+        orderId ? `&order_id=${encodeURIComponent(orderId)}` : ""
+      }`
     : `${GYM_APP_URL}/dashboard${
         state === "ok"
           ? `?welcome=1${unlockedEmail ? `&email=${encodeURIComponent(unlockedEmail)}` : ""}`
