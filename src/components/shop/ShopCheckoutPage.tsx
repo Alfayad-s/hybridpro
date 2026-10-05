@@ -8,35 +8,40 @@ import Image from "next/image";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { useCart } from "./CartProvider";
+import { DeliveryPinMap, type DeliveryPin } from "./DeliveryPinMap";
 
 export function ShopCheckoutPage() {
   const cart = useCart();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [pincode, setPincode] = useState("");
+  const [floor, setFloor] = useState("");
+  const [pin, setPin] = useState<DeliveryPin | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
+    if (cart.needsShipping && (!floor.trim() || !pin?.address || pin.pincode.length !== 6)) {
+      setError(
+        "Pin a delivery location that includes a 6-digit PIN code, and add the floor or building.",
+      );
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/payments/shop-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
+          fullName: fullName.trim(),
           email: email.trim(),
           mobile,
-          address: address.trim(),
-          city: city.trim(),
-          pincode,
+          floor: floor.trim(),
+          mapAddress: pin?.address ?? "",
+          city: pin?.city ?? "",
+          pincode: pin?.pincode ?? "",
           items: cart.lines.map((line) => ({
             slug: line.slug,
             size: line.size,
@@ -98,19 +103,11 @@ export function ShopCheckoutPage() {
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <label className="text-sm">
-              <span className="mb-1.5 block text-[color:var(--muted)]">First name</span>
+              <span className="mb-1.5 block text-[color:var(--muted)]">Full name</span>
               <input
                 required
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
-                className="w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none"
-              />
-            </label>
-            <label className="text-sm">
-              <span className="mb-1.5 block text-[color:var(--muted)]">Last name</span>
-              <input
-                value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
                 className="w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none"
               />
             </label>
@@ -142,37 +139,33 @@ export function ShopCheckoutPage() {
               <>
                 <label className="text-sm">
                   <span className="mb-1.5 block text-[color:var(--muted)]">
-                    Delivery address
+                    Floor, flat, or building
                   </span>
                   <input
                     required
-                    value={address}
-                    onChange={(event) => setAddress(event.target.value)}
+                    value={floor}
+                    onChange={(event) => setFloor(event.target.value)}
+                    placeholder="Floor 3, Tower B"
                     className="w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none"
                   />
                 </label>
+                <DeliveryPinMap onChange={setPin} />
                 <label className="text-sm">
-                  <span className="mb-1.5 block text-[color:var(--muted)]">City</span>
+                  <span className="mb-1.5 block text-[color:var(--muted)]">
+                    Map address
+                  </span>
                   <input
                     required
-                    value={city}
-                    onChange={(event) => setCity(event.target.value)}
-                    className="w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none"
+                    readOnly
+                    value={pin?.address ?? ""}
+                    placeholder="Pin the map to fill this address"
+                    className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--card)] px-4 py-3 outline-none"
                   />
-                </label>
-                <label className="text-sm">
-                  <span className="mb-1.5 block text-[color:var(--muted)]">PIN code</span>
-                  <input
-                    required
-                    inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    value={pincode}
-                    onChange={(event) =>
-                      setPincode(event.target.value.replace(/\D/g, "").slice(0, 6))
-                    }
-                    className="w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none"
-                  />
+                  {pin && pin.pincode.length !== 6 ? (
+                    <span className="mt-1.5 block text-red-600">
+                      Move the pin onto a location with a 6-digit PIN code.
+                    </span>
+                  ) : null}
                 </label>
               </>
             ) : null}

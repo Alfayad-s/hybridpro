@@ -1,0 +1,107 @@
+.icon {
+  display: inline-block;
+  overflow: visible;
+}
+
+.house,
+.cart {
+  overflow: visible;
+}
+
+.door {
+  stroke-dasharray: 22;
+  stroke-dashoffset: 0;
+}
+
+.play .door {
+  animation: door-draw 0.6s ease-out forwards;
+}
+
+@keyframes door-draw {
+  0% {
+    stroke-dashoffset: 22;
+    opacity: 0;
+  }
+  15% {
+    stroke-dashoffset: 22;
+    opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.heartPath {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.play .heartPath {
+  animation: heart-beat 1.2s ease-in-out;
+}
+
+@keyframes heart-beat {
+  0% {
+    transform: scale(1);
+  }
+  16.67% {
+    transform: scale(1.1);
+  }
+  33.33% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  66.67% {
+    transform: scale(1);
+  }
+  83.33% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.search.play {
+  animation: search-bounce 1s ease-in-out;
+}
+
+@keyframes search-bounce {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(0) translateY(-4px);
+  }
+  50% {
+    transform: translateX(-3px) translateY(0);
+  }
+}
+
+.cart {
+  transform-origin: center;
+}
+
+.cart.play {
+  animation: cart-bounce 0.8s ease-in-out;
+}
+
+@keyframes cart-bounce {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  25% {
+    transform: scale(1.1) translateY(-5px);
+  }
+  50% {
+    transform: scale(1) translateY(0);
+  }
+  75% {
+    transform: scale(1.1) translateY(-5px);
+  }
+}

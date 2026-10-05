@@ -54,6 +54,12 @@
   opacity: 1;
 }
 
+body[data-product-sheet="open"] .staggered-menu-header,
+body[data-product-sheet="open"] .site-top-nav {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .staggered-menu-header > * {
   pointer-events: auto;
 }

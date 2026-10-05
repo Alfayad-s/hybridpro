@@ -125,7 +125,7 @@ export const Navbar = ({
         ease: [0.22, 1, 0.36, 1],
       }}
       style={{ pointerEvents: hidden ? "none" : "auto" }}
-      className={cn("fixed inset-x-0 top-0 z-40 w-full", className)}
+      className={cn("site-top-nav fixed inset-x-0 top-0 z-40 w-full", className)}
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)

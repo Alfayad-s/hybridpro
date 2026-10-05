@@ -5,11 +5,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import type { ShopProduct } from "@/lib/shopCatalog";
-import { useShopCatalog } from "@/components/shop/ShopCatalogProvider";
+import { useShopCatalog, type ShopPromo } from "@/components/shop/ShopCatalogProvider";
 import { ProductSheet } from "@/components/shop/ProductSheet";
 import { ShopBannerStack } from "@/components/shop/ShopBannerStack";
 import { useCart } from "@/components/shop/CartProvider";
-import { SAVED_ARRIVE_EVENT, ShopBottomNav } from "@/components/shop/ShopBottomNav";
+import {
+  CART_ARRIVE_EVENT,
+  SAVED_ARRIVE_EVENT,
+  ShopBottomNav,
+} from "@/components/shop/ShopBottomNav";
 import { AnimatePresence, motion } from "framer-motion";
 import { Heart, X } from "lucide-react";
 import { useWishlist } from "@/components/shop/WishlistProvider";
@@ -19,6 +23,12 @@ export default function ShopSection() {
   const catalog = useShopCatalog();
   const [category, setCategory] = useState("all");
   const [openSlug, setOpenSlug] = useState<string | null>(null);
+
+  const comingSoonTab = catalog.categories.some(
+    (item) => item.slug === category && item.comingSoon,
+  );
+  const comingSoonLabel =
+    catalog.categories.find((item) => item.slug === category)?.label ?? "Coming soon";
 
   const products = useMemo(
     () =>
@@ -35,7 +45,7 @@ export default function ShopSection() {
       className="relative scroll-mt-24 bg-[var(--background)] px-4 pt-24 pb-8 sm:px-6 sm:pt-28 md:px-8 lg:px-10"
     >
       <div className="w-full">
-        <ShopBannerStack onSelect={setCategory} />
+        <ShopBannerStack banners={catalog.banners} onSelect={setCategory} />
 
         <div className="mt-6 grid w-full items-start gap-8 lg:mt-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
           <div className="sticky top-[calc(3.6rem+env(safe-area-inset-top,0px))] z-30 -mx-4 bg-[var(--background)] px-4 py-3 lg:hidden">
@@ -114,14 +124,17 @@ export default function ShopSection() {
 
           {catalog.error ? (
             <p className="text-sm text-[color:var(--muted)]">{catalog.error}</p>
-          ) : catalog.ready ? (
+          ) : !catalog.ready ? (
+            <p className="text-sm text-[color:var(--muted)]">Loading the shop…</p>
+          ) : comingSoonTab ? (
+            <ComingSoonPanel label={comingSoonLabel} />
+          ) : (
             <ProductMasonry
               products={products}
+              offers={catalog.cardPromos}
               onOpen={setOpenSlug}
               onOffer={setCategory}
             />
-          ) : (
-            <p className="text-sm text-[color:var(--muted)]">Loading the shop…</p>
           )}
         </div>
       </div>
@@ -148,31 +161,26 @@ function columnCount(width: number) {
   return 2;
 }
 
-const offerCards: {
-  src: string;
-  alt: string;
-  category: string;
-}[] = [
-  {
-    src: "/shop/masonry-guides-offer.jpg",
-    alt: "E-Books from ₹599",
-    category: "ebooks",
-  },
-];
-
 type MasonryTile =
   | { kind: "product"; product: ShopProduct }
-  | { kind: "offer"; src: string; alt: string; category: string };
+  | { kind: "offer"; id: string; src: string; alt: string; category: string };
 
-function masonryTiles(products: ShopProduct[]): MasonryTile[] {
+function masonryTiles(products: ShopProduct[], offers: ShopPromo[]): MasonryTile[] {
   const tiles: MasonryTile[] = [];
   let offerIndex = 0;
   products.forEach((product, index) => {
     tiles.push({ kind: "product", product });
-    if ((index + 1) % 4 === 0 && offerIndex < offerCards.length) {
-      const offer = offerCards[offerIndex];
+    if ((index + 1) % 4 === 0 && offerIndex < offers.length) {
+      const offer = offers[offerIndex];
       offerIndex += 1;
-      tiles.push({ kind: "offer", ...offer });
+      if (!offer) return;
+      tiles.push({
+        kind: "offer",
+        id: offer.id,
+        src: offer.image,
+        alt: offer.alt,
+        category: offer.category,
+      });
     }
   });
   return tiles;
@@ -180,10 +188,12 @@ function masonryTiles(products: ShopProduct[]): MasonryTile[] {
 
 function ProductMasonry({
   products,
+  offers,
   onOpen,
   onOffer,
 }: {
   products: ShopProduct[];
+  offers: ShopPromo[];
   onOpen: (slug: string) => void;
   onOffer: (category: string) => void;
 }) {
@@ -196,7 +206,7 @@ function ProductMasonry({
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  const tiles = masonryTiles(products);
+  const tiles = masonryTiles(products, offers);
   const lanes = Array.from({ length: columns }, () => [] as MasonryTile[]);
   tiles.forEach((tile, index) => {
     lanes[index % columns].push(tile);
@@ -219,10 +229,12 @@ function ProductMasonry({
               />
             ) : (
               <OfferCard
-                key={tile.src}
+                key={tile.id}
                 src={tile.src}
                 alt={tile.alt}
-                onClick={() => onOffer(tile.category)}
+                onClick={() => {
+                  if (tile.category) onOffer(tile.category);
+                }}
               />
             ),
           )}
@@ -253,6 +265,28 @@ function OfferCard({
   );
 }
 
+function ComingSoonPanel({ label }: { label: string }) {
+  return (
+    <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[28px] border border-[color:var(--border)] bg-[var(--card)] px-6 py-16 text-center">
+      <p
+        className="text-[0.7rem] tracking-[0.32em] uppercase"
+        style={{ color: FLUORO_GREEN }}
+      >
+        {label}
+      </p>
+      <h2
+        className="mt-3 text-6xl leading-none uppercase sm:text-7xl"
+        style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+      >
+        Coming soon
+      </h2>
+      <p className="mt-4 max-w-sm text-sm leading-relaxed text-[color:var(--muted)]">
+        This collection is on the way. Check back soon.
+      </p>
+    </div>
+  );
+}
+
 function ProductCard({
   product,
   index,
@@ -280,6 +314,11 @@ function ProductCard({
             className="object-contain p-3 sm:p-6"
           />
           <SaveButton slug={product.slug} imageRef={imageRef} />
+          {product.comingSoon ? (
+            <span className="absolute top-2 left-2 rounded-full bg-black/80 px-2.5 py-1 text-[0.6rem] font-semibold tracking-[0.14em] text-white uppercase">
+              Coming soon
+            </span>
+          ) : null}
         </div>
         <div className="flex flex-1 flex-col pt-3 sm:pt-4">
           {product.subtitle !== "Available sizes" ? (
@@ -397,14 +436,7 @@ function flyProductToCart(from: HTMLElement) {
   const fab = document.getElementById("shop-cart-fab");
   if (!fab) return;
   flyProductImage(from, fab, () => {
-    document.getElementById("shop-cart-fab")?.animate(
-      [
-        { transform: "scale(1)" },
-        { transform: "scale(1.16)" },
-        { transform: "scale(1)" },
-      ],
-      { duration: 280 },
-    );
+    window.dispatchEvent(new Event(CART_ARRIVE_EVENT));
   });
 }
 
@@ -438,7 +470,11 @@ function ProductBuy({
       >
         {product.priceLabel}
       </p>
-      {!needsSize && inCart ? (
+      {product.comingSoon ? (
+        <p className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[color:var(--border)] px-3 py-2 text-[0.7rem] font-semibold tracking-[0.12em] text-[color:var(--muted)] uppercase sm:py-2.5 sm:text-xs">
+          Coming soon
+        </p>
+      ) : !needsSize && inCart ? (
         <Link
           href="/shop/cart"
           className="mt-3 inline-flex w-full items-center justify-center rounded-full px-3 py-2 text-[0.7rem] font-semibold text-black sm:py-2.5 sm:text-xs"

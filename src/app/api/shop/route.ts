@@ -14,7 +14,26 @@ type ShopApiProduct = {
   pricePaise?: number | null;
   image?: string | null;
   sizes?: string[];
+  comingSoon?: boolean;
 };
+
+type ShopApiPromo = {
+  id: string;
+  image?: string | null;
+  alt?: string;
+  label?: string;
+  category?: string;
+};
+
+function toShopPromo(promo: ShopApiPromo) {
+  return {
+    id: promo.id,
+    image: shopImageSrc(promo.image),
+    alt: promo.alt ?? "",
+    label: promo.label ?? "",
+    category: promo.category ?? "",
+  };
+}
 
 function toShopProduct(product: ShopApiProduct): ShopProduct {
   return {
@@ -26,6 +45,7 @@ function toShopProduct(product: ShopApiProduct): ShopProduct {
     priceLabel: product.priceLabel,
     image: shopImageSrc(product.image),
     sizes: product.sizes?.length ? product.sizes : undefined,
+    comingSoon: Boolean(product.comingSoon),
   };
 }
 
@@ -41,12 +61,20 @@ export async function GET() {
       );
     }
     const data = (await res.json()) as {
-      categories?: { slug: string; label: string }[];
+      categories?: { slug: string; label: string; comingSoon?: boolean }[];
       products?: ShopApiProduct[];
+      banners?: ShopApiPromo[];
+      cardPromos?: ShopApiPromo[];
     };
     return NextResponse.json({
-      categories: data.categories ?? [],
+      categories: (data.categories ?? []).map((item) => ({
+        slug: item.slug,
+        label: item.label,
+        comingSoon: Boolean(item.comingSoon),
+      })),
       products: (data.products ?? []).map(toShopProduct),
+      banners: (data.banners ?? []).map(toShopPromo),
+      cardPromos: (data.cardPromos ?? []).map(toShopPromo),
     });
   } catch {
     return NextResponse.json(

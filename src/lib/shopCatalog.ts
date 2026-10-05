@@ -10,6 +10,7 @@ export type ShopProduct = {
   image: string;
   images?: string[];
   sizes?: string[];
+  comingSoon?: boolean;
 };
 
 export function productImages(product: ShopProduct) {
@@ -21,6 +22,7 @@ export function productImages(product: ShopProduct) {
 export function shopImageSrc(imageUrl: string | null | undefined) {
   if (!imageUrl) return "/shop/ebook-3d.png";
   if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+  if (imageUrl.startsWith("/") && !imageUrl.includes("..")) return imageUrl;
   const asset = imageUrl.startsWith("asset:") ? imageUrl.slice("asset:".length) : imageUrl;
   const file = asset.replace(/^assets\/store\//, "");
   if (file && !file.includes("/") && !file.includes("..")) return `/shop/${file}`;

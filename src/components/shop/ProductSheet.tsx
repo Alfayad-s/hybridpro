@@ -2,14 +2,25 @@
 
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import { useCart } from "@/components/shop/CartProvider";
+import {
+  CART_ARRIVE_EVENT,
+  SAVED_ARRIVE_EVENT,
+} from "@/components/shop/ShopBottomNav";
 import { useWishlist } from "@/components/shop/WishlistProvider";
 import { useShopCatalog } from "@/components/shop/ShopCatalogProvider";
 import { productImages, type ShopProduct } from "@/lib/shopCatalog";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  useDragControls,
+  useMotionValue,
+} from "framer-motion";
 import { Heart, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
+import { createPortal } from "react-dom";
 
 const sheetSpring = {
   type: "spring" as const,
@@ -25,24 +36,34 @@ export function ProductSheet({
   product: ShopProduct | null;
   onClose: () => void;
 }) {
+  const [host, setHost] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setHost(document.body);
+  }, []);
+
   useEffect(() => {
     if (!product) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.body.dataset.productSheet = "open";
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = previous;
+      delete document.body.dataset.productSheet;
       window.removeEventListener("keydown", onKey);
     };
   }, [product, onClose]);
 
-  return (
+  if (!host) return null;
+
+  return createPortal(
     <AnimatePresence>
       {product ? (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[100]">
           <motion.button
             type="button"
             aria-label="Close product details"
@@ -53,30 +74,103 @@ export function ProductSheet({
             transition={{ duration: 0.25 }}
             onClick={onClose}
           />
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label={product.title}
-            className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-[var(--background)] shadow-[0_-16px_50px_rgba(0,0,0,0.28)]"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={sheetSpring}
-          >
-            <SheetBody product={product} onClose={onClose} />
-          </motion.div>
+          <SheetPanel product={product} onClose={onClose} />
         </div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    host,
+  );
+}
+
+function SheetPanel({
+  product,
+  onClose,
+}: {
+  product: ShopProduct;
+  onClose: () => void;
+}) {
+  const controls = useDragControls();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const gesture = useRef({ x: 0, y: 0, active: false });
+  const y = useMotionValue(1000);
+  const closing = useRef(false);
+
+  useEffect(() => {
+    const animation = animate(y, 0, sheetSpring);
+    return () => animation.stop();
+  }, [y]);
+
+  const beginSwipe = (event: PointerEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("button, a, input, textarea")) return;
+    gesture.current = { x: event.clientX, y: event.clientY, active: true };
+  };
+
+  const followSwipe = (event: PointerEvent) => {
+    if (!gesture.current.active) return;
+    const dy = event.clientY - gesture.current.y;
+    const dx = event.clientX - gesture.current.x;
+    if (dy < 12 || Math.abs(dx) > dy) return;
+    const scroller = scrollRef.current;
+    if (
+      scroller &&
+      scroller.scrollTop > 1 &&
+      scroller.contains(event.target as Node)
+    ) {
+      return;
+    }
+    gesture.current.active = false;
+    controls.start(event);
+  };
+
+  return (
+    <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={product.title}
+      className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-[var(--background)] shadow-[0_-16px_50px_rgba(0,0,0,0.28)]"
+      style={{ y }}
+      drag="y"
+      dragControls={controls}
+      dragListener={false}
+      dragConstraints={{ top: 0 }}
+      dragElastic={0}
+      dragMomentum={false}
+      onPointerDown={beginSwipe}
+      onPointerMove={followSwipe}
+      onPointerUp={() => {
+        gesture.current.active = false;
+      }}
+      onPointerCancel={() => {
+        gesture.current.active = false;
+      }}
+      onDragEnd={(_, info) => {
+        if (closing.current) return;
+        const shouldClose = info.offset.y > 90 || info.velocity.y > 700;
+        if (shouldClose) {
+          closing.current = true;
+          void animate(y, window.innerHeight, {
+            duration: 0.28,
+            ease: [0.22, 1, 0.36, 1],
+          }).then(onClose);
+          return;
+        }
+        void animate(y, 0, sheetSpring);
+      }}
+    >
+      <SheetBody product={product} onClose={onClose} scrollRef={scrollRef} />
+    </motion.div>
   );
 }
 
 function SheetBody({
   product,
   onClose,
+  scrollRef,
 }: {
   product: ShopProduct;
   onClose: () => void;
+  scrollRef: RefObject<HTMLDivElement | null>;
 }) {
   const cart = useCart();
   const wishlist = useWishlist();
@@ -90,19 +184,10 @@ function SheetBody({
   const category =
     catalog.categories.find((item) => item.slug === product.category)?.label ??
     product.category;
-  const drag = useRef(0);
 
   return (
     <>
-      <div
-        className="flex shrink-0 cursor-grab touch-none justify-center pt-3 pb-1"
-        onPointerDown={(event) => {
-          drag.current = event.clientY;
-        }}
-        onPointerUp={(event) => {
-          if (event.clientY - drag.current > 72) onClose();
-        }}
-      >
+      <div className="flex shrink-0 cursor-grab touch-none justify-center pt-3 pb-2">
         <span className="h-1.5 w-10 rounded-full bg-[var(--border)]" />
       </div>
       <button
@@ -113,9 +198,17 @@ function SheetBody({
       >
         <X size={18} />
       </button>
-      <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         <ImageCarousel images={images} title={product.title} />
         <div className="px-5 pt-5 pb-8">
+          {product.comingSoon ? (
+            <p className="text-[0.65rem] font-semibold tracking-[0.28em] text-[#ff3b30] uppercase">
+              Coming soon
+            </p>
+          ) : null}
           <p
             className="text-[0.65rem] tracking-[0.28em] uppercase"
             style={{ color: FLUORO_GREEN }}
@@ -137,7 +230,11 @@ function SheetBody({
                   ? `Remove from wishlist, ${wishlist.items.length} saved`
                   : `Save to wishlist, ${wishlist.items.length} saved`
               }
-              onClick={() => wishlist.toggle(product.slug)}
+              onClick={() => {
+                const adding = !wishlist.has(product.slug);
+                wishlist.toggle(product.slug);
+                if (adding) window.dispatchEvent(new Event(SAVED_ARRIVE_EVENT));
+              }}
               className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[color:var(--border)]"
             >
               <Heart
@@ -190,7 +287,11 @@ function SheetBody({
               Instant download after payment. No shipping.
             </p>
           )}
-          {inCart ? (
+          {product.comingSoon ? (
+            <p className="mt-6 inline-flex w-full items-center justify-center rounded-full border border-[color:var(--border)] px-6 py-3.5 text-sm font-bold tracking-[0.12em] text-[color:var(--muted)] uppercase">
+              Coming soon
+            </p>
+          ) : inCart ? (
             <Link
               href="/shop/cart"
               className="mt-6 inline-flex w-full items-center justify-center rounded-full px-6 py-3.5 text-sm font-bold text-black"
@@ -201,7 +302,10 @@ function SheetBody({
           ) : (
             <button
               type="button"
-              onClick={() => cart.add(product.slug, size)}
+              onClick={() => {
+                cart.add(product.slug, size);
+                window.dispatchEvent(new Event(CART_ARRIVE_EVENT));
+              }}
               className="mt-6 inline-flex w-full items-center justify-center rounded-full px-6 py-3.5 text-sm font-bold text-black"
               style={{ background: FLUORO_GREEN }}
             >

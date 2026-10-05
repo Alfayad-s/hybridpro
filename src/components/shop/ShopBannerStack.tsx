@@ -1,29 +1,10 @@
 "use client";
 
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
+import type { ShopPromo } from "@/components/shop/ShopCatalogProvider";
 import type { ShopCategory } from "@/lib/shopCatalog";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-
-const banners: {
-  src: string;
-  alt: string;
-  label: string;
-  category: ShopCategory;
-}[] = [
-  {
-    src: "/shop/banner-guides-offer.jpg",
-    alt: "Hybrid Pro e-books from ₹599",
-    label: "E-Books",
-    category: "ebooks",
-  },
-  {
-    src: "/shop/banner-guides-light.jpg",
-    alt: "Hybrid Pro playbook from ₹599",
-    label: "E-Books",
-    category: "ebooks",
-  },
-];
 
 const sensitivity = 72;
 const autoplayMs = 3200;
@@ -33,8 +14,27 @@ function easeOutCubic(t: number) {
 }
 
 export function ShopBannerStack({
+  banners,
   onSelect,
 }: {
+  banners: ShopPromo[];
+  onSelect: (category: ShopCategory) => void;
+}) {
+  if (banners.length === 0) return null;
+  return (
+    <BannerStack
+      key={banners.map((item) => item.id).join("|")}
+      banners={banners}
+      onSelect={onSelect}
+    />
+  );
+}
+
+function BannerStack({
+  banners,
+  onSelect,
+}: {
+  banners: ShopPromo[];
   onSelect: (category: ShopCategory) => void;
 }) {
   const [order, setOrder] = useState(() =>
@@ -141,6 +141,7 @@ export function ShopBannerStack({
           const rotate = depth * 4;
           const lift = isTop ? 0 : promote * (baseDepth === 1 ? 4 : 2);
           const item = banners[slideIndex];
+          if (!item) return null;
           const shown = depth <= 2;
           const opacity = !shown
             ? 0
@@ -149,7 +150,7 @@ export function ShopBannerStack({
               : 1;
           return (
             <div
-              key={item.src}
+              key={item.id}
               className="absolute top-4 left-1/2 h-[168px] w-[92%] max-w-[560px]"
                 style={{
                 transform: `translate(calc(-50% + ${isTop ? drag.x : 0}px), ${isTop ? drag.y - lift : -lift}px) rotate(${rotate}deg) scale(${scale})`,
@@ -160,7 +161,7 @@ export function ShopBannerStack({
             >
               <button
                 type="button"
-                aria-label={`Show ${item.label}`}
+                aria-label={`Show ${item.label || item.alt}`}
                 className="relative h-full w-full overflow-hidden rounded-[28px] shadow-[0_12px_28px_rgba(0,0,0,0.28)]"
                 style={{ touchAction: "pan-y" }}
                 onPointerDown={(event) => {
@@ -193,7 +194,7 @@ export function ShopBannerStack({
                   const offset = dragRef.current;
                   const distance = Math.hypot(offset.x, offset.y);
                   if (distance < 8) {
-                    onSelect(item.category);
+                    if (item.category) onSelect(item.category);
                     pauseThenContinue();
                     return;
                   }
@@ -216,7 +217,7 @@ export function ShopBannerStack({
                 }}
               >
                 <Image
-                  src={item.src}
+                  src={item.image}
                   alt={item.alt}
                   fill
                   priority={slideIndex === 0}
@@ -232,7 +233,7 @@ export function ShopBannerStack({
       <div className="mt-1 flex justify-center gap-1.5">
         {banners.map((item, index) => (
           <span
-            key={item.src}
+            key={item.id}
             className="h-1.5 rounded-full transition-all duration-200"
             style={{
               width: front === index ? 18 : 6,

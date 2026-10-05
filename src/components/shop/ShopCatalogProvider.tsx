@@ -10,13 +10,27 @@ import {
   type ReactNode,
 } from "react";
 
-type ShopCategoryItem = { slug: ShopCategory | "all"; label: string };
+type ShopCategoryItem = {
+  slug: ShopCategory | "all";
+  label: string;
+  comingSoon?: boolean;
+};
+
+export type ShopPromo = {
+  id: string;
+  image: string;
+  alt: string;
+  label: string;
+  category: string;
+};
 
 type ShopCatalogValue = {
   ready: boolean;
   error: string | null;
   products: ShopProduct[];
   categories: ShopCategoryItem[];
+  banners: ShopPromo[];
+  cardPromos: ShopPromo[];
   getProduct: (slug: string) => ShopProduct | null;
 };
 
@@ -24,6 +38,8 @@ const ShopCatalogContext = createContext<ShopCatalogValue | null>(null);
 
 export function ShopCatalogProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<ShopProduct[]>([]);
+  const [banners, setBanners] = useState<ShopPromo[]>([]);
+  const [cardPromos, setCardPromos] = useState<ShopPromo[]>([]);
   const [categories, setCategories] = useState<ShopCategoryItem[]>([
     { slug: "all", label: "All" },
   ]);
@@ -36,17 +52,22 @@ export function ShopCatalogProvider({ children }: { children: ReactNode }) {
       .then(async (res) => {
         const data = (await res.json()) as {
           error?: string;
-          categories?: { slug: string; label: string }[];
+          categories?: { slug: string; label: string; comingSoon?: boolean }[];
           products?: ShopProduct[];
+          banners?: ShopPromo[];
+          cardPromos?: ShopPromo[];
         };
         if (!res.ok) throw new Error(data.error || "Shop catalog is unavailable");
         if (cancelled) return;
         setProducts(data.products ?? []);
+        setBanners(data.banners ?? []);
+        setCardPromos(data.cardPromos ?? []);
         setCategories([
           { slug: "all", label: "All" },
           ...(data.categories ?? []).map((item) => ({
             slug: item.slug as ShopCategory,
             label: item.label,
+            comingSoon: Boolean(item.comingSoon),
           })),
         ]);
         setError(null);
@@ -69,10 +90,12 @@ export function ShopCatalogProvider({ children }: { children: ReactNode }) {
       error,
       products,
       categories,
+      banners,
+      cardPromos,
       getProduct: (slug: string) =>
         products.find((product) => product.slug === slug) ?? null,
     };
-  }, [categories, error, products, ready]);
+  }, [banners, cardPromos, categories, error, products, ready]);
 
   return (
     <ShopCatalogContext.Provider value={value}>

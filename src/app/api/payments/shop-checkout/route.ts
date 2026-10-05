@@ -15,9 +15,12 @@ type ItemBody = {
 
 type Body = {
   email?: string;
+  fullName?: string;
   firstName?: string;
   lastName?: string;
   mobile?: string;
+  floor?: string;
+  mapAddress?: string;
   address?: string;
   city?: string;
   pincode?: string;
@@ -40,6 +43,7 @@ async function loadShopProduct(slug: string): Promise<ShopProduct | null> {
       priceLabel: string;
       image?: string | null;
       sizes?: string[];
+      comingSoon?: boolean;
     };
   };
   const product = data.product;
@@ -53,6 +57,7 @@ async function loadShopProduct(slug: string): Promise<ShopProduct | null> {
     priceLabel: product.priceLabel,
     image: shopImageSrc(product.image),
     sizes: product.sizes?.length ? product.sizes : undefined,
+    comingSoon: Boolean(product.comingSoon),
   };
 }
 
@@ -75,10 +80,13 @@ export async function POST(request: Request) {
   }
 
   const email = body.email?.trim() || "";
-  const firstName = body.firstName?.trim() || "";
-  const lastName = body.lastName?.trim() || undefined;
+  const fullName = (body.fullName || body.firstName || "").trim();
+  const nameParts = fullName.split(/\s+/).filter(Boolean);
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ") || body.lastName?.trim() || undefined;
   const mobile = (body.mobile || "").replace(/\D/g, "");
-  const address = body.address?.trim() || "";
+  const floor = body.floor?.trim() || "";
+  const mapAddress = (body.mapAddress || body.address || "").trim();
   const city = body.city?.trim() || "";
   const pincode = (body.pincode || "").replace(/\D/g, "");
 
@@ -109,6 +117,12 @@ export async function POST(request: Request) {
     if (!product || qty < 1 || qty > 10) {
       return NextResponse.json({ error: "A cart item is not valid" }, { status: 400 });
     }
+    if (product.comingSoon) {
+      return NextResponse.json(
+        { error: `${product.title} is coming soon` },
+        { status: 400 },
+      );
+    }
     if (product.sizes?.length && !product.sizes.includes(size)) {
       return NextResponse.json(
         { error: `Choose a size for ${product.title}` },
@@ -124,9 +138,12 @@ export async function POST(request: Request) {
     });
   }
 
-  if (needsShipping && (!address || !city || pincode.length !== 6)) {
+  if (needsShipping && (!floor || !mapAddress || !city || pincode.length !== 6)) {
     return NextResponse.json(
-      { error: "A delivery address and 6-digit PIN code are required" },
+      {
+        error:
+          "Pin a delivery location on the map, including a 6-digit PIN code, and add the floor or building.",
+      },
       { status: 400 },
     );
   }
@@ -159,7 +176,7 @@ export async function POST(request: Request) {
         kind: "shop",
         items: summary,
         ...(needsShipping
-          ? { ship_to: `${address}, ${city} ${pincode}`.slice(0, 180) }
+          ? { ship_to: `${floor}, ${mapAddress}`.slice(0, 180) }
           : {}),
       },
       successQuery: {

@@ -1,13 +1,19 @@
 "use client";
 
 import { useCart } from "@/components/shop/CartProvider";
+import {
+  CartIcon,
+  HeartIcon,
+  HouseIcon,
+  SearchIcon,
+} from "@/components/shop/ShopNavIcons";
 import { LayoutGroup, motion } from "framer-motion";
-import { Heart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export const SAVED_ARRIVE_EVENT = "shop-saved-arrive";
+export const CART_ARRIVE_EVENT = "shop-cart-arrive";
 
 const liquid = {
   type: "spring" as const,
@@ -29,32 +35,28 @@ export function ShopBottomNav() {
   const onSaved = pathname.startsWith("/shop/wishlist");
   const onCart = pathname.startsWith("/shop/cart");
   const [heartRed, setHeartRed] = useState(false);
+  const [housePlay, setHousePlay] = useState(0);
+  const [searchPlay, setSearchPlay] = useState(0);
+  const [heartPlay, setHeartPlay] = useState(0);
+  const [cartPlay, setCartPlay] = useState(0);
   const flash = useRef(0);
 
   useEffect(() => {
-    const onArrive = () => {
+    const onSaved = () => {
       const id = ++flash.current;
       setHeartRed(true);
-      const animation = document.getElementById("shop-saved-icon")?.animate(
-        [
-          { transform: "scale(1)" },
-          { transform: "scale(1.45)" },
-          { transform: "scale(0.82)" },
-          { transform: "scale(1.22)" },
-          { transform: "scale(1)" },
-        ],
-        { duration: 480, easing: "ease-out" },
-      );
-      const fadeRed = () => {
-        window.setTimeout(() => {
-          if (flash.current === id) setHeartRed(false);
-        }, 3000);
-      };
-      if (animation) animation.finished.then(fadeRed).catch(fadeRed);
-      else window.setTimeout(fadeRed, 480);
+      setHeartPlay((play) => play + 1);
+      window.setTimeout(() => {
+        if (flash.current === id) setHeartRed(false);
+      }, 1200 + 3000);
     };
-    window.addEventListener(SAVED_ARRIVE_EVENT, onArrive);
-    return () => window.removeEventListener(SAVED_ARRIVE_EVENT, onArrive);
+    const onCart = () => setCartPlay((play) => play + 1);
+    window.addEventListener(SAVED_ARRIVE_EVENT, onSaved);
+    window.addEventListener(CART_ARRIVE_EVENT, onCart);
+    return () => {
+      window.removeEventListener(SAVED_ARRIVE_EVENT, onSaved);
+      window.removeEventListener(CART_ARRIVE_EVENT, onCart);
+    };
   }, []);
 
   return (
@@ -72,18 +74,20 @@ export function ShopBottomNav() {
             <NavItem
               active={onShop}
               label="Home"
-              icon={<HomeIcon />}
+              icon={<HouseIcon play={housePlay} />}
               href="/shop"
-              onClick={
-                onShop
-                  ? () => window.scrollTo({ top: 0, behavior: "smooth" })
-                  : undefined
-              }
+              onClick={() => {
+                setHousePlay((play) => play + 1);
+                if (onShop) window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
             />
           </div>
           <div className="flex justify-center">
-            <IconButton label="Search">
-              <SearchIcon />
+            <IconButton
+              label="Search"
+              onClick={() => setSearchPlay((play) => play + 1)}
+            >
+              <SearchIcon play={searchPlay} />
             </IconButton>
           </div>
           <div className="flex justify-center">
@@ -92,14 +96,14 @@ export function ShopBottomNav() {
               label="Saved"
               iconId="shop-saved-icon"
               icon={
-                <Heart
-                  size={22}
-                  strokeWidth={2}
-                  fill={heartRed ? "#ff3b30" : "none"}
-                  style={{ color: heartRed ? "#ff3b30" : "currentColor" }}
+                <HeartIcon
+                  play={heartPlay}
+                  color={heartRed ? "#ff3b30" : "currentColor"}
+                  filled={heartRed}
                 />
               }
               href="/shop/wishlist"
+              onClick={() => setHeartPlay((play) => play + 1)}
             />
           </div>
         </div>
@@ -108,13 +112,14 @@ export function ShopBottomNav() {
           href="/shop/cart"
           aria-label={`Open cart, ${cart.count} items`}
           aria-current={onCart ? "page" : undefined}
+          onClick={() => setCartPlay((play) => play + 1)}
           className="relative flex h-16 min-w-16 shrink-0 items-center justify-center rounded-full text-[15px] font-semibold text-black shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
           style={glass}
         >
           {onCart ? <LiquidPill /> : null}
           <span className="relative z-10 flex items-center">
             <span className="grid h-16 w-14 place-items-center">
-              <CartIcon />
+              <CartIcon play={cartPlay} />
             </span>
             <motion.span
               initial={false}
@@ -159,7 +164,7 @@ function NavItem({
   icon: ReactNode;
   iconId?: string;
   href: string;
-  onClick?: () => void;
+  onClick: () => void;
 }) {
   const className = `relative flex h-11 items-center rounded-full text-[15px] font-semibold ${
     active ? "text-black" : "text-[#8e8e93]"
@@ -183,7 +188,7 @@ function NavItem({
       </motion.span>
     </>
   );
-  if (onClick) {
+  if (active && href === "/shop") {
     return (
       <button type="button" aria-current="page" onClick={onClick} className={className}>
         {body}
@@ -195,6 +200,7 @@ function NavItem({
       href={href}
       aria-label={label}
       aria-current={active ? "page" : undefined}
+      onClick={onClick}
       className={className}
     >
       {body}
@@ -204,64 +210,21 @@ function NavItem({
 
 function IconButton({
   label,
+  onClick,
   children,
 }: {
   label: string;
+  onClick: () => void;
   children: ReactNode;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
+      onClick={onClick}
       className="grid h-11 w-11 place-items-center text-[#8e8e93]"
     >
       {children}
     </button>
-  );
-}
-
-function HomeIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-      <path
-        fill="currentColor"
-        d="M12.4 3.3a1.2 1.2 0 0 0-1.5 0l-7.2 6.1A1.2 1.2 0 0 0 4.4 11H6v8.2c0 .7.5 1.3 1.2 1.3h3.2v-5.2h3.2V20.5h3.2c.7 0 1.2-.6 1.2-1.3V11h1.6a1.2 1.2 0 0 0 .8-2.1l-7.2-5.6Z"
-      />
-    </svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="10.5" cy="10.5" r="6" stroke="currentColor" strokeWidth="1.8" />
-      <path
-        d="M15.2 15.2 20 20"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function CartIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M6.2 7.2h13.2l-1.3 8.2H8L6.2 7.2Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6.2 7.2 5.2 4.8H3"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <circle cx="9.2" cy="18.6" r="1.2" fill="currentColor" />
-      <circle cx="16.4" cy="18.6" r="1.2" fill="currentColor" />
-    </svg>
   );
 }
