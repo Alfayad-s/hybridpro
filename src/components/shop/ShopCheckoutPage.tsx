@@ -23,7 +23,7 @@ export function ShopCheckoutPage() {
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
-    if (cart.needsShipping && (!floor.trim() || !pin?.address || pin.pincode.length !== 6)) {
+    if (!floor.trim() || !pin?.address || pin.pincode.length !== 6) {
       setError(
         "Pin a delivery location that includes a 6-digit PIN code, and add the floor or building.",
       );
@@ -135,8 +135,7 @@ export function ShopCheckoutPage() {
                 className="w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none"
               />
             </label>
-            {cart.needsShipping ? (
-              <>
+            <>
                 <label className="text-sm">
                   <span className="mb-1.5 block text-[color:var(--muted)]">
                     Floor, flat, or building
@@ -167,8 +166,7 @@ export function ShopCheckoutPage() {
                     </span>
                   ) : null}
                 </label>
-              </>
-            ) : null}
+            </>
             {error ? (
               <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600">
                 {error}

@@ -99,6 +99,7 @@ export function DeliveryPinMap({
   const onChangeRef = useRef(onChange);
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -152,8 +153,14 @@ export function DeliveryPinMap({
             if (cancelled) return;
             if (status !== "OK") {
               onChangeRef.current(null);
+              setHint(
+                status === "REQUEST_DENIED"
+                  ? "Google blocked the address lookup. Enable billing and the Geocoding API for this key."
+                  : "Could not read an address for this pin.",
+              );
               return;
             }
+            setHint(null);
             onChangeRef.current(readPin(results?.[0]));
           });
         };
@@ -219,6 +226,7 @@ export function DeliveryPinMap({
           <div ref={mapNode} className="h-64 w-full" />
         )}
       </div>
+      {hint ? <p className="text-sm text-red-600">{hint}</p> : null}
     </div>
   );
 }

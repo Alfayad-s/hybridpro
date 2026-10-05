@@ -109,7 +109,6 @@ export async function POST(request: Request) {
   }
 
   const lines: { title: string; size: string; qty: number; paise: number }[] = [];
-  let needsShipping = false;
   for (const item of requested) {
     const product = await loadShopProduct(item.slug || "");
     const qty = Math.floor(Number(item.qty) || 0);
@@ -129,7 +128,6 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-    if (product.category !== "ebooks") needsShipping = true;
     lines.push({
       title: product.title,
       size,
@@ -138,7 +136,7 @@ export async function POST(request: Request) {
     });
   }
 
-  if (needsShipping && (!floor || !mapAddress || !city || pincode.length !== 6)) {
+  if (!floor || !mapAddress || !city || pincode.length !== 6) {
     return NextResponse.json(
       {
         error:
@@ -175,9 +173,7 @@ export async function POST(request: Request) {
       metadata: {
         kind: "shop",
         items: summary,
-        ...(needsShipping
-          ? { ship_to: `${floor}, ${mapAddress}`.slice(0, 180) }
-          : {}),
+        ship_to: `${floor}, ${mapAddress}`.slice(0, 180),
       },
       successQuery: {
         plan: "shop",
