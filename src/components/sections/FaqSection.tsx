@@ -15,7 +15,7 @@ const faqs = [
   },
   {
     q: "What's the difference between Shop and Coaching?",
-    a: "Shop (coming soon) is one-time digital products, PDF training plans and ebooks you download yourself. Coaching is ongoing personalised support with check-ins, form reviews, and a coach in your corner.",
+    a: "Shop is Hybrid Pro tees, shorts, and digital training guides. Coaching is ongoing personalised support with check-ins, form reviews, and a coach in your corner.",
   },
   {
     q: "How fast will I see results?",
@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     q: "What if I need to pause?",
-    a: "You can pause or cancel your coaching plan at any time, no contracts, no cancellation calls. Digital shop purchases (when live) are one-time downloads.",
+    a: "You can pause or cancel your coaching plan at any time, no contracts, no cancellation calls. Shop guides are one-time downloads. Gear is a one-time purchase.",
   },
   {
     q: "Is nutrition included?",

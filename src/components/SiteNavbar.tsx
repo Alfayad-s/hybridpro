@@ -10,6 +10,7 @@ import {
 import StaggeredMenu from "@/components/ui/StaggeredMenu";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useTheme } from "@/components/ThemeProvider";
+import { useCart } from "@/components/shop/CartProvider";
 import { usePathname } from "next/navigation";
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
   { name: "About", link: "#about" },
   { name: "Programs", link: "/programs" },
   { name: "Coaching", link: "/coaching" },
+  { name: "Shop", link: "/shop" },
   { name: "Nutrition", link: "#nutrition" },
   { name: "App", link: "/app" },
   { name: "Pricing", link: "/pricing" },
@@ -33,6 +35,8 @@ const staggeredItems = [
   { label: "About", ariaLabel: "Learn about us", link: "#about" },
   { label: "Programs", ariaLabel: "See training programs", link: "/programs" },
   { label: "Coaching", ariaLabel: "How coaching works", link: "/coaching" },
+  { label: "Shop", ariaLabel: "Open the Hybrid Pro shop", link: "/shop" },
+  { label: "Cart", ariaLabel: "Open your shop cart", link: "/shop/cart" },
   {
     label: "Nutrition",
     ariaLabel: "Nutrition and meal planning",
@@ -65,6 +69,7 @@ export default function SiteNavbar() {
   const pathname = usePathname();
   const brandGreen = theme === "dark" ? "#A6FF00" : "#93E200";
   const onHome = pathname === "/";
+  const cart = useCart();
 
   const desktopNavItems = navItems.map((item) => ({
     ...item,
@@ -73,6 +78,10 @@ export default function SiteNavbar() {
 
   const mobileItems = staggeredItems.map((item) => ({
     ...item,
+    label:
+      item.link === "/shop/cart" && cart.count > 0
+        ? `Cart (${cart.count})`
+        : item.label,
     link: resolveNavLink(item.link, onHome),
   }));
 
@@ -119,7 +128,10 @@ export default function SiteNavbar() {
         <NavBody>
           <NavbarLogo />
           <NavItems items={desktopNavItems} />
-          <div className="relative z-20 flex shrink-0 items-center">
+          <div className="relative z-20 flex shrink-0 items-center gap-2">
+            <NavbarButton href="/shop/cart" variant="dark" className="px-4 py-2">
+              Cart{cart.count > 0 ? ` ${cart.count}` : ""}
+            </NavbarButton>
             <NavbarButton
               href={resolveNavLink("#contact", onHome)}
               variant="primary"

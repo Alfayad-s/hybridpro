@@ -76,6 +76,17 @@ async function handle(request: NextRequest, extra?: Record<string, unknown>) {
     params.status.toLowerCase() === "failed" ||
     params.status.toLowerCase() === "failure" ||
     params.status.toLowerCase() === "cancelled";
+  const shopOrder = params.plan === "shop" || params.ref.startsWith("shop-");
+
+  if (shopOrder) {
+    return NextResponse.redirect(
+      websiteUrl(failed ? "/payment/failure" : "/payment/success", {
+        ...params,
+        plan: "shop",
+      }),
+      303,
+    );
+  }
 
   if (failed) {
     return NextResponse.redirect(websiteUrl("/payment/failure", params), 303);

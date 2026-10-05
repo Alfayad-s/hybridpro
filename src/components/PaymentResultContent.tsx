@@ -4,6 +4,7 @@ import BrandLogo from "@/components/BrandLogo";
 import SiteNavbar from "@/components/SiteNavbar";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
+import { useCart } from "@/components/shop/CartProvider";
 import { GYM_APP_URL } from "@/lib/gymApp";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -71,6 +72,8 @@ function SuccessBody() {
   const planId = params.get("plan");
   const userId = params.get("userId");
   const merchantOrderReference = params.get("ref");
+  const isShop = planId === "shop";
+  const { clear: clearCart } = useCart();
   const alreadyActivated = params.get("activated") === "1";
   const fromFlutterApp =
     params.get("source") === "flutter" ||
@@ -88,6 +91,14 @@ function SuccessBody() {
   const [unlockedEmail, setUnlockedEmail] = useState(email);
 
   useEffect(() => {
+    if (isShop) {
+      setState("ok");
+      setMessage(
+        "Pine Labs accepted this shop payment. We'll use the email and delivery details from checkout.",
+      );
+      clearCart();
+      return;
+    }
     if (alreadyActivated) {
       setState("ok");
       return;
@@ -166,7 +177,7 @@ function SuccessBody() {
     return () => {
       cancelled = true;
     };
-  }, [alreadyActivated, email, merchantOrderReference, orderId, planId, userId]);
+  }, [alreadyActivated, clearCart, email, isShop, merchantOrderReference, orderId, planId, userId]);
 
   const appHomeUrl = fromFlutterApp
     ? `in.hybridpro.app://checkout-callback?welcome=1${
@@ -182,13 +193,13 @@ function SuccessBody() {
 
   // Always bounce back into the native app after activation (WebView + Safari).
   useEffect(() => {
-    if (state !== "ok") return;
+    if (isShop || state !== "ok") return;
     const delay = fromFlutterApp ? 700 : 1600;
     const timer = window.setTimeout(() => {
       window.location.assign(appHomeUrl);
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [appHomeUrl, fromFlutterApp, state]);
+  }, [appHomeUrl, fromFlutterApp, isShop, state]);
 
   return (
     <div className="mx-auto flex min-h-[70dvh] max-w-lg flex-col items-center justify-center px-5 py-28 text-center">
@@ -216,7 +227,13 @@ function SuccessBody() {
         className="mt-3 text-4xl uppercase tracking-[0.02em] sm:text-5xl"
         style={{ fontFamily: "var(--font-bebas), sans-serif" }}
       >
-        {state === "ok" ? "Welcome to Hybrid Pro" : state === "loading" ? "One moment" : "Almost there"}
+        {isShop && state === "ok"
+          ? "Shop order paid"
+          : state === "ok"
+            ? "Welcome to Hybrid Pro"
+            : state === "loading"
+              ? "One moment"
+              : "Almost there"}
       </h1>
       <p className="mt-4 text-[color:var(--muted)]">{message}</p>
       {planName && state === "ok" && (
@@ -228,13 +245,23 @@ function SuccessBody() {
         </p>
       )}
       <div className="mt-10 flex flex-wrap justify-center gap-3">
-        <a
-          href={appHomeUrl}
-          className="inline-flex rounded-full px-6 py-3 text-sm font-bold text-black"
-          style={{ background: FLUORO_GREEN }}
-        >
-          Open Hybrid Pro app
-        </a>
+        {isShop ? (
+          <Link
+            href="/shop"
+            className="inline-flex rounded-full px-6 py-3 text-sm font-bold text-black"
+            style={{ background: FLUORO_GREEN }}
+          >
+            Back to shop
+          </Link>
+        ) : (
+          <a
+            href={appHomeUrl}
+            className="inline-flex rounded-full px-6 py-3 text-sm font-bold text-black"
+            style={{ background: FLUORO_GREEN }}
+          >
+            Open Hybrid Pro app
+          </a>
+        )}
         <Link
           href="/#contact"
           className="inline-flex rounded-full border border-[color:var(--border)] px-6 py-3 text-sm font-semibold"
