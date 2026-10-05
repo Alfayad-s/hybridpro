@@ -52,6 +52,15 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   // Required for Next.js 16 when a webpack plugin (next-pwa) is present.
   turbopack: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/dxfj2ocp/image/upload/**",
+      },
+    ],
+  },
   async headers() {
     return [
       {

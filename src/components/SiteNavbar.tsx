@@ -69,6 +69,7 @@ export default function SiteNavbar() {
   const pathname = usePathname();
   const brandGreen = theme === "dark" ? "#A6FF00" : "#93E200";
   const onHome = pathname === "/";
+  const pinHeader = pathname === "/shop";
   const cart = useCart();
 
   const desktopNavItems = navItems.map((item) => ({
@@ -98,6 +99,7 @@ export default function SiteNavbar() {
     return (
       <StaggeredMenu
         isFixed
+        hideOnScroll={!pinHeader}
         position="right"
         items={mobileItems}
         socialItems={socialItems}
@@ -122,6 +124,7 @@ export default function SiteNavbar() {
         // Home hero video is dark: use dark glass nav until About, then normal pill.
         // Other pages keep the solid active pill.
         alwaysScrolled={!onHome}
+        hideOnScroll={!pinHeader}
         shrinkOnSectionId={onHome ? "about" : undefined}
         darkHero={onHome}
       >

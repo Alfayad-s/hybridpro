@@ -22,6 +22,8 @@ interface NavbarProps {
   lightHero?: boolean;
   /** Dark video/hero behind nav — dark glass + light links before pill appears */
   darkHero?: boolean;
+  /** When false, the bar stays visible while the page scrolls. */
+  hideOnScroll?: boolean;
 }
 
 interface NavBodyProps {
@@ -68,10 +70,11 @@ export const Navbar = ({
   alwaysScrolled = false,
   lightHero = false,
   darkHero = false,
+  hideOnScroll = true,
 }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(alwaysScrolled);
-  const hidden = useScrollHideNav();
+  const hidden = useScrollHideNav({ enabled: hideOnScroll });
 
   useEffect(() => {
     if (alwaysScrolled) {

@@ -1,5 +1,6 @@
+import { getShopBackendUrl } from "@/lib/hybridAppApi";
 import { createPineLabsCheckout, isPineLabsConfigured } from "@/lib/pinelabs";
-import { getShopProduct, shopPricePaise } from "@/lib/shopCatalog";
+import { shopImageSrc, shopPricePaise, type ShopProduct } from "@/lib/shopCatalog";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
@@ -22,6 +23,38 @@ type Body = {
   pincode?: string;
   items?: ItemBody[];
 };
+
+async function loadShopProduct(slug: string): Promise<ShopProduct | null> {
+  const res = await fetch(
+    `${getShopBackendUrl()}/api/shop/products/${encodeURIComponent(slug)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return null;
+  const data = (await res.json()) as {
+    product?: {
+      slug: string;
+      title: string;
+      subtitle?: string;
+      description?: string;
+      category: string;
+      priceLabel: string;
+      image?: string | null;
+      sizes?: string[];
+    };
+  };
+  const product = data.product;
+  if (!product?.slug) return null;
+  return {
+    slug: product.slug,
+    title: product.title,
+    subtitle: product.subtitle ?? "",
+    description: product.description ?? "",
+    category: product.category,
+    priceLabel: product.priceLabel,
+    image: shopImageSrc(product.image),
+    sizes: product.sizes?.length ? product.sizes : undefined,
+  };
+}
 
 export async function POST(request: Request) {
   if (!isPineLabsConfigured()) {
@@ -70,7 +103,7 @@ export async function POST(request: Request) {
   const lines: { title: string; size: string; qty: number; paise: number }[] = [];
   let needsShipping = false;
   for (const item of requested) {
-    const product = getShopProduct(item.slug || "");
+    const product = await loadShopProduct(item.slug || "");
     const qty = Math.floor(Number(item.qty) || 0);
     const size = (item.size || "").trim();
     if (!product || qty < 1 || qty > 10) {

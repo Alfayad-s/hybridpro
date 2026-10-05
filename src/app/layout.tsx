@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Great_Vibes, Outfit } from "next/font/google";
 import { CartProvider } from "@/components/shop/CartProvider";
+import { ShopCatalogProvider } from "@/components/shop/ShopCatalogProvider";
 import { WishlistProvider } from "@/components/shop/WishlistProvider";
 import SplashScreen from "@/components/SplashScreen";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -88,12 +89,14 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]">
         <ThemeProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <SplashScreen />
-              {children}
-            </WishlistProvider>
-          </CartProvider>
+          <ShopCatalogProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <SplashScreen />
+                {children}
+              </WishlistProvider>
+            </CartProvider>
+          </ShopCatalogProvider>
         </ThemeProvider>
       </body>
     </html>

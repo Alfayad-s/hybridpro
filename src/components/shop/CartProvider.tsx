@@ -1,8 +1,8 @@
 "use client";
 
+import { useShopCatalog } from "@/components/shop/ShopCatalogProvider";
 import {
   formatInr,
-  getShopProduct,
   shopPricePaise,
   type ShopProduct,
 } from "@/lib/shopCatalog";
@@ -45,7 +45,7 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-function readStored(): CartLine[] {
+function readStored(known: (slug: string) => boolean): CartLine[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? (JSON.parse(raw) as unknown) : [];
@@ -55,7 +55,7 @@ function readStored(): CartLine[] {
       const slug = "slug" in line && typeof line.slug === "string" ? line.slug : "";
       const size = "size" in line && typeof line.size === "string" ? line.size : "";
       const qty = "qty" in line && typeof line.qty === "number" ? line.qty : 0;
-      if (!getShopProduct(slug) || qty < 1) return [];
+      if (!known(slug) || qty < 1) return [];
       return [{ slug, size, qty: Math.min(10, Math.floor(qty)) }];
     });
   } catch {
@@ -64,13 +64,16 @@ function readStored(): CartLine[] {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const catalog = useShopCatalog();
   const [lines, setLines] = useState<CartLine[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setLines(readStored());
+    if (!catalog.ready || catalog.error) return;
+    const known = new Set(catalog.products.map((product) => product.slug));
+    setLines(readStored((slug) => known.has(slug)));
     setReady(true);
-  }, []);
+  }, [catalog.error, catalog.products, catalog.ready]);
 
   useEffect(() => {
     if (!ready) return;
@@ -78,7 +81,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [lines, ready]);
 
   const add = useCallback((slug: string, size = "") => {
-    if (!getShopProduct(slug)) return;
+    if (!catalog.getProduct(slug)) return;
     setLines((current) => {
       const index = current.findIndex(
         (line) => line.slug === slug && line.size === size,
@@ -88,7 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         i === index ? { ...line, qty: Math.min(10, line.qty + 1) } : line,
       );
     });
-  }, []);
+  }, [catalog]);
 
   const setQty = useCallback((slug: string, size: string, qty: number) => {
     setLines((current) =>
@@ -110,7 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const items = lines.flatMap((line) => {
-      const product = getShopProduct(line.slug);
+      const product = catalog.getProduct(line.slug);
       if (!product) return [];
       const linePaise = shopPricePaise(product.priceLabel) * line.qty;
       return [{ ...line, product, linePaise }];
@@ -129,7 +132,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       remove,
       clear,
     };
-  }, [add, clear, lines, ready, remove, setQty]);
+  }, [add, catalog, clear, lines, ready, remove, setQty]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

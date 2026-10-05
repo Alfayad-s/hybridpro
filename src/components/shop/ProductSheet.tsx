@@ -3,11 +3,8 @@
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import { useCart } from "@/components/shop/CartProvider";
 import { useWishlist } from "@/components/shop/WishlistProvider";
-import {
-  productImages,
-  shopCategories,
-  type ShopProduct,
-} from "@/lib/shopCatalog";
+import { useShopCatalog } from "@/components/shop/ShopCatalogProvider";
+import { productImages, type ShopProduct } from "@/lib/shopCatalog";
 import { AnimatePresence, motion } from "framer-motion";
 import { Heart, X } from "lucide-react";
 import Image from "next/image";
@@ -83,6 +80,7 @@ function SheetBody({
 }) {
   const cart = useCart();
   const wishlist = useWishlist();
+  const catalog = useShopCatalog();
   const images = productImages(product);
   const [size, setSize] = useState(product.sizes?.[0] ?? "");
   const saved = wishlist.has(product.slug);
@@ -90,7 +88,7 @@ function SheetBody({
     (line) => line.slug === product.slug && line.size === size,
   );
   const category =
-    shopCategories.find((item) => item.slug === product.category)?.label ??
+    catalog.categories.find((item) => item.slug === product.category)?.label ??
     product.category;
   const drag = useRef(0);
 

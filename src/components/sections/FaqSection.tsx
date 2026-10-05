@@ -15,7 +15,7 @@ const faqs = [
   },
   {
     q: "What's the difference between Shop and Coaching?",
-    a: "Shop is Hybrid Pro tees, shorts, and digital training guides. Coaching is ongoing personalised support with check-ins, form reviews, and a coach in your corner.",
+    a: "Shop is Hybrid Pro digital e-books. Coaching is ongoing personalised support with check-ins, form reviews, and a coach in your corner.",
   },
   {
     q: "How fast will I see results?",

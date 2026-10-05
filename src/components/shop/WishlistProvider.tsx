@@ -1,6 +1,7 @@
 "use client";
 
-import { getShopProduct, type ShopProduct } from "@/lib/shopCatalog";
+import { useShopCatalog } from "@/components/shop/ShopCatalogProvider";
+import type { ShopProduct } from "@/lib/shopCatalog";
 import {
   createContext,
   useCallback,
@@ -24,13 +25,13 @@ type WishlistContextValue = {
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
 
-function readStored(): string[] {
+function readStored(known: (slug: string) => boolean): string[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? (JSON.parse(raw) as unknown) : [];
     if (!Array.isArray(parsed)) return [];
     return parsed.flatMap((slug) =>
-      typeof slug === "string" && getShopProduct(slug) ? [slug] : [],
+      typeof slug === "string" && known(slug) ? [slug] : [],
     );
   } catch {
     return [];
@@ -38,13 +39,16 @@ function readStored(): string[] {
 }
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
+  const catalog = useShopCatalog();
   const [slugs, setSlugs] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setSlugs(readStored());
+    if (!catalog.ready || catalog.error) return;
+    const known = new Set(catalog.products.map((product) => product.slug));
+    setSlugs(readStored((slug) => known.has(slug)));
     setReady(true);
-  }, []);
+  }, [catalog.error, catalog.products, catalog.ready]);
 
   useEffect(() => {
     if (!ready) return;
@@ -52,13 +56,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, [ready, slugs]);
 
   const toggle = useCallback((slug: string) => {
-    if (!getShopProduct(slug)) return;
+    if (!catalog.getProduct(slug)) return;
     setSlugs((current) =>
       current.includes(slug)
         ? current.filter((item) => item !== slug)
         : [...current, slug],
     );
-  }, []);
+  }, [catalog]);
 
   const remove = useCallback((slug: string) => {
     setSlugs((current) => current.filter((item) => item !== slug));
@@ -66,7 +70,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<WishlistContextValue>(() => {
     const items = slugs.flatMap((slug) => {
-      const product = getShopProduct(slug);
+      const product = catalog.getProduct(slug);
       return product ? [product] : [];
     });
     return {
@@ -77,7 +81,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       toggle,
       remove,
     };
-  }, [ready, remove, slugs, toggle]);
+  }, [catalog, ready, remove, slugs, toggle]);
 
   return (
     <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>

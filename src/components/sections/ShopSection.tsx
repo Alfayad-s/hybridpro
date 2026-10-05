@@ -2,32 +2,30 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import type { ShopProduct } from "@/lib/shopCatalog";
-import {
-  getShopProduct,
-  shopCategories,
-  shopProducts,
-  type ShopCategory,
-} from "@/lib/shopCatalog";
+import { useShopCatalog } from "@/components/shop/ShopCatalogProvider";
 import { ProductSheet } from "@/components/shop/ProductSheet";
 import { ShopBannerStack } from "@/components/shop/ShopBannerStack";
 import { useCart } from "@/components/shop/CartProvider";
 import { SAVED_ARRIVE_EVENT, ShopBottomNav } from "@/components/shop/ShopBottomNav";
-import { Heart } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Heart, X } from "lucide-react";
 import { useWishlist } from "@/components/shop/WishlistProvider";
 import { FLUORO_GREEN, Reveal } from "./Reveal";
 
 export default function ShopSection() {
-  const [category, setCategory] = useState<ShopCategory | "all">("all");
+  const catalog = useShopCatalog();
+  const [category, setCategory] = useState("all");
   const [openSlug, setOpenSlug] = useState<string | null>(null);
 
   const products = useMemo(
     () =>
       category === "all"
-        ? shopProducts
-        : shopProducts.filter((product) => product.category === category),
-    [category],
+        ? catalog.products
+        : catalog.products.filter((product) => product.category === category),
+    [catalog.products, category],
   );
 
   return (
@@ -40,13 +38,13 @@ export default function ShopSection() {
         <ShopBannerStack onSelect={setCategory} />
 
         <div className="mt-6 grid w-full items-start gap-8 lg:mt-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
-          <div className="sticky top-0 z-30 -mx-4 bg-[var(--background)] px-4 py-3 lg:hidden">
+          <div className="sticky top-[calc(3.6rem+env(safe-area-inset-top,0px))] z-30 -mx-4 bg-[var(--background)] px-4 py-3 lg:hidden">
             <div
               role="tablist"
               aria-label="Shop categories"
               className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-              {shopCategories.map((item) => {
+              {catalog.categories.map((item) => {
                 const selected = category === item.slug;
                 return (
                   <button
@@ -76,12 +74,12 @@ export default function ShopSection() {
               Categories
             </p>
             <nav className="mt-4 flex flex-col border-t border-[color:var(--border)]">
-              {shopCategories.map((item) => {
+              {catalog.categories.map((item) => {
                 const selected = category === item.slug;
                 const count =
                   item.slug === "all"
-                    ? shopProducts.length
-                    : shopProducts.filter(
+                    ? catalog.products.length
+                    : catalog.products.filter(
                         (product) => product.category === item.slug,
                       ).length;
                 return (
@@ -114,24 +112,144 @@ export default function ShopSection() {
             </nav>
           </aside>
 
-          <div className="grid w-full grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {products.map((product, index) => (
-            <ProductCard
-              key={product.slug}
-              product={product}
-              index={index}
-              onOpen={() => setOpenSlug(product.slug)}
+          {catalog.error ? (
+            <p className="text-sm text-[color:var(--muted)]">{catalog.error}</p>
+          ) : catalog.ready ? (
+            <ProductMasonry
+              products={products}
+              onOpen={setOpenSlug}
+              onOffer={setCategory}
             />
-          ))}
-          </div>
+          ) : (
+            <p className="text-sm text-[color:var(--muted)]">Loading the shop…</p>
+          )}
         </div>
       </div>
       <ShopBottomNav />
       <ProductSheet
-        product={openSlug ? getShopProduct(openSlug) : null}
+        product={openSlug ? catalog.getProduct(openSlug) : null}
         onClose={() => setOpenSlug(null)}
       />
     </section>
+  );
+}
+
+const imageAspects = [
+  "aspect-square",
+  "aspect-[3/4]",
+  "aspect-[4/5]",
+  "aspect-[5/4]",
+];
+
+function columnCount(width: number) {
+  if (width >= 1536) return 5;
+  if (width >= 1280) return 4;
+  if (width >= 1024) return 3;
+  return 2;
+}
+
+const offerCards: {
+  src: string;
+  alt: string;
+  category: string;
+}[] = [
+  {
+    src: "/shop/masonry-guides-offer.jpg",
+    alt: "E-Books from ₹599",
+    category: "ebooks",
+  },
+];
+
+type MasonryTile =
+  | { kind: "product"; product: ShopProduct }
+  | { kind: "offer"; src: string; alt: string; category: string };
+
+function masonryTiles(products: ShopProduct[]): MasonryTile[] {
+  const tiles: MasonryTile[] = [];
+  let offerIndex = 0;
+  products.forEach((product, index) => {
+    tiles.push({ kind: "product", product });
+    if ((index + 1) % 4 === 0 && offerIndex < offerCards.length) {
+      const offer = offerCards[offerIndex];
+      offerIndex += 1;
+      tiles.push({ kind: "offer", ...offer });
+    }
+  });
+  return tiles;
+}
+
+function ProductMasonry({
+  products,
+  onOpen,
+  onOffer,
+}: {
+  products: ShopProduct[];
+  onOpen: (slug: string) => void;
+  onOffer: (category: string) => void;
+}) {
+  const [columns, setColumns] = useState(2);
+
+  useEffect(() => {
+    const update = () => setColumns(columnCount(window.innerWidth));
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const tiles = masonryTiles(products);
+  const lanes = Array.from({ length: columns }, () => [] as MasonryTile[]);
+  tiles.forEach((tile, index) => {
+    lanes[index % columns].push(tile);
+  });
+
+  return (
+    <div className="flex w-full items-start gap-3 sm:gap-5">
+      {lanes.map((lane, laneIndex) => (
+        <div
+          key={laneIndex}
+          className="flex min-w-0 flex-1 flex-col gap-3 sm:gap-5"
+        >
+          {lane.map((tile) =>
+            tile.kind === "product" ? (
+              <ProductCard
+                key={tile.product.slug}
+                product={tile.product}
+                index={products.indexOf(tile.product)}
+                onOpen={() => onOpen(tile.product.slug)}
+              />
+            ) : (
+              <OfferCard
+                key={tile.src}
+                src={tile.src}
+                alt={tile.alt}
+                onClick={() => onOffer(tile.category)}
+              />
+            ),
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function OfferCard({
+  src,
+  alt,
+  onClick,
+}: {
+  src: string;
+  alt: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={alt}
+      className="relative aspect-square w-full overflow-hidden rounded-2xl border border-[color:var(--border)] sm:rounded-[1.5rem]"
+    >
+      <Image src={src} alt={alt} fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover" />
+    </button>
   );
 }
 
@@ -148,14 +266,11 @@ function ProductCard({
 
   return (
     <Reveal delay={Math.min(index, 6) * 0.04}>
-      <article
-        className="flex h-full cursor-pointer flex-col"
-        onClick={onOpen}
-      >
+      <article className="flex cursor-pointer flex-col" onClick={onOpen}>
         <div
           ref={imageRef}
           data-shop-image
-          className="relative aspect-square overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--card)] sm:rounded-[1.5rem]"
+          className={`relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--card)] sm:rounded-[1.5rem] ${imageAspects[index % imageAspects.length]}`}
         >
           <Image
             src={product.image}
@@ -167,19 +282,21 @@ function ProductCard({
           <SaveButton slug={product.slug} imageRef={imageRef} />
         </div>
         <div className="flex flex-1 flex-col pt-3 sm:pt-4">
-          <p
-            className="text-[0.6rem] tracking-[0.16em] uppercase sm:text-[0.65rem] sm:tracking-[0.22em]"
-            style={{ color: FLUORO_GREEN }}
-          >
-            {product.subtitle}
-          </p>
+          {product.subtitle !== "Available sizes" ? (
+            <p
+              className="text-[0.6rem] tracking-[0.16em] uppercase sm:text-[0.65rem] sm:tracking-[0.22em]"
+              style={{ color: FLUORO_GREEN }}
+            >
+              {product.subtitle}
+            </p>
+          ) : null}
           <h3
-            className="mt-1.5 text-2xl leading-none tracking-[0.02em] text-[var(--foreground)] uppercase sm:mt-2 sm:text-3xl"
+            className="text-2xl leading-none tracking-[0.02em] text-[var(--foreground)] uppercase sm:text-3xl"
             style={{ fontFamily: "var(--font-bebas), sans-serif" }}
           >
             {product.title}
           </h3>
-          <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)] sm:mt-3 sm:text-sm">
+          <p className="mt-1.5 line-clamp-1 text-xs text-[color:var(--muted)] sm:text-sm">
             {product.description}
           </p>
           {product.sizes ? (
@@ -299,39 +416,29 @@ function ProductBuy({
   imageRef: RefObject<HTMLDivElement | null>;
 }) {
   const cart = useCart();
+  const needsSize = Boolean(product.sizes?.length);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [size, setSize] = useState(product.sizes?.[0] ?? "");
   const inCart = cart.lines.some(
-    (line) => line.slug === product.slug && line.size === size,
+    (line) => line.slug === product.slug && line.size === (needsSize ? "" : size),
   );
 
+  function addSelected() {
+    cart.add(product.slug, needsSize ? size : "");
+    const from = imageRef.current;
+    if (from) flyProductToCart(from);
+    setPickerOpen(false);
+  }
+
   return (
-    <div className="mt-auto pt-4" onClick={(event) => event.stopPropagation()}>
+    <div className="mt-auto pt-3" onClick={(event) => event.stopPropagation()}>
       <p
         className="text-2xl leading-none text-[var(--foreground)] sm:text-3xl"
         style={{ fontFamily: "var(--font-bebas), sans-serif" }}
       >
         {product.priceLabel}
       </p>
-      {product.sizes ? (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {product.sizes.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setSize(option)}
-              className="rounded-full px-2.5 py-1 text-[0.65rem] font-semibold"
-              style={{
-                background: size === option ? FLUORO_GREEN : "transparent",
-                color: size === option ? "#111" : "var(--foreground)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      {inCart ? (
+      {!needsSize && inCart ? (
         <Link
           href="/shop/cart"
           className="mt-3 inline-flex w-full items-center justify-center rounded-full px-3 py-2 text-[0.7rem] font-semibold text-black sm:py-2.5 sm:text-xs"
@@ -342,14 +449,9 @@ function ProductBuy({
       ) : (
         <button
           type="button"
-          onClick={(event) => {
-            cart.add(product.slug, size);
-            const from =
-              imageRef.current ??
-              event.currentTarget
-                .closest("article")
-                ?.querySelector<HTMLElement>("[data-shop-image]");
-            if (from) flyProductToCart(from);
+          onClick={() => {
+            if (needsSize) setPickerOpen(true);
+            else addSelected();
           }}
           className="mt-3 inline-flex w-full items-center justify-center rounded-full px-3 py-2 text-[0.7rem] font-semibold text-black sm:py-2.5 sm:text-xs"
           style={{ background: FLUORO_GREEN }}
@@ -357,6 +459,119 @@ function ProductBuy({
           Add to cart
         </button>
       )}
+      <SizePicker
+        open={pickerOpen}
+        product={product}
+        size={size}
+        onSize={setSize}
+        onClose={() => setPickerOpen(false)}
+        onAdd={addSelected}
+      />
     </div>
+  );
+}
+
+function SizePicker({
+  open,
+  product,
+  size,
+  onSize,
+  onClose,
+  onAdd,
+}: {
+  open: boolean;
+  product: ShopProduct;
+  size: string;
+  onSize: (size: string) => void;
+  onClose: () => void;
+  onAdd: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <AnimatePresence>
+      {open ? (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center p-3 pb-24 sm:items-center sm:pb-3">
+          <motion.button
+            type="button"
+            aria-label="Close size picker"
+            className="absolute inset-0 bg-black/45"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Choose a size for ${product.title}`}
+            className="relative w-full max-w-sm rounded-[28px] bg-[var(--background)] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 40, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 420, damping: 34 }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[0.65rem] tracking-[0.2em] text-[color:var(--muted)] uppercase">
+                  Select size
+                </p>
+                <p
+                  className="mt-1 text-3xl leading-none uppercase"
+                  style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+                >
+                  {product.title}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="grid h-9 w-9 place-items-center rounded-full bg-[var(--card)]"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {product.sizes?.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => onSize(option)}
+                  className="rounded-full px-4 py-2 text-sm font-semibold"
+                  style={{
+                    background: size === option ? FLUORO_GREEN : "transparent",
+                    color: size === option ? "#111" : "var(--foreground)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={onAdd}
+              className="mt-5 inline-flex w-full items-center justify-center rounded-full px-3 py-3 text-sm font-bold text-black"
+              style={{ background: FLUORO_GREEN }}
+            >
+              Add {size} to cart
+            </button>
+          </motion.div>
+        </div>
+      ) : null}
+    </AnimatePresence>,
+    document.body,
   );
 }

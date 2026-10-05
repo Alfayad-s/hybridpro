@@ -12,39 +12,15 @@ const banners: {
   category: ShopCategory;
 }[] = [
   {
-    src: "/shop/banner-tees-offer.jpg",
-    alt: "Hybrid Pro tee drop from ₹1,499",
-    label: "Tees",
-    category: "tees",
-  },
-  {
-    src: "/shop/banner-tee-light.jpg",
-    alt: "Hybrid Pro white tee from ₹1,499",
-    label: "Tees",
-    category: "tees",
-  },
-  {
-    src: "/shop/banner-shorts-offer.jpg",
-    alt: "New Hybrid Pro shorts from ₹1,299",
-    label: "Shorts",
-    category: "shorts",
-  },
-  {
-    src: "/shop/banner-shorts-light.jpg",
-    alt: "Hybrid Pro air shorts from ₹1,299",
-    label: "Shorts",
-    category: "shorts",
-  },
-  {
     src: "/shop/banner-guides-offer.jpg",
-    alt: "Hybrid Pro guides from ₹599",
-    label: "Guides",
+    alt: "Hybrid Pro e-books from ₹599",
+    label: "E-Books",
     category: "ebooks",
   },
   {
     src: "/shop/banner-guides-light.jpg",
     alt: "Hybrid Pro playbook from ₹599",
-    label: "Guides",
+    label: "E-Books",
     category: "ebooks",
   },
 ];

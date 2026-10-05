@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import BrandLogo from "@/components/BrandLogo";
 import { useScrollHideNav } from "@/hooks/useScrollHideNav";
@@ -37,6 +38,7 @@ export type StaggeredMenuProps = {
   accentColor?: string;
   changeMenuColorOnOpen?: boolean;
   isFixed?: boolean;
+  hideOnScroll?: boolean;
   closeOnClickAway?: boolean;
   onMenuOpen?: () => void;
   onMenuClose?: () => void;
@@ -56,12 +58,20 @@ export default function StaggeredMenu({
   accentColor = "#93E200",
   changeMenuColorOnOpen = true,
   isFixed = false,
+  hideOnScroll = true,
   closeOnClickAway = true,
   onMenuOpen,
   onMenuClose,
 }: StaggeredMenuProps) {
   const [open, setOpen] = useState(false);
-  const headerHidden = useScrollHideNav({ enabled: !open });
+  const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
+  const headerHidden = useScrollHideNav({ enabled: hideOnScroll && !open });
+  const pinHeader = !hideOnScroll;
+
+  useEffect(() => {
+    if (!pinHeader) return;
+    setHeaderHost(document.body);
+  }, [pinHeader]);
   const openRef = useRef(false);
   const panelRef = useRef<HTMLElement>(null);
   const preLayersRef = useRef<HTMLDivElement>(null);
@@ -425,6 +435,47 @@ export default function StaggeredMenu({
     return arr;
   })();
 
+  const headerBar = (
+    <header
+      className={`staggered-menu-header${headerHidden ? " is-scroll-hidden" : ""}${pinHeader ? " is-pinned" : ""}`}
+      aria-label="Main navigation header"
+    >
+      <div className="sm-logo" aria-label="Logo">
+        <a
+          href="#top"
+          onClick={closeMenu}
+          className="text-[var(--brand-green)]"
+        >
+          <BrandLogo className="sm-logo-img h-[30px] w-auto sm:h-9" />
+        </a>
+      </div>
+
+      <button
+        ref={toggleBtnRef}
+        className="sm-toggle"
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        aria-controls="staggered-menu-panel"
+        onClick={toggleMenu}
+        type="button"
+      >
+        <span className="sm-toggle-textWrap" aria-hidden="true">
+          <span ref={textInnerRef} className="sm-toggle-textInner">
+            {textLines.map((line, i) => (
+              <span className="sm-toggle-line" key={`${line}-${i}`}>
+                {line}
+              </span>
+            ))}
+          </span>
+        </span>
+        <span ref={iconRef} className="sm-icon" aria-hidden="true">
+          <span ref={plusHRef} className="sm-icon-line" />
+          <span ref={plusVRef} className="sm-icon-line sm-icon-line-v" />
+        </span>
+      </button>
+    </header>
+  );
+
   return (
     <div
       className={`${className ? `${className} ` : ""}staggered-menu-wrapper${
@@ -444,44 +495,7 @@ export default function StaggeredMenu({
         ))}
       </div>
 
-      <header
-        className={`staggered-menu-header${headerHidden ? " is-scroll-hidden" : ""}`}
-        aria-label="Main navigation header"
-      >
-        <div className="sm-logo" aria-label="Logo">
-          <a
-            href="#top"
-            onClick={closeMenu}
-            className="text-[var(--brand-green)]"
-          >
-            <BrandLogo className="sm-logo-img h-[30px] w-auto sm:h-9" />
-          </a>
-        </div>
-
-        <button
-          ref={toggleBtnRef}
-          className="sm-toggle"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          aria-controls="staggered-menu-panel"
-          onClick={toggleMenu}
-          type="button"
-        >
-          <span className="sm-toggle-textWrap" aria-hidden="true">
-            <span ref={textInnerRef} className="sm-toggle-textInner">
-              {textLines.map((line, i) => (
-                <span className="sm-toggle-line" key={`${line}-${i}`}>
-                  {line}
-                </span>
-              ))}
-            </span>
-          </span>
-          <span ref={iconRef} className="sm-icon" aria-hidden="true">
-            <span ref={plusHRef} className="sm-icon-line" />
-            <span ref={plusVRef} className="sm-icon-line sm-icon-line-v" />
-          </span>
-        </button>
-      </header>
+      {headerHost ? createPortal(headerBar, headerHost) : headerBar}
 
       <aside
         id="staggered-menu-panel"
