@@ -8,8 +8,14 @@ export type ShopProduct = {
   category: ShopCategory;
   priceLabel: string;
   image: string;
+  images?: string[];
   sizes?: string[];
 };
+
+export function productImages(product: ShopProduct) {
+  const extras = product.images?.filter((src) => src && src !== product.image) ?? [];
+  return [product.image, ...extras];
+}
 
 export function shopPricePaise(priceLabel: string) {
   return Number(priceLabel.replace(/[^\d]/g, "")) * 100;

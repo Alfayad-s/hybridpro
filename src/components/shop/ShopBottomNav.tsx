@@ -2,9 +2,12 @@
 
 import { useCart } from "@/components/shop/CartProvider";
 import { LayoutGroup, motion } from "framer-motion";
+import { Heart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+export const SAVED_ARRIVE_EVENT = "shop-saved-arrive";
 
 const liquid = {
   type: "spring" as const,
@@ -25,6 +28,34 @@ export function ShopBottomNav() {
   const onShop = pathname === "/shop";
   const onSaved = pathname.startsWith("/shop/wishlist");
   const onCart = pathname.startsWith("/shop/cart");
+  const [heartRed, setHeartRed] = useState(false);
+  const flash = useRef(0);
+
+  useEffect(() => {
+    const onArrive = () => {
+      const id = ++flash.current;
+      setHeartRed(true);
+      const animation = document.getElementById("shop-saved-icon")?.animate(
+        [
+          { transform: "scale(1)" },
+          { transform: "scale(1.45)" },
+          { transform: "scale(0.82)" },
+          { transform: "scale(1.22)" },
+          { transform: "scale(1)" },
+        ],
+        { duration: 480, easing: "ease-out" },
+      );
+      const fadeRed = () => {
+        window.setTimeout(() => {
+          if (flash.current === id) setHeartRed(false);
+        }, 3000);
+      };
+      if (animation) animation.finished.then(fadeRed).catch(fadeRed);
+      else window.setTimeout(fadeRed, 480);
+    };
+    window.addEventListener(SAVED_ARRIVE_EVENT, onArrive);
+    return () => window.removeEventListener(SAVED_ARRIVE_EVENT, onArrive);
+  }, []);
 
   return (
     <LayoutGroup>
@@ -59,7 +90,15 @@ export function ShopBottomNav() {
             <NavItem
               active={onSaved}
               label="Saved"
-              icon={<HeartIcon filled={onSaved} />}
+              iconId="shop-saved-icon"
+              icon={
+                <Heart
+                  size={22}
+                  strokeWidth={2}
+                  fill={heartRed ? "#ff3b30" : "none"}
+                  style={{ color: heartRed ? "#ff3b30" : "currentColor" }}
+                />
+              }
               href="/shop/wishlist"
             />
           </div>
@@ -111,12 +150,14 @@ function NavItem({
   active,
   label,
   icon,
+  iconId,
   href,
   onClick,
 }: {
   active: boolean;
   label: string;
   icon: ReactNode;
+  iconId?: string;
   href: string;
   onClick?: () => void;
 }) {
@@ -126,7 +167,10 @@ function NavItem({
   const body = (
     <>
       {active ? <LiquidPill /> : null}
-      <span className="relative z-10 grid h-11 w-11 shrink-0 place-items-center">
+      <span
+        id={iconId}
+        className="relative z-10 grid h-11 w-11 shrink-0 place-items-center"
+      >
         {icon}
       </span>
       <motion.span
@@ -196,20 +240,6 @@ function SearchIcon() {
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-export function HeartIcon({ filled = false }: { filled?: boolean }) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 19.2s-6.4-3.9-8.2-7.6C2.4 9.2 3.4 6.2 6.2 5.4c1.7-.5 3.3.1 4.3 1.4 1-1.3 2.6-1.9 4.3-1.4 2.8.8 3.8 3.8 2.4 6.2-1.8 3.7-8.2 7.6-8.2 7.6Z"
-        fill={filled ? "currentColor" : "none"}
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
       />
     </svg>
   );

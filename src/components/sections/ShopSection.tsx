@@ -5,18 +5,22 @@ import Link from "next/link";
 import { useMemo, useRef, useState, type RefObject } from "react";
 import type { ShopProduct } from "@/lib/shopCatalog";
 import {
+  getShopProduct,
   shopCategories,
   shopProducts,
   type ShopCategory,
 } from "@/lib/shopCatalog";
+import { ProductSheet } from "@/components/shop/ProductSheet";
 import { ShopBannerStack } from "@/components/shop/ShopBannerStack";
 import { useCart } from "@/components/shop/CartProvider";
-import { HeartIcon, ShopBottomNav } from "@/components/shop/ShopBottomNav";
+import { SAVED_ARRIVE_EVENT, ShopBottomNav } from "@/components/shop/ShopBottomNav";
+import { Heart } from "lucide-react";
 import { useWishlist } from "@/components/shop/WishlistProvider";
 import { FLUORO_GREEN, Reveal } from "./Reveal";
 
 export default function ShopSection() {
   const [category, setCategory] = useState<ShopCategory | "all">("all");
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
 
   const products = useMemo(
     () =>
@@ -112,12 +116,21 @@ export default function ShopSection() {
 
           <div className="grid w-full grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {products.map((product, index) => (
-            <ProductCard key={product.slug} product={product} index={index} />
+            <ProductCard
+              key={product.slug}
+              product={product}
+              index={index}
+              onOpen={() => setOpenSlug(product.slug)}
+            />
           ))}
           </div>
         </div>
       </div>
       <ShopBottomNav />
+      <ProductSheet
+        product={openSlug ? getShopProduct(openSlug) : null}
+        onClose={() => setOpenSlug(null)}
+      />
     </section>
   );
 }
@@ -125,15 +138,20 @@ export default function ShopSection() {
 function ProductCard({
   product,
   index,
+  onOpen,
 }: {
   product: ShopProduct;
   index: number;
+  onOpen: () => void;
 }) {
   const imageRef = useRef<HTMLDivElement>(null);
 
   return (
     <Reveal delay={Math.min(index, 6) * 0.04}>
-      <article className="flex h-full flex-col">
+      <article
+        className="flex h-full cursor-pointer flex-col"
+        onClick={onOpen}
+      >
         <div
           ref={imageRef}
           data-shop-image
@@ -146,7 +164,7 @@ function ProductCard({
             sizes="(max-width: 1024px) 50vw, 25vw"
             className="object-contain p-3 sm:p-6"
           />
-          <SaveButton slug={product.slug} />
+          <SaveButton slug={product.slug} imageRef={imageRef} />
         </div>
         <div className="flex flex-1 flex-col pt-3 sm:pt-4">
           <p
@@ -176,32 +194,58 @@ function ProductCard({
   );
 }
 
-function SaveButton({ slug }: { slug: string }) {
+function SaveButton({
+  slug,
+  imageRef,
+}: {
+  slug: string;
+  imageRef: RefObject<HTMLDivElement | null>;
+}) {
   const wishlist = useWishlist();
   const saved = wishlist.has(slug);
   return (
     <button
       type="button"
       aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
-      onClick={() => wishlist.toggle(slug)}
+      onClick={(event) => {
+        event.stopPropagation();
+        const adding = !wishlist.has(slug);
+        wishlist.toggle(slug);
+        if (!adding) return;
+        const from = imageRef.current;
+        const target = document.getElementById("shop-saved-icon");
+        if (from && target) {
+          flyProductImage(from, target, () => {
+            window.dispatchEvent(new Event(SAVED_ARRIVE_EVENT));
+          });
+        }
+      }}
       className="absolute top-2 right-2 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/90 shadow-sm"
-      style={{ color: saved ? "#ff3b30" : "#111" }}
     >
-      <HeartIcon filled={saved} />
+      <Heart
+        size={18}
+        strokeWidth={2}
+        fill={saved ? "#ff3b30" : "none"}
+        color={saved ? "#ff3b30" : "#111"}
+      />
     </button>
   );
 }
 
-function flyProductToCart(from: HTMLElement, src: string) {
-  const fab = document.getElementById("shop-cart-fab");
-  const start = from.getBoundingClientRect();
-  if (!fab || start.width < 8) return;
-  const end = fab.getBoundingClientRect();
+function flyProductImage(
+  from: HTMLElement,
+  target: HTMLElement,
+  onArrive?: () => void,
+) {
+  const picture = from.querySelector("img");
+  const start = (picture ?? from).getBoundingClientRect();
+  const end = target.getBoundingClientRect();
+  if (start.width < 8 || end.width < 8) return;
   const dx = end.left + end.width / 2 - (start.left + start.width / 2);
   const dy = end.top + end.height / 2 - (start.top + start.height / 2);
-  const scale = Math.min(end.width, 64) / start.width;
+  const scale = Math.min(56, end.width) / start.width;
   const node = document.createElement("img");
-  node.src = src;
+  node.src = picture?.currentSrc || picture?.src || "";
   node.alt = "";
   node.setAttribute("data-shop-flyer", "");
   node.style.position = "fixed";
@@ -211,23 +255,31 @@ function flyProductToCart(from: HTMLElement, src: string) {
   node.style.width = `${start.width}px`;
   node.style.height = `${start.height}px`;
   node.style.objectFit = "contain";
+  node.style.opacity = "1";
   node.style.borderRadius = "1.25rem";
   node.style.pointerEvents = "none";
-  node.style.background = "var(--card)";
+  node.style.background = getComputedStyle(from).backgroundColor;
   document.body.appendChild(node);
   const flight = node.animate(
     [
-      { transform: "translate(0px, 0px) scale(1)", opacity: 1, borderRadius: "1.25rem" },
+      { transform: "translate(0px, 0px) scale(1)", opacity: 1 },
       {
         transform: `translate(${dx}px, ${dy}px) scale(${scale})`,
-        opacity: 0.35,
-        borderRadius: "999px",
+        opacity: 1,
       },
     ],
     { duration: 700, easing: "cubic-bezier(.22,.8,.24,1)", fill: "forwards" },
   );
   flight.onfinish = () => {
     node.remove();
+    onArrive?.();
+  };
+}
+
+function flyProductToCart(from: HTMLElement) {
+  const fab = document.getElementById("shop-cart-fab");
+  if (!fab) return;
+  flyProductImage(from, fab, () => {
     document.getElementById("shop-cart-fab")?.animate(
       [
         { transform: "scale(1)" },
@@ -236,7 +288,7 @@ function flyProductToCart(from: HTMLElement, src: string) {
       ],
       { duration: 280 },
     );
-  };
+  });
 }
 
 function ProductBuy({
@@ -253,7 +305,7 @@ function ProductBuy({
   );
 
   return (
-    <div className="mt-auto pt-4">
+    <div className="mt-auto pt-4" onClick={(event) => event.stopPropagation()}>
       <p
         className="text-2xl leading-none text-[var(--foreground)] sm:text-3xl"
         style={{ fontFamily: "var(--font-bebas), sans-serif" }}
@@ -297,7 +349,7 @@ function ProductBuy({
               event.currentTarget
                 .closest("article")
                 ?.querySelector<HTMLElement>("[data-shop-image]");
-            if (from) flyProductToCart(from, product.image);
+            if (from) flyProductToCart(from);
           }}
           className="mt-3 inline-flex w-full items-center justify-center rounded-full px-3 py-2 text-[0.7rem] font-semibold text-black sm:py-2.5 sm:text-xs"
           style={{ background: FLUORO_GREEN }}

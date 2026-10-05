@@ -4,6 +4,7 @@ import SiteNavbar from "@/components/SiteNavbar";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
 import { formatInr } from "@/lib/shopCatalog";
+import Image from "next/image";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { useCart } from "./CartProvider";
@@ -67,7 +68,7 @@ export function ShopCheckoutPage() {
       `}</style>
       <SiteNavbar />
       <ThemeGlassToggle />
-      <section className="mx-auto grid w-full max-w-5xl gap-10 px-4 pt-28 pb-20 sm:px-6 lg:grid-cols-[1fr_1.05fr]">
+      <section className="mx-auto flex w-full max-w-xl flex-col gap-10 px-4 pt-28 pb-20 sm:px-6">
         <div>
           <p
             className="text-[0.7rem] tracking-[0.35em] uppercase"
@@ -81,26 +82,9 @@ export function ShopCheckoutPage() {
           >
             Pay with Pine Labs
           </h1>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-[color:var(--muted)]">
+          <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">
             Cards, UPI, and netbanking. The amount is the cart total. Coaching
             plans stay on the pricing page.
-          </p>
-          <ul className="mt-8 flex flex-col gap-3 text-sm">
-            {cart.items.map((item) => (
-              <li key={`${item.slug}-${item.size}`} className="flex justify-between gap-4">
-                <span>
-                  {item.product.title}
-                  {item.size ? ` · ${item.size}` : ""} × {item.qty}
-                </span>
-                <span>{formatInr(item.linePaise)}</span>
-              </li>
-            ))}
-          </ul>
-          <p
-            className="mt-6 text-4xl"
-            style={{ fontFamily: "var(--font-bebas), sans-serif" }}
-          >
-            {cart.totalLabel}
           </p>
         </div>
 
@@ -207,6 +191,52 @@ export function ShopCheckoutPage() {
             </button>
           </form>
         )}
+
+        {cart.ready && cart.items.length > 0 ? (
+          <div>
+            <p className="text-[0.7rem] tracking-[0.35em] text-[color:var(--muted)] uppercase">
+              Your items
+            </p>
+            <ul className="mt-4 flex flex-col gap-3">
+              {cart.items.map((item) => (
+                <li
+                  key={`${item.slug}-${item.size}`}
+                  className="flex gap-4 rounded-2xl border border-[color:var(--border)] bg-[var(--card)] p-3"
+                >
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[var(--background)]">
+                    <Image
+                      src={item.product.image}
+                      alt={item.product.title}
+                      fill
+                      sizes="80px"
+                      className="object-contain p-1.5"
+                    />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col justify-center">
+                    <p className="font-semibold">{item.product.title}</p>
+                    <p className="mt-0.5 text-sm text-[color:var(--muted)]">
+                      {item.size ? `Size ${item.size} · ` : ""}Qty {item.qty}
+                    </p>
+                  </div>
+                  <p className="self-center text-sm font-semibold">
+                    {formatInr(item.linePaise)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 flex items-end justify-between px-1">
+              <p className="text-sm tracking-[0.16em] text-[color:var(--muted)] uppercase">
+                Total
+              </p>
+              <p
+                className="text-4xl leading-none"
+                style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+              >
+                {cart.totalLabel}
+              </p>
+            </div>
+          </div>
+        ) : null}
       </section>
     </main>
   );
