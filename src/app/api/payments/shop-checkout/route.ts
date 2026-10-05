@@ -1,4 +1,4 @@
-import { getShopBackendUrl } from "@/lib/hybridAppApi";
+import { getShopBackendUrl, recordShopOrder } from "@/lib/hybridAppApi";
 import { createPineLabsCheckout, isPineLabsConfigured } from "@/lib/pinelabs";
 import { shopImageSrc, shopPricePaise, type ShopProduct } from "@/lib/shopCatalog";
 import { randomUUID } from "crypto";
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Your cart is empty" }, { status: 400 });
   }
 
-  const lines: { title: string; size: string; qty: number; paise: number }[] = [];
+  const lines: { slug: string; title: string; size: string; qty: number; paise: number }[] = [];
   for (const item of requested) {
     const product = await loadShopProduct(item.slug || "");
     const qty = Math.floor(Number(item.qty) || 0);
@@ -129,6 +129,7 @@ export async function POST(request: Request) {
       );
     }
     lines.push({
+      slug: product.slug,
       title: product.title,
       size,
       qty,
@@ -180,6 +181,20 @@ export async function POST(request: Request) {
         email,
         ref: merchantOrderReference,
       },
+    });
+
+    await recordShopOrder({
+      reference: merchantOrderReference,
+      pineOrderId: checkout.orderId,
+      customerName: fullName,
+      email,
+      mobile,
+      floor,
+      address: mapAddress,
+      city,
+      pincode,
+      items: lines,
+      amountPaise,
     });
 
     return NextResponse.json({

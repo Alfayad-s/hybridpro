@@ -97,6 +97,16 @@ function SuccessBody() {
         "Pine Labs accepted this shop payment. We'll use the email and delivery details from checkout.",
       );
       clearCart();
+      if (merchantOrderReference) {
+        void fetch("/api/payments/shop-paid", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reference: merchantOrderReference,
+            pineOrderId: orderId || "",
+          }),
+        });
+      }
       return;
     }
     if (alreadyActivated) {

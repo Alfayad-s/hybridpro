@@ -55,6 +55,52 @@ function internalHeaders() {
   };
 }
 
+export async function recordShopOrder(payload: {
+  reference: string;
+  pineOrderId?: string;
+  customerName: string;
+  email: string;
+  mobile?: string;
+  floor?: string;
+  address?: string;
+  city?: string;
+  pincode?: string;
+  items: { slug: string; title: string; size: string; qty: number; paise: number }[];
+  amountPaise: number;
+}) {
+  const res = await fetch(`${getShopBackendUrl()}/api/shop/orders`, {
+    method: "POST",
+    headers: internalHeaders(),
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+  const data = (await res.json().catch(() => ({}))) as { error?: string };
+  if (!res.ok) {
+    throw new Error(data.error || `Could not save the shop order (${res.status})`);
+  }
+  return data;
+}
+
+export async function markShopOrderPaid(payload: {
+  reference: string;
+  pineOrderId?: string;
+}) {
+  const res = await fetch(
+    `${getShopBackendUrl()}/api/shop/orders/${encodeURIComponent(payload.reference)}/paid`,
+    {
+      method: "POST",
+      headers: internalHeaders(),
+      body: JSON.stringify({ pineOrderId: payload.pineOrderId || "" }),
+      cache: "no-store",
+    },
+  );
+  const data = (await res.json().catch(() => ({}))) as { error?: string };
+  if (!res.ok) {
+    throw new Error(data.error || `Could not mark the shop order paid (${res.status})`);
+  }
+  return data;
+}
+
 export async function saveCheckoutIntent(payload: {
   pineOrderId?: string;
   merchantOrderReference: string;
