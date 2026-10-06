@@ -4,6 +4,7 @@ import SiteNavbar from "@/components/SiteNavbar";
 import { useCart } from "@/components/shop/CartProvider";
 import { ShopBottomNav } from "@/components/shop/ShopBottomNav";
 import { useWishlist } from "@/components/shop/WishlistProvider";
+import { ParticleDeleteContainer } from "@/components/shop/ParticleDeleteContainer";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import Image from "next/image";
 import Link from "next/link";
@@ -48,11 +49,11 @@ export function WishlistPage() {
             </Link>
           </div>
         ) : (
-          <ul className="mt-8 flex flex-col gap-4">
+          <div className="mt-8 flex flex-col gap-4">
             {wishlist.items.map((product) => (
               <WishlistRow key={product.slug} product={product} />
             ))}
-          </ul>
+          </div>
         )}
       </section>
       <ShopBottomNav />
@@ -69,66 +70,74 @@ function WishlistRow({ product }: { product: ShopProduct }) {
   );
 
   return (
-    <li className="flex gap-4 border-b border-[color:var(--border)] pb-4">
-      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--card)]">
-        <Image
-          src={product.image}
-          alt={product.title}
-          fill
-          sizes="96px"
-          className="object-contain p-2"
-        />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-semibold">{product.title}</p>
-        <p className="mt-1 text-sm">{product.priceLabel}</p>
-        {product.sizes ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {product.sizes.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setSize(option)}
-                className="rounded-full px-2.5 py-1 text-[0.65rem] font-semibold"
-                style={{
-                  background: size === option ? FLUORO_GREEN : "transparent",
-                  color: size === option ? "#111" : "var(--foreground)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                {option}
-              </button>
-            ))}
+    <ParticleDeleteContainer
+      onDelete={() => wishlist.remove(product.slug)}
+      className="flex gap-4 border-b border-[color:var(--border)] pb-4"
+    >
+      {({ isDeleting, handleDelete }) => (
+        <>
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--card)]">
+            <Image
+              src={product.image}
+              alt={product.title}
+              fill
+              sizes="96px"
+              className="object-contain p-2"
+            />
           </div>
-        ) : null}
-        <div className="mt-3 flex items-center gap-3">
-          {inCart ? (
-            <Link
-              href="/shop/cart"
-              className="inline-flex rounded-full px-4 py-2 text-xs font-semibold text-black"
-              style={{ background: FLUORO_GREEN }}
-            >
-              Go to cart
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => cart.add(product.slug, size)}
-              className="inline-flex rounded-full px-4 py-2 text-xs font-semibold text-black"
-              style={{ background: FLUORO_GREEN }}
-            >
-              Add to cart
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => wishlist.remove(product.slug)}
-            className="text-xs tracking-[0.12em] text-[color:var(--muted)] uppercase"
-          >
-            Remove
-          </button>
-        </div>
-      </div>
-    </li>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">{product.title}</p>
+            <p className="mt-1 text-sm">{product.priceLabel}</p>
+            {product.sizes ? (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {product.sizes.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setSize(option)}
+                    className="rounded-full px-2.5 py-1 text-[0.65rem] font-semibold"
+                    style={{
+                      background: size === option ? FLUORO_GREEN : "transparent",
+                      color: size === option ? "#111" : "var(--foreground)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <div className="mt-3 flex items-center gap-3">
+              {inCart ? (
+                <Link
+                  href="/shop/cart"
+                  className="inline-flex rounded-full px-4 py-2 text-xs font-semibold text-black"
+                  style={{ background: FLUORO_GREEN }}
+                >
+                  Go to cart
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => cart.add(product.slug, size)}
+                  className="inline-flex rounded-full px-4 py-2 text-xs font-semibold text-black"
+                  style={{ background: FLUORO_GREEN }}
+                >
+                  Add to cart
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="text-xs tracking-[0.12em] text-[color:var(--muted)] uppercase disabled:opacity-60"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </ParticleDeleteContainer>
   );
 }

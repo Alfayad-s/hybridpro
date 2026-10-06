@@ -3,9 +3,10 @@
 import SiteNavbar from "@/components/SiteNavbar";
 import { ShopBottomNav } from "@/components/shop/ShopBottomNav";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
-import { formatInr } from "@/lib/shopCatalog";
+import { formatInr, type ShopProduct } from "@/lib/shopCatalog";
 import Image from "next/image";
 import Link from "next/link";
+import { ParticleDeleteContainer } from "@/components/shop/ParticleDeleteContainer";
 import { useCart } from "./CartProvider";
 
 export function CartPage() {
@@ -32,57 +33,11 @@ export function CartPage() {
           <p className="mt-10 text-[color:var(--muted)]">Your cart is empty.</p>
         ) : (
           <>
-            <ul className="mt-8 flex flex-col gap-4">
+            <div className="mt-8 flex flex-col gap-4">
               {cart.items.map((item) => (
-                <li
-                  key={`${item.slug}-${item.size}`}
-                  className="flex gap-4 border-b border-[color:var(--border)] pb-4"
-                >
-                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--card)]">
-                    <Image
-                      src={item.product.image}
-                      alt={item.product.title}
-                      fill
-                      sizes="96px"
-                      className="object-contain p-2"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{item.product.title}</p>
-                    {item.size ? (
-                      <p className="text-sm text-[color:var(--muted)]">Size {item.size}</p>
-                    ) : null}
-                    <p className="mt-1 text-sm">{formatInr(item.linePaise)}</p>
-                    <div className="mt-3 flex items-center gap-2">
-                      <button
-                        type="button"
-                        aria-label={`Decrease ${item.product.title}`}
-                        onClick={() => cart.setQty(item.slug, item.size, item.qty - 1)}
-                        className="h-8 w-8 rounded-full border border-[color:var(--border)]"
-                      >
-                        −
-                      </button>
-                      <span className="w-6 text-center text-sm">{item.qty}</span>
-                      <button
-                        type="button"
-                        aria-label={`Increase ${item.product.title}`}
-                        onClick={() => cart.setQty(item.slug, item.size, item.qty + 1)}
-                        className="h-8 w-8 rounded-full border border-[color:var(--border)]"
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => cart.remove(item.slug, item.size)}
-                        className="ml-auto text-xs tracking-[0.12em] text-[color:var(--muted)] uppercase"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </li>
+                <CartRow key={`${item.slug}-${item.size}`} item={item} />
               ))}
-            </ul>
+            </div>
             <AddMoreItems />
             <div className="mt-8 flex items-end justify-between">
               <p className="text-sm tracking-[0.16em] text-[color:var(--muted)] uppercase">
@@ -108,6 +63,80 @@ export function CartPage() {
       </section>
       <ShopBottomNav />
     </main>
+  );
+}
+
+function CartRow({
+  item,
+}: {
+  item: {
+    slug: string;
+    size: string;
+    qty: number;
+    linePaise: number;
+    product: ShopProduct;
+  };
+}) {
+  const cart = useCart();
+
+  return (
+    <ParticleDeleteContainer
+      onDelete={() => cart.remove(item.slug, item.size)}
+      className="flex gap-4 border-b border-[color:var(--border)] pb-4"
+    >
+      {({ isDeleting, handleDelete }) => (
+        <>
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--card)]">
+            <Image
+              src={item.product.image}
+              alt={item.product.title}
+              fill
+              sizes="96px"
+              className="object-contain p-2"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">{item.product.title}</p>
+            {item.size ? (
+              <p className="text-sm text-[color:var(--muted)]">Size {item.size}</p>
+            ) : null}
+            <p className="mt-1 text-sm">{formatInr(item.linePaise)}</p>
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                aria-label={`Decrease ${item.product.title}`}
+                disabled={isDeleting}
+                onClick={() => {
+                  if (item.qty <= 1) handleDelete();
+                  else cart.setQty(item.slug, item.size, item.qty - 1);
+                }}
+                className="h-8 w-8 rounded-full border border-[color:var(--border)] disabled:opacity-60"
+              >
+                −
+              </button>
+              <span className="w-6 text-center text-sm">{item.qty}</span>
+              <button
+                type="button"
+                aria-label={`Increase ${item.product.title}`}
+                disabled={isDeleting}
+                onClick={() => cart.setQty(item.slug, item.size, item.qty + 1)}
+                className="h-8 w-8 rounded-full border border-[color:var(--border)] disabled:opacity-60"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="ml-auto text-xs tracking-[0.12em] text-[color:var(--muted)] uppercase disabled:opacity-60"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </ParticleDeleteContainer>
   );
 }
 
