@@ -108,7 +108,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Your cart is empty" }, { status: 400 });
   }
 
-  const lines: { slug: string; title: string; size: string; qty: number; paise: number }[] = [];
+  const lines: {
+    slug: string;
+    title: string;
+    size: string;
+    qty: number;
+    paise: number;
+    unitPaise: number;
+    image: string;
+  }[] = [];
   for (const item of requested) {
     const product = await loadShopProduct(item.slug || "");
     const qty = Math.floor(Number(item.qty) || 0);
@@ -128,12 +136,15 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+    const unitPaise = shopPricePaise(product.priceLabel);
     lines.push({
       slug: product.slug,
       title: product.title,
       size,
       qty,
-      paise: shopPricePaise(product.priceLabel) * qty,
+      unitPaise,
+      paise: unitPaise * qty,
+      image: product.image,
     });
   }
 

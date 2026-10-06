@@ -65,7 +65,15 @@ export async function recordShopOrder(payload: {
   address?: string;
   city?: string;
   pincode?: string;
-  items: { slug: string; title: string; size: string; qty: number; paise: number }[];
+  items: {
+    slug: string;
+    title: string;
+    size: string;
+    qty: number;
+    paise: number;
+    unitPaise?: number;
+    image?: string;
+  }[];
   amountPaise: number;
 }) {
   const res = await fetch(`${getShopBackendUrl()}/api/shop/orders`, {

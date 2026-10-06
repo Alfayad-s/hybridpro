@@ -128,6 +128,18 @@ export default function ShopSection() {
             <p className="text-sm text-[color:var(--muted)]">Loading the shop…</p>
           ) : comingSoonTab ? (
             <ComingSoonPanel label={comingSoonLabel} />
+          ) : products.length === 0 ? (
+            <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[28px] border border-[color:var(--border)] bg-[var(--card)] px-6 py-16 text-center">
+              <h2
+                className="text-5xl leading-none uppercase"
+                style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+              >
+                Nothing here yet
+              </h2>
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-[color:var(--muted)]">
+                This collection is empty. Check back when new pieces are added.
+              </p>
+            </div>
           ) : (
             <ProductMasonry
               products={products}
