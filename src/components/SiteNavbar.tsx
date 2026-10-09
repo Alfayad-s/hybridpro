@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useTheme } from "@/components/ThemeProvider";
 import { useCart } from "@/components/shop/CartProvider";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 const navItems = [
   { name: "Home", link: "/" },
@@ -77,6 +78,29 @@ export default function SiteNavbar() {
     link: resolveNavLink(item.link, onHome),
   }));
 
+  useEffect(() => {
+    if (!ready || isMobile) return;
+    const nav = document.querySelector(".site-top-nav");
+    if (!(nav instanceof HTMLElement)) return;
+
+    const apply = () => {
+      const height = Math.ceil(nav.getBoundingClientRect().height);
+      document.documentElement.style.setProperty(
+        "--site-nav-height",
+        `${height}px`,
+      );
+    };
+
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(nav);
+    window.addEventListener("resize", apply);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", apply);
+    };
+  }, [ready, isMobile]);
+
   const mobileItems = staggeredItems.map((item) => ({
     ...item,
     label:
@@ -121,12 +145,12 @@ export default function SiteNavbar() {
     <div className="relative w-full">
       <Navbar
         className="px-4 pt-3 xl:px-6"
-        // Home hero video is dark: use dark glass nav until About, then normal pill.
+        // Home hero is the light footer canvas: dark links until About, then the pill.
         // Other pages keep the solid active pill.
         alwaysScrolled={!onHome}
         hideOnScroll={!pinHeader}
         shrinkOnSectionId={onHome ? "about" : undefined}
-        darkHero={onHome}
+        lightHero={onHome}
       >
         <NavBody>
           <NavbarLogo />

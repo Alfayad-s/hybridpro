@@ -1068,8 +1068,20 @@ export default function ScrollFrameAnimation({
               >
                 {activeQuote === 0 ? (
                   <>
+                    <span
+                      className="hidden text-2xl text-white/80 lg:block lg:text-5xl"
+                      style={{ letterSpacing: "0.22em", wordSpacing: "0.2em" }}
+                    >
+                      Welcome to
+                    </span>
+                    <span
+                      className="mt-2 hidden text-[9.5rem] lg:block"
+                      style={{ color: FLUORO_GREEN, letterSpacing: "0.04em" }}
+                    >
+                      Hybrid Pro
+                    </span>
                     <motion.span
-                      className="block text-2xl text-white/80 sm:text-3xl md:text-4xl lg:text-5xl"
+                      className="block text-2xl text-white/80 sm:text-3xl md:text-4xl lg:hidden"
                       style={{ letterSpacing: "0.22em", wordSpacing: "0.2em" }}
                       initial={{ opacity: 0, y: 18 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -1080,7 +1092,7 @@ export default function ScrollFrameAnimation({
                     <SquigglyText
                       stepDuration={70}
                       scale={[5, 8]}
-                      className="mt-2 block text-6xl sm:text-8xl md:text-9xl lg:text-[9.5rem]"
+                      className="mt-2 block text-6xl sm:text-8xl md:text-9xl lg:hidden"
                       style={{ color: FLUORO_GREEN, letterSpacing: "0.04em" }}
                     >
                       Hybrid Pro

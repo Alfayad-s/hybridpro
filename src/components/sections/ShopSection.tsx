@@ -45,6 +45,24 @@ export default function ShopSection() {
       className="relative scroll-mt-24 bg-[var(--background)] px-4 pt-24 pb-8 sm:px-6 sm:pt-28 md:px-8 lg:px-10"
     >
       <div className="w-full">
+        <AnimatePresence mode="wait">
+          {!catalog.ready && !catalog.error ? (
+            <motion.div
+              key="shop-skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <ShopSkeleton />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="shop-catalog"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            >
         <ShopBannerStack banners={catalog.banners} onSelect={setCategory} />
 
         <div className="mt-6 grid w-full items-start gap-8 lg:mt-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
@@ -124,8 +142,6 @@ export default function ShopSection() {
 
           {catalog.error ? (
             <p className="text-sm text-[color:var(--muted)]">{catalog.error}</p>
-          ) : !catalog.ready ? (
-            <p className="text-sm text-[color:var(--muted)]">Loading the shop…</p>
           ) : comingSoonTab ? (
             <ComingSoonPanel label={comingSoonLabel} />
           ) : products.length === 0 ? (
@@ -141,7 +157,7 @@ export default function ShopSection() {
               </p>
             </div>
           ) : (
-            <ProductMasonry
+            <ProductGrid
               products={products}
               offers={catalog.cardPromos}
               onOpen={setOpenSlug}
@@ -149,6 +165,9 @@ export default function ShopSection() {
             />
           )}
         </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <ShopBottomNav />
       <ProductSheet
@@ -159,30 +178,96 @@ export default function ShopSection() {
   );
 }
 
-const imageAspects = [
-  "aspect-square",
-  "aspect-[3/4]",
-  "aspect-[4/5]",
-  "aspect-[5/4]",
-];
-
-function columnCount(width: number) {
-  if (width >= 1536) return 5;
-  if (width >= 1280) return 4;
-  if (width >= 1024) return 3;
-  return 2;
+function ShopBone({
+  className,
+  delay = 0,
+}: {
+  className?: string;
+  delay?: number;
+}) {
+  return (
+    <div
+      className={`relative overflow-hidden bg-[color-mix(in_srgb,var(--foreground)_7%,transparent)] ${className ?? ""}`}
+    >
+      <span
+        aria-hidden
+        className="shop-shimmer pointer-events-none absolute inset-y-0 left-0 w-1/2"
+        style={{ animationDelay: `${delay}ms` }}
+      />
+    </div>
+  );
 }
 
-type MasonryTile =
+function ShopSkeleton() {
+  const cards = [0, 1, 2, 3, 4, 5, 6, 7];
+  return (
+    <div aria-busy="true" aria-label="Loading the shop">
+      <div className="mx-auto w-full max-w-xl lg:max-w-4xl">
+        <div className="relative h-[210px]">
+          <ShopBone
+            className="absolute top-4 left-1/2 h-[168px] w-[92%] max-w-[560px] -translate-x-1/2 rounded-[28px]"
+          />
+        </div>
+        <div className="mt-1 flex justify-center gap-1.5">
+          <ShopBone delay={60} className="h-1.5 w-[18px] rounded-full" />
+          <ShopBone delay={100} className="h-1.5 w-1.5 rounded-full" />
+          <ShopBone delay={140} className="h-1.5 w-1.5 rounded-full" />
+        </div>
+      </div>
+
+      <div className="mt-6 grid w-full items-start gap-8 lg:mt-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
+        <div className="flex gap-2 lg:hidden">
+          {[0, 1, 2, 3].map((index) => (
+            <ShopBone
+              key={index}
+              delay={index * 70}
+              className="h-9 w-24 shrink-0 rounded-full"
+            />
+          ))}
+        </div>
+        <div className="hidden lg:block">
+          <ShopBone className="h-3 w-24 rounded-full" />
+          <div className="mt-4 flex flex-col border-t border-[color:var(--border)]">
+            {[0, 1, 2, 3, 4].map((index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between border-b border-[color:var(--border)] py-3.5"
+              >
+                <ShopBone delay={index * 80} className="h-3.5 w-28 rounded-full" />
+                <ShopBone delay={index * 80 + 40} className="h-3 w-6 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 items-stretch gap-4 sm:gap-5 lg:grid-cols-3">
+          {cards.map((index) => (
+            <div key={index} className="overflow-hidden rounded-2xl border border-[color:var(--border)]">
+              <ShopBone
+                delay={index * 90}
+                className="aspect-square"
+              />
+              <ShopBone delay={index * 90 + 40} className="mt-3 h-2.5 w-16 rounded-full" />
+              <ShopBone delay={index * 90 + 70} className="mt-2 h-6 w-3/4 rounded-md" />
+              <ShopBone delay={index * 90 + 100} className="mt-2 h-3 w-full rounded-full" />
+              <ShopBone delay={index * 90 + 130} className="mt-3 h-9 w-24 rounded-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type CatalogTile =
   | { kind: "product"; product: ShopProduct }
   | { kind: "offer"; id: string; src: string; alt: string; category: string };
 
-function masonryTiles(products: ShopProduct[], offers: ShopPromo[]): MasonryTile[] {
-  const tiles: MasonryTile[] = [];
+function catalogTiles(products: ShopProduct[], offers: ShopPromo[]): CatalogTile[] {
+  const tiles: CatalogTile[] = [];
   let offerIndex = 0;
   products.forEach((product, index) => {
     tiles.push({ kind: "product", product });
-    if ((index + 1) % 4 === 0 && offerIndex < offers.length) {
+    if ((index + 1) % 6 === 0 && offerIndex < offers.length) {
       const offer = offers[offerIndex];
       offerIndex += 1;
       if (!offer) return;
@@ -198,7 +283,7 @@ function masonryTiles(products: ShopProduct[], offers: ShopPromo[]): MasonryTile
   return tiles;
 }
 
-function ProductMasonry({
+function ProductGrid({
   products,
   offers,
   onOpen,
@@ -209,49 +294,29 @@ function ProductMasonry({
   onOpen: (slug: string) => void;
   onOffer: (category: string) => void;
 }) {
-  const [columns, setColumns] = useState(2);
-
-  useEffect(() => {
-    const update = () => setColumns(columnCount(window.innerWidth));
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const tiles = masonryTiles(products, offers);
-  const lanes = Array.from({ length: columns }, () => [] as MasonryTile[]);
-  tiles.forEach((tile, index) => {
-    lanes[index % columns].push(tile);
-  });
+  const tiles = catalogTiles(products, offers);
 
   return (
-    <div className="flex w-full items-start gap-3 sm:gap-5">
-      {lanes.map((lane, laneIndex) => (
-        <div
-          key={laneIndex}
-          className="flex min-w-0 flex-1 flex-col gap-3 sm:gap-5"
-        >
-          {lane.map((tile) =>
-            tile.kind === "product" ? (
-              <ProductCard
-                key={tile.product.slug}
-                product={tile.product}
-                index={products.indexOf(tile.product)}
-                onOpen={() => onOpen(tile.product.slug)}
-              />
-            ) : (
-              <OfferCard
-                key={tile.id}
-                src={tile.src}
-                alt={tile.alt}
-                onClick={() => {
-                  if (tile.category) onOffer(tile.category);
-                }}
-              />
-            ),
-          )}
-        </div>
-      ))}
+    <div className="grid grid-cols-2 items-stretch gap-4 sm:gap-5 lg:grid-cols-3">
+      {tiles.map((tile, index) =>
+        tile.kind === "product" ? (
+          <ProductCard
+            key={tile.product.slug}
+            product={tile.product}
+            index={index}
+            onOpen={() => onOpen(tile.product.slug)}
+          />
+        ) : (
+          <OfferCard
+            key={tile.id}
+            src={tile.src}
+            alt={tile.alt}
+            onClick={() => {
+              if (tile.category) onOffer(tile.category);
+            }}
+          />
+        ),
+      )}
     </div>
   );
 }
@@ -270,7 +335,7 @@ function OfferCard({
       type="button"
       onClick={onClick}
       aria-label={alt}
-      className="relative aspect-square w-full overflow-hidden rounded-2xl border border-[color:var(--border)] sm:rounded-[1.5rem]"
+      className="relative col-span-full h-36 overflow-hidden rounded-2xl border border-[color:var(--border)] sm:h-44"
     >
       <Image src={src} alt={alt} fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover" />
     </button>
@@ -311,48 +376,50 @@ function ProductCard({
   const imageRef = useRef<HTMLDivElement>(null);
 
   return (
-    <Reveal delay={Math.min(index, 6) * 0.04}>
-      <article className="flex cursor-pointer flex-col" onClick={onOpen}>
+    <Reveal delay={Math.min(index, 6) * 0.04} className="h-full">
+      <article
+        className="flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--background)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
+        onClick={onOpen}
+      >
         <div
           ref={imageRef}
           data-shop-image
-          className={`relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--card)] sm:rounded-[1.5rem] ${imageAspects[index % imageAspects.length]}`}
+          className="relative aspect-square bg-[#f4f4f5]"
         >
           <Image
             src={product.image}
             alt={product.title}
             fill
-            sizes="(max-width: 1024px) 50vw, 25vw"
-            className="object-contain p-3 sm:p-6"
+            priority={index === 0}
+            loading={index < 3 ? "eager" : "lazy"}
+            sizes="(max-width: 1024px) 50vw, 28vw"
+            className="object-contain p-6 sm:p-8"
           />
           <SaveButton slug={product.slug} imageRef={imageRef} />
           {product.comingSoon ? (
-            <span className="absolute top-2 left-2 rounded-full bg-black/80 px-2.5 py-1 text-[0.6rem] font-semibold tracking-[0.14em] text-white uppercase">
+            <span className="absolute top-3 left-3 rounded-full bg-black/80 px-2.5 py-1 text-[0.6rem] font-semibold tracking-[0.14em] text-white uppercase">
               Coming soon
             </span>
           ) : null}
         </div>
-        <div className="flex flex-1 flex-col pt-3 sm:pt-4">
+        <div className="flex flex-1 flex-col px-4 py-4">
           {product.subtitle !== "Available sizes" ? (
             <p
-              className="text-[0.6rem] tracking-[0.16em] uppercase sm:text-[0.65rem] sm:tracking-[0.22em]"
+              className="text-[0.62rem] tracking-[0.18em] uppercase"
               style={{ color: FLUORO_GREEN }}
             >
               {product.subtitle}
             </p>
           ) : null}
-          <h3
-            className="text-2xl leading-none tracking-[0.02em] text-[var(--foreground)] uppercase sm:text-3xl"
-            style={{ fontFamily: "var(--font-bebas), sans-serif" }}
-          >
+          <h3 className="mt-1 line-clamp-2 min-h-[2.6rem] text-base leading-snug font-semibold text-[var(--foreground)]">
             {product.title}
           </h3>
-          <p className="mt-1.5 line-clamp-1 text-xs text-[color:var(--muted)] sm:text-sm">
+          <p className="mt-1.5 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-[color:var(--muted)]">
             {product.description}
           </p>
           {product.sizes ? (
-            <p className="mt-2 text-[0.65rem] tracking-[0.08em] text-[color:var(--muted-soft)] uppercase sm:mt-3 sm:text-xs sm:tracking-[0.12em]">
-              Sizes {product.sizes.join(" · ")}
+            <p className="mt-2 text-[0.65rem] tracking-[0.08em] text-[color:var(--muted-soft)] uppercase">
+              {product.sizes.join(" · ")}
             </p>
           ) : null}
           <ProductBuy product={product} imageRef={imageRef} />
@@ -475,24 +542,24 @@ function ProductBuy({
   }
 
   return (
-    <div className="mt-auto pt-3" onClick={(event) => event.stopPropagation()}>
-      <p
-        className="text-2xl leading-none text-[var(--foreground)] sm:text-3xl"
-        style={{ fontFamily: "var(--font-bebas), sans-serif" }}
-      >
+    <div
+      className="mt-auto flex items-center justify-between gap-3 pt-4"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <p className="text-lg font-semibold tracking-tight text-[var(--foreground)]">
         {product.priceLabel}
       </p>
       {product.comingSoon ? (
-        <p className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[color:var(--border)] px-3 py-2 text-[0.7rem] font-semibold tracking-[0.12em] text-[color:var(--muted)] uppercase sm:py-2.5 sm:text-xs">
-          Coming soon
+        <p className="inline-flex shrink-0 items-center justify-center rounded-full border border-[color:var(--border)] px-3 py-2 text-[0.7rem] font-semibold tracking-[0.08em] text-[color:var(--muted)] uppercase">
+          Soon
         </p>
       ) : !needsSize && inCart ? (
         <Link
           href="/shop/cart"
-          className="mt-3 inline-flex w-full items-center justify-center rounded-full px-3 py-2 text-[0.7rem] font-semibold text-black sm:py-2.5 sm:text-xs"
+          className="inline-flex shrink-0 items-center justify-center rounded-full px-3.5 py-2 text-xs font-semibold text-black"
           style={{ background: FLUORO_GREEN }}
         >
-          Go to cart
+          In cart
         </Link>
       ) : (
         <button
@@ -501,10 +568,10 @@ function ProductBuy({
             if (needsSize) setPickerOpen(true);
             else addSelected();
           }}
-          className="mt-3 inline-flex w-full items-center justify-center rounded-full px-3 py-2 text-[0.7rem] font-semibold text-black sm:py-2.5 sm:text-xs"
+          className="inline-flex shrink-0 items-center justify-center rounded-full px-3.5 py-2 text-xs font-semibold text-black"
           style={{ background: FLUORO_GREEN }}
         >
-          Add to cart
+          Add
         </button>
       )}
       <SizePicker

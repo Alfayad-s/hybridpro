@@ -15,11 +15,10 @@ export function getHybridBackendUrl() {
   return DEFAULT_REMOTE_BACKEND_URL;
 }
 
-/** Website shop catalog. Local dev talks to the Nest API on port 3002. */
+/** Website shop. Uses HYBRID_BACKEND_URL in development and production. */
 export function getShopBackendUrl() {
   const override = process.env.SHOP_API_URL?.trim().replace(/\/$/, "");
   if (override) return override;
-  if (process.env.NODE_ENV !== "production") return "http://localhost:3002";
   return getHybridBackendUrl();
 }
 

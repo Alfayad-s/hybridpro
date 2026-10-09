@@ -177,6 +177,7 @@
 
 html {
   scroll-behavior: auto;
+  scrollbar-width: none;
   -webkit-text-size-adjust: 100%;
   transition:
     --background var(--theme-duration) var(--theme-ease),
@@ -192,6 +193,18 @@ html {
     --glass-shadow var(--theme-duration) var(--theme-ease),
     --glass-highlight var(--theme-duration) var(--theme-ease),
     --nav-pill var(--theme-duration) var(--theme-ease);
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+* {
+  scrollbar-width: none;
 }
 
 :root {
@@ -323,8 +336,37 @@ header,
   animation-play-state: paused;
 }
 
+@keyframes shop-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.shop-shimmer {
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.72) 42%,
+    transparent 78%
+  );
+  animation: shop-shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.dark .shop-shimmer {
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.14) 42%,
+    transparent 78%
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .gallery-marquee-track {
+  .gallery-marquee-track,
+  .shop-shimmer {
     animation: none;
   }
 }

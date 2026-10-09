@@ -1,12 +1,12 @@
 "use client";
 
+import DesktopHeroSection from "@/components/DesktopHeroSection";
 import MobileHeroSection from "@/components/MobileHeroSection";
-import ScrollFrameAnimation from "@/components/ScrollFrameAnimation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 /**
- * Desktop: scroll-scrubbed frame hero.
- * Mobile: static full-bleed hero (no frame preload / pin).
+ * Desktop: inset rounded card on a light grey canvas.
+ * Mobile: static full-bleed hero.
  */
 export default function HomeHero() {
   const { isMobile, isPwa, ready } = useIsMobile(1024);
@@ -21,12 +21,5 @@ export default function HomeHero() {
     return <MobileHeroSection isPwa={isPwa} />;
   }
 
-  return (
-    <ScrollFrameAnimation
-      frameCount={1523}
-      folderPath="/frames"
-      imageExtension="webp"
-      scrollLength={28000}
-    />
-  );
+  return <DesktopHeroSection />;
 }
