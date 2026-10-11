@@ -10,7 +10,7 @@ import NutritionSection from "@/components/sections/NutritionSection";
 
 export default function Home() {
   return (
-    <main id="top" className="min-h-screen bg-[var(--background)]">
+    <main id="top" className="min-h-screen bg-[#fff]">
       <SiteNavbar />
       <ThemeGlassToggle showAfterSelector="#about" />
       <HomeHero />

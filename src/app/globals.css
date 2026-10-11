@@ -364,9 +364,36 @@ header,
   );
 }
 
+@keyframes hero-char-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.18em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-caret {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.hero-caret {
+  animation: hero-caret 1.05s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gallery-marquee-track,
-  .shop-shimmer {
+  .shop-shimmer,
+  .hero-caret {
     animation: none;
   }
 }

@@ -1,172 +1,153 @@
 "use client";
 
+import { programImages } from "@/lib/trainerMedia";
+import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Dumbbell, Flame, LineChart, Users } from "lucide-react";
-import { FLUORO_GREEN } from "@/components/sections/Reveal";
+import { useEffect, useState } from "react";
 
-const features = [
-  { icon: Dumbbell, label: "Personalized Workouts" },
-  { icon: LineChart, label: "Track Your Progress" },
-  { icon: Users, label: "Expert Coaching" },
+const headlines = [
+  "Strength, fat loss, and habits that last.",
+  "Coaching built around your life.",
+  "Train with purpose. Stay consistent.",
+  "Online or in person.",
 ];
 
-/** Large-screen home hero matching the Hybrid Pro landing layout. */
+function TypedHeadline() {
+  const [index, setIndex] = useState(0);
+  const [text, setText] = useState("");
+  const [leaving, setLeaving] = useState(false);
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduced(media.matches);
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, []);
+
+  useEffect(() => {
+    if (reduced) return;
+    const full = headlines[index];
+    let delay = 42;
+    let next: () => void;
+
+    if (!leaving && text.length < full.length) {
+      next = () => setText(full.slice(0, text.length + 1));
+    } else if (!leaving) {
+      delay = 1900;
+      next = () => setLeaving(true);
+    } else {
+      delay = 460;
+      next = () => {
+        setText("");
+        setLeaving(false);
+        setIndex((current) => (current + 1) % headlines.length);
+      };
+    }
+
+    const timer = window.setTimeout(next, delay);
+    return () => window.clearTimeout(timer);
+  }, [text, leaving, index, reduced]);
+
+  const shown = reduced ? headlines[0] : text;
+
+  return (
+    <h1 className="mt-4 min-h-[3.35em] max-w-[14ch] text-[clamp(2.15rem,4.2vw,4.15rem)] leading-[1.08] font-semibold tracking-[-0.03em] text-[#111]">
+      <span className="sr-only">{headlines[index]}</span>
+      <span
+        aria-hidden
+        className={`inline ${leaving ? "translate-y-2 opacity-0 transition duration-500 ease-in" : ""}`}
+      >
+        {shown.split(" ").map((word, wordIndex, words) => (
+          <span key={`${index}-${wordIndex}`} className="inline-block whitespace-nowrap">
+            {word.split("").map((char, charIndex) => (
+              <span
+                key={`${index}-${wordIndex}-${charIndex}`}
+                className={reduced ? undefined : "inline-block animate-[hero-char-in_240ms_ease-out]"}
+              >
+                {char}
+              </span>
+            ))}
+            {wordIndex < words.length - 1 ? "\u00A0" : null}
+          </span>
+        ))}
+        <span className="hero-caret ml-1 inline-block h-[0.82em] w-[3px] translate-y-[0.06em] bg-[#111] align-baseline" />
+      </span>
+    </h1>
+  );
+}
+
+/** Home hero: centered headline on the left, training photo on the right. */
 export default function DesktopHeroSection() {
   return (
     <section
-      className="relative overflow-hidden bg-[#f4f5f7]"
+      className="bg-[#fff] px-3 pb-3 sm:px-4 sm:pb-4"
       style={{
-        marginTop: "var(--site-nav-height, 4.75rem)",
-        height: "calc(100dvh - var(--site-nav-height, 4.75rem))",
-        maxHeight: "calc(100dvh - var(--site-nav-height, 4.75rem))",
+        paddingTop: "calc(var(--site-nav-height, 4.75rem) + 0.75rem)",
       }}
       aria-label="Hybrid Pro, welcome"
     >
-      <div
-        className="pointer-events-none absolute top-[8%] right-[4%] h-[78%] w-[36%] rounded-[3.5rem] bg-[#dff3b4]"
-        style={{ transform: "rotate(18deg)" }}
-        aria-hidden
-      />
+      <div className="mx-auto flex min-h-[calc(100dvh-var(--site-nav-height,4.75rem)-1.5rem)] w-full max-w-[1440px] flex-col overflow-hidden rounded-[1.75rem] bg-white lg:h-[calc(100dvh-var(--site-nav-height,4.75rem)-1.5rem)] lg:flex-row lg:rounded-[2rem]">
+        <div className="flex flex-1 flex-col px-5 py-8 sm:px-8 lg:px-10 lg:py-8">
+          <div className="flex flex-1 flex-col items-center justify-center px-2 text-center">
+            <p className="text-xs tracking-[0.08em] text-black/45 sm:text-sm">
+              Hybrid Pro coaching
+            </p>
+            <TypedHeadline />
+          </div>
 
-      <div className="relative z-10 flex h-full items-center px-8 md:px-12 lg:px-16 xl:px-20">
-        <div className="w-[min(48%,640px)] pb-6">
-          <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#3a3a3a] shadow-sm">
-            <LineChart size={14} color={FLUORO_GREEN} aria-hidden />
-            Smarter Training. Better Results.
-          </p>
-
-          <h1 className="mt-5 text-[clamp(4.2rem,7.4vw,7.4rem)] leading-[0.86] font-extrabold tracking-[-0.045em] text-[#111111]">
-            HYBRID
-            <br />
-            <span style={{ color: FLUORO_GREEN }}>PRO</span>
-          </h1>
-
-          <p className="mt-5 max-w-md text-base leading-relaxed text-[#3d3d3d] md:text-lg">
-            Personalized training, expert coaching, and real progress — anytime,
-            anywhere.
-          </p>
-
-          <div className="mt-7 flex flex-wrap items-center gap-3">
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 lg:mt-0">
             <Link
               href="#contact"
-              className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-black transition hover:-translate-y-0.5"
-              style={{
-                background: FLUORO_GREEN,
-                boxShadow: "0 10px 28px rgba(var(--brand-green-rgb), 0.35)",
-              }}
+              className="inline-flex items-center gap-2.5 rounded-full bg-[#111] py-1.5 pr-5 pl-1.5 text-sm font-medium text-white transition hover:-translate-y-0.5"
             >
-              Start Your Journey
-              <ArrowRight size={16} aria-hidden />
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-white/15">
+                <ArrowUpRight className="h-4 w-4" aria-hidden />
+              </span>
+              Contact us now
             </Link>
             <Link
               href="/programs"
-              className="inline-flex items-center rounded-full border border-[#d5d5d8] bg-white px-5 py-3 text-sm font-semibold text-[#111111] transition hover:-translate-y-0.5"
+              className="inline-flex items-center gap-3 text-right text-xs leading-tight text-black/55 transition hover:text-[#111]"
             >
-              Explore Programs
+              See the
+              <br />
+              programs
+              <Image
+                src={programImages.muscle}
+                alt=""
+                width={44}
+                height={44}
+                className="h-11 w-11 rounded-full object-cover"
+              />
             </Link>
           </div>
-
-          <div className="mt-8 flex items-center gap-3">
-            <div className="flex -space-x-2" aria-hidden>
-              {["#111111", "#6b7280", "#c5c7cb"].map((color) => (
-                <span
-                  key={color}
-                  className="grid h-10 w-10 place-items-center rounded-full border-2 border-[#f4f5f7]"
-                  style={{ background: color }}
-                >
-                  <Users size={16} color="#fff" />
-                </span>
-              ))}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#111111]">Join 10K+ members</p>
-              <p className="text-xs text-[#6b7280]">Real people. Real results.</p>
-            </div>
-          </div>
-
-          <ul className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm font-medium text-[#3a3a3a]">
-            {features.map((item, index) => (
-              <li key={item.label} className="flex items-center gap-5">
-                {index > 0 ? (
-                  <span className="h-5 w-px bg-[#d5d5d8]" aria-hidden />
-                ) : null}
-                <span className="inline-flex items-center gap-2">
-                  <item.icon size={16} aria-hidden />
-                  {item.label}
-                </span>
-              </li>
-            ))}
-          </ul>
         </div>
-      </div>
 
-      <Image
-        src="/hero/man.png"
-        alt=""
-        width={1262}
-        height={1246}
-        priority
-        loading="eager"
-        className="pointer-events-none absolute right-[1%] bottom-0 z-[1] h-[96%] w-auto max-w-[52%] object-contain object-bottom"
-      />
-
-      <div className="absolute top-[14%] right-[4%] z-[2] w-[210px] rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-        <div className="flex items-center justify-between text-xs font-medium text-[#6b7280]">
-          <span className="inline-flex items-center gap-1.5">
-            <LineChart size={14} aria-hidden />
-            Weekly Progress
-          </span>
-          <ArrowUpRight size={14} aria-hidden />
-        </div>
-        <p className="mt-3 text-3xl font-extrabold tracking-tight text-[#111111]">
-          +60%
-        </p>
-        <p className="text-xs text-[#6b7280]">Strength increase</p>
-        <div className="mt-3 flex h-10 items-end gap-1.5" aria-hidden>
-          {[28, 40, 34, 52, 70].map((height) => (
-            <span
-              key={height}
-              className="w-3 rounded-sm"
-              style={{
-                height,
-                background: height > 50 ? FLUORO_GREEN : "#d9f5a6",
-              }}
+        <div className="p-3 sm:p-4 lg:w-[52%] lg:pl-0">
+          <div className="relative min-h-[460px] overflow-hidden rounded-[1.5rem] lg:h-full lg:min-h-0">
+            <Image
+              src={programImages.strength}
+              alt="Athlete performing a heavy deadlift in the gym"
+              fill
+              priority
+              sizes="(min-width: 1024px) 52vw, 100vw"
+              className="object-cover object-center"
             />
-          ))}
+            <Link
+              href="/pricing"
+              className="absolute right-4 bottom-4 inline-flex items-center gap-3 rounded-2xl bg-white/85 px-4 py-3 text-xs leading-tight text-[#111] shadow-sm backdrop-blur-md transition hover:bg-white sm:right-5 sm:bottom-5"
+            >
+              See
+              <br />
+              plans
+              <ArrowUpRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
         </div>
       </div>
-
-      <div className="absolute top-[46%] right-[34%] z-[2] w-[168px] rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-        <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6b7280]">
-          <Flame size={14} color="#f97316" aria-hidden />
-          Calories Burned
-        </p>
-        <p className="mt-2 text-2xl font-extrabold tracking-tight text-[#111111]">
-          480
-          <span className="ml-1 text-sm font-semibold text-[#6b7280]">kcal</span>
-        </p>
-        <svg viewBox="0 0 120 28" className="mt-2 h-7 w-full" aria-hidden>
-          <path
-            d="M2 20 C 18 20, 22 8, 36 12 S 54 24, 68 14 S 92 4, 118 10"
-            fill="none"
-            stroke={FLUORO_GREEN}
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
-      <p
-        className="pointer-events-none absolute right-[3%] bottom-[18%] z-[2] text-right text-[1.65rem] leading-tight text-[#111111]"
-        style={{ fontFamily: "var(--font-signature), cursive" }}
-      >
-        Stronger
-        <br />
-        Healthier
-        <br />
-        Happier You
-      </p>
     </section>
   );
 }
