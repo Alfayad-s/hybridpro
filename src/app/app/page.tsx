@@ -2,9 +2,9 @@ import AppInstallPageContent from "@/components/AppInstallPageContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Install GymTrack · Hybrid Pro",
+  title: "Hybrid Pro app",
   description:
-    "Scan the QR code or open gym.clawdage.com, then add GymTrack to your home screen on iPhone or Android.",
+    "Open Hybrid Pro on your phone. Log sessions, track progress, and keep coaching with you.",
 };
 
 export default function AppInstallPage() {

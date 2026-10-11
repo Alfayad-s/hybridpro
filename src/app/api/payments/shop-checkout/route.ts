@@ -2,7 +2,7 @@ import { getShopBackendUrl, recordShopOrder } from "@/lib/hybridAppApi";
 import { createPineLabsCheckout, isPineLabsConfigured } from "@/lib/pinelabs";
 import { shopImageSrc, shopPricePaise, type ShopProduct } from "@/lib/shopCatalog";
 import { randomUUID } from "crypto";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -117,8 +117,13 @@ export async function POST(request: Request) {
     unitPaise: number;
     image: string;
   }[] = [];
-  for (const item of requested) {
-    const product = await loadShopProduct(item.slug || "");
+  const loaded = await Promise.all(
+    requested.map(async (item) => ({
+      item,
+      product: await loadShopProduct(item.slug || ""),
+    })),
+  );
+  for (const { item, product } of loaded) {
     const qty = Math.floor(Number(item.qty) || 0);
     const size = (item.size || "").trim();
     if (!product || qty < 1 || qty > 10) {
@@ -194,7 +199,7 @@ export async function POST(request: Request) {
       },
     });
 
-    await recordShopOrder({
+    const orderRecord = {
       reference: merchantOrderReference,
       pineOrderId: checkout.orderId,
       customerName: fullName,
@@ -206,7 +211,12 @@ export async function POST(request: Request) {
       pincode,
       items: lines,
       amountPaise,
-    });
+    };
+    after(() =>
+      recordShopOrder(orderRecord).catch((err) => {
+        console.error("[shop-checkout] save order", err);
+      }),
+    );
 
     return NextResponse.json({
       redirectUrl: checkout.redirectUrl,

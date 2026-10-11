@@ -30,6 +30,7 @@ type MapsNamespace = {
         name: string,
         handler: (event?: { latLng?: GoogleLatLng }) => void,
       ) => void;
+      trigger: (target: object, name: string) => void;
     };
   };
 };
@@ -91,15 +92,19 @@ function readPin(result: GeocodeResult | undefined): DeliveryPin | null {
 
 export function DeliveryPinMap({
   onChange,
+  className = "",
 }: {
   onChange: (pin: DeliveryPin | null) => void;
+  className?: string;
 }) {
   const mapNode = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<GoogleMap | null>(null);
   const searchNode = useRef<HTMLInputElement>(null);
   const onChangeRef = useRef(onChange);
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -138,6 +143,7 @@ export function DeliveryPinMap({
           clickableIcons: false,
           gestureHandling: "greedy",
         });
+        mapRef.current = map;
         const marker = new maps.Marker({
           map,
           position: defaultCenter,
@@ -202,31 +208,103 @@ export function DeliveryPinMap({
       });
     return () => {
       cancelled = true;
+      mapRef.current = null;
     };
   }, [apiKey]);
 
+  useEffect(() => {
+    const node = mapNode.current;
+    if (!node) return undefined;
+    const observer = new ResizeObserver(() => {
+      const map = mapRef.current;
+      if (map) window.google?.maps.event.trigger(map, "resize");
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!expanded) return undefined;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    searchNode.current?.focus();
+    const resize = () => {
+      const map = mapRef.current;
+      if (map) window.google?.maps.event.trigger(map, "resize");
+    };
+    const frame = requestAnimationFrame(resize);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+      cancelAnimationFrame(frame);
+      requestAnimationFrame(resize);
+    };
+  }, [expanded]);
+
   return (
-    <div className="flex flex-col gap-3">
-      <label className="text-sm">
-        <span className="mb-1.5 block text-[color:var(--muted)]">
-          Search or pin the delivery location
-        </span>
-        <input
-          ref={searchNode}
-          placeholder="Search an area"
-          className="w-full rounded-xl border border-[color:var(--border)] bg-transparent px-4 py-3 outline-none"
-        />
-      </label>
-      <div className="overflow-hidden rounded-2xl border border-[color:var(--border)]">
+    <div
+      className={
+        expanded
+          ? "fixed inset-0 z-[120] flex flex-col bg-[var(--background)]"
+          : `flex flex-col gap-3 ${className}`
+      }
+    >
+      {expanded ? (
+        <style>{`.pac-container { z-index: 1300 !important; }`}</style>
+      ) : null}
+      <div className={expanded ? "flex items-center gap-2 px-4 pt-4" : "contents"}>
+        <label className={expanded ? "min-w-0 flex-1 text-sm" : "text-sm"}>
+          {expanded ? null : (
+            <span className="mb-1.5 block text-[color:var(--muted)]">
+              Search or pin the delivery location
+            </span>
+          )}
+          <input
+            ref={searchNode}
+            placeholder="Search an area"
+            aria-label="Search an area"
+            className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--background)] px-4 py-3 outline-none lg:py-2.5"
+          />
+        </label>
+        {expanded ? (
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="shrink-0 rounded-full border border-[color:var(--border)] px-4 py-3 text-sm font-semibold"
+          >
+            Close
+          </button>
+        ) : null}
+      </div>
+      <div
+        className={
+          expanded
+            ? "relative mt-3 min-h-0 flex-1"
+            : "relative h-64 overflow-hidden rounded-2xl border border-[color:var(--border)] lg:h-auto lg:min-h-48 lg:flex-1"
+        }
+      >
         {error ? (
           <p className="px-4 py-10 text-center text-sm text-[color:var(--muted)]">
             {error}
           </p>
         ) : (
-          <div ref={mapNode} className="h-64 w-full" />
+          <div ref={mapNode} className="absolute inset-0" />
         )}
+        {!expanded && !error ? (
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="absolute top-3 right-3 z-10 rounded-full bg-black/80 px-3 py-1.5 text-xs font-semibold text-white"
+          >
+            Full view
+          </button>
+        ) : null}
       </div>
-      {hint ? <p className="text-sm text-red-600">{hint}</p> : null}
+      {hint ? <p className="px-4 text-sm text-red-600">{hint}</p> : null}
     </div>
   );
 }

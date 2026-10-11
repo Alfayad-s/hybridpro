@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Great_Vibes, Outfit } from "next/font/google";
+import localFont from "next/font/local";
+import Script from "next/script";
 import { CartProvider } from "@/components/shop/CartProvider";
 import { ShopCatalogProvider } from "@/components/shop/ShopCatalogProvider";
 import { WishlistProvider } from "@/components/shop/WishlistProvider";
@@ -7,18 +8,18 @@ import SplashScreen from "@/components/SplashScreen";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
-const outfit = Outfit({
-  subsets: ["latin"],
+const outfit = localFont({
+  src: "../fonts/Outfit-Variable.woff2",
   variable: "--font-outfit",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "100 900",
 });
 
-const greatVibes = Great_Vibes({
-  weight: "400",
+const greatVibes = localFont({
+  src: "../fonts/GreatVibes-Regular.woff2",
   variable: "--font-signature",
-  subsets: ["latin"],
   display: "swap",
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -84,10 +85,10 @@ export default function RootLayout({
       className={`${outfit.variable} ${outfit.className} ${greatVibes.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className="min-h-dvh overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]">
+        <Script id="hybridpro-theme" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
         <ThemeProvider>
           <ShopCatalogProvider>
             <CartProvider>

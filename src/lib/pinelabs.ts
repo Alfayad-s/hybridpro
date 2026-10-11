@@ -110,7 +110,7 @@ export type CreateCheckoutInput = {
   successQuery?: Record<string, string>;
 };
 
-type TokenResult = { token: string; baseUrl: string };
+type TokenResult = { token: string; baseUrl: string; expiresIn?: number };
 
 type AuthAttempt = {
   label: string;
@@ -212,7 +212,11 @@ async function requestAccessToken(baseUrl: string): Promise<TokenResult> {
         continue;
       }
 
-      return { token, baseUrl };
+      const expiresIn =
+        typeof data.expires_in === "number" && data.expires_in > 0
+          ? data.expires_in
+          : 900;
+      return { token, baseUrl, expiresIn };
     } catch (err) {
       attemptErrors.push(
         `${attempt.label}: ${err instanceof Error ? err.message : String(err)}`,
@@ -269,16 +273,27 @@ export async function diagnosePineLabsAuth() {
   };
 }
 
+let tokenCache: (TokenResult & { expiresAt: number }) | null = null;
+
 /**
  * Authenticate against preferred env first, then fall back to other hosts.
+ * The access token is reused until shortly before it expires.
  */
 export async function getPineLabsAccessToken(): Promise<TokenResult> {
+  if (tokenCache && tokenCache.expiresAt > Date.now() + 60_000) {
+    return { token: tokenCache.token, baseUrl: tokenCache.baseUrl };
+  }
   const bases = getCandidateBaseUrls();
   const errors: string[] = [];
 
   for (const base of bases) {
     try {
       const result = await requestAccessToken(base);
+      tokenCache = {
+        token: result.token,
+        baseUrl: result.baseUrl,
+        expiresAt: Date.now() + (result.expiresIn ?? 900) * 1000,
+      };
       if (base !== getPreferredBaseUrl()) {
         console.warn(
           `[pinelabs] Auth succeeded on ${base} (preferred was ${getPreferredBaseUrl()}). Set PINELABS_BASE_URL=${base}`,

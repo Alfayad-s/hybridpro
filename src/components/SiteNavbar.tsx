@@ -145,20 +145,19 @@ export default function SiteNavbar() {
     <div className="relative w-full">
       <Navbar
         className="px-4 pt-3 xl:px-6"
-        // Home hero is the light footer canvas: dark links until About, then the pill.
-        // Other pages keep the solid active pill.
-        alwaysScrolled={!onHome}
+        // At the top of every page the bar matches the home hero: open, no pill.
+        // Home tightens when About reaches the top. Other pages tighten after a short scroll.
+        alwaysScrolled={false}
         hideOnScroll={!pinHeader}
         shrinkOnSectionId={onHome ? "about" : undefined}
-        lightHero={onHome}
+        shrinkOnScroll={!onHome}
+        shrinkScrollThreshold={24}
+        lightHero
       >
         <NavBody>
           <NavbarLogo />
           <NavItems items={desktopNavItems} />
           <div className="relative z-20 flex shrink-0 items-center gap-2">
-            <NavbarButton href="/shop/cart" variant="dark" className="px-4 py-2">
-              Cart{cart.count > 0 ? ` ${cart.count}` : ""}
-            </NavbarButton>
             <NavbarButton
               href={resolveNavLink("#contact", onHome)}
               variant="primary"

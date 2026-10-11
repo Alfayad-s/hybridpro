@@ -15,9 +15,11 @@ export function WishlistPage() {
   const wishlist = useWishlist();
 
   return (
-    <main className="min-h-screen bg-[var(--background)] pb-28">
+    <main className="min-h-screen bg-[var(--background)] pb-28 lg:flex lg:h-dvh lg:flex-col lg:overflow-hidden lg:pb-0">
       <SiteNavbar />
-      <section className="mx-auto w-full max-w-3xl px-4 pt-28 pb-8 sm:px-6">
+      <section className="mx-auto w-full max-w-3xl px-4 pt-28 pb-8 sm:px-6 lg:flex lg:min-h-0 lg:max-w-6xl lg:flex-1 lg:flex-col lg:px-10 lg:pt-[calc(var(--site-nav-height,4.75rem)+1.25rem)] lg:pb-8">
+        <div className="lg:flex lg:items-end lg:justify-between">
+        <div>
         <p
           className="text-[0.7rem] tracking-[0.35em] uppercase"
           style={{ color: FLUORO_GREEN }}
@@ -25,13 +27,15 @@ export function WishlistPage() {
           Saved
         </p>
         <h1
-          className="mt-2 text-5xl uppercase text-[var(--foreground)]"
+          className="mt-2 text-5xl uppercase text-[var(--foreground)] lg:mt-1 lg:text-6xl"
           style={{ fontFamily: "var(--font-bebas), sans-serif" }}
         >
           Wishlist
         </h1>
+        </div>
+        </div>
         {!wishlist.ready ? null : wishlist.items.length === 0 ? (
-          <div className="mt-10">
+          <div className="mt-10 lg:mt-8">
             <p className="text-[color:var(--muted)]">Nothing saved yet.</p>
             <Link
               href="/shop"
@@ -49,14 +53,16 @@ export function WishlistPage() {
             </Link>
           </div>
         ) : (
-          <div className="mt-8 flex flex-col gap-4">
+          <div className="mt-8 flex flex-col gap-4 lg:mt-6 lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:content-start lg:gap-x-8 lg:gap-y-4 lg:overflow-auto">
             {wishlist.items.map((product) => (
               <WishlistRow key={product.slug} product={product} />
             ))}
           </div>
         )}
       </section>
-      <ShopBottomNav />
+      <div className="lg:hidden">
+        <ShopBottomNav />
+      </div>
     </main>
   );
 }
@@ -72,7 +78,7 @@ function WishlistRow({ product }: { product: ShopProduct }) {
   return (
     <ParticleDeleteContainer
       onDelete={() => wishlist.remove(product.slug)}
-      className="flex gap-4 border-b border-[color:var(--border)] pb-4"
+      className="flex gap-4 border-b border-[color:var(--border)] pb-4 lg:items-center lg:rounded-2xl lg:border lg:bg-[var(--card)] lg:p-4"
     >
       {({ isDeleting, handleDelete }) => (
         <>

@@ -1,54 +1,9 @@
 "use client";
 
-import { useTheme } from "@/components/ThemeProvider";
-import { pricingPlans } from "@/lib/pricingPlans";
+import { FLUORO_GREEN } from "@/components/sections/Reveal";
+import { pricingPlans, type PricingPlan } from "@/lib/pricingPlans";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  Eyebrow,
-  FLUORO_GREEN,
-  Reveal,
-  SectionShell,
-  SectionTitle,
-} from "./Reveal";
-
-function CheckIcon() {
-  return (
-    <span
-      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-      style={{ background: FLUORO_GREEN }}
-      aria-hidden
-    >
-      <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-        <path
-          d="M2.5 6.2L4.8 8.5L9.5 3.5"
-          stroke="#111"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </span>
-  );
-}
-
-function CrossIcon({ color }: { color: string }) {
-  return (
-    <span
-      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center"
-      aria-hidden
-    >
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path
-          d="M3 3L9 9M9 3L3 9"
-          stroke={color}
-          strokeWidth="1.6"
-          strokeLinecap="round"
-        />
-      </svg>
-    </span>
-  );
-}
 
 function checkoutHref(
   planId: string,
@@ -63,180 +18,164 @@ function checkoutHref(
   return `/checkout?${next.toString()}`;
 }
 
-export default function PricingSection() {
-  const params = useSearchParams();
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+function Check({ on, light }: { on: boolean; light?: boolean }) {
+  return (
+    <span
+      className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full"
+      style={{
+        background: on ? (light ? "#fff" : FLUORO_GREEN) : "transparent",
+        border: on ? "none" : `1.5px solid ${light ? "rgba(255,255,255,0.28)" : "rgba(17,17,17,0.18)"}`,
+        opacity: on ? 1 : 0.55,
+      }}
+      aria-hidden
+    >
+      {on ? (
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+          <path
+            d="M2.5 6.2L4.8 8.5L9.5 3.5"
+            stroke={light ? "#111" : "#111"}
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : null}
+    </span>
+  );
+}
 
-  const accent = FLUORO_GREEN;
-  const cardBg = isLight ? "#FFFFFF" : "#2A2A2A";
-  const titleColor = isLight ? "#111111" : "#FFFFFF";
-  const bodyColor = isLight ? "rgba(17,17,17,0.72)" : "rgba(255,255,255,0.85)";
-  const includedColor = isLight ? "#111111" : "#FFFFFF";
-  const excludedColor = isLight ? "#9A9A9A" : "#8A8A8A";
-  const strikeColor = isLight ? "#B0B0B0" : "#6B6B6B";
-  const dividerColor = isLight
-    ? "rgba(17,17,17,0.18)"
-    : "rgba(255,255,255,0.25)";
-  const borderFill = isLight
-    ? "rgba(var(--brand-green-rgb), 0.35)"
-    : "rgba(var(--brand-green-rgb), 0.22)";
-  const ctaBg = isLight ? "#111111" : "#FFFFFF";
-  const ctaColor = isLight ? FLUORO_GREEN : "#111111";
-  const ctaHover = isLight ? "#222222" : "#f3f3f3";
+function PlanCard({
+  plan,
+  href,
+  tone,
+}: {
+  plan: PricingPlan;
+  href: string;
+  tone: "dark" | "light";
+}) {
+  const dark = tone === "dark";
+  const features = [
+    ...plan.included.map((label) => ({ label, on: true })),
+    ...plan.excluded.map((label) => ({ label, on: false })),
+  ];
 
   return (
-    <SectionShell id="pricing">
-      <Reveal>
-        <Eyebrow>Coaching pricing</Eyebrow>
-        <SectionTitle>Choose your Hybrid Pro plan.</SectionTitle>
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
-          Foundation, Performance, and Elite are 30 days. Hyrox is 90 days,
-          beginner to race day. Secure checkout powered by Pine Labs.
-        </p>
-      </Reveal>
-
-      <div className="mt-12 grid gap-6 sm:mt-16 md:grid-cols-2 md:gap-5 xl:grid-cols-4 lg:gap-6">
-        {pricingPlans.map((plan, i) => (
-          <Reveal key={plan.id} delay={0.08 * i}>
-            <article
-              className="relative flex h-full flex-col overflow-hidden rounded-[1.75rem] p-[3px]"
-              style={{
-                backgroundImage: `repeating-linear-gradient(
-                  -45deg,
-                  ${accent} 0 2px,
-                  transparent 2px 5px
-                )`,
-                backgroundColor: borderFill,
-                boxShadow: plan.featured
-                  ? `0 18px 50px rgba(var(--brand-green-rgb), ${isLight ? 0.2 : 0.22})`
-                  : isLight
-                    ? "0 16px 40px rgba(0,0,0,0.08)"
-                    : "0 16px 40px rgba(0,0,0,0.18)",
-              }}
-            >
-              <div
-                className="relative flex h-full flex-col rounded-[1.6rem] px-6 py-7 sm:px-7 sm:py-8"
-                style={{
-                  background: cardBg,
-                  border: isLight ? "1px solid rgba(0,0,0,0.04)" : undefined,
-                }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p
-                      className="text-[0.65rem] font-bold tracking-[0.22em] uppercase"
-                      style={{ color: accent }}
-                    >
-                      {plan.company} · {plan.category}
-                    </p>
-                    <h3
-                      className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl"
-                      style={{ color: titleColor }}
-                    >
-                      {plan.name}
-                    </h3>
-                  </div>
-                  {plan.saveLabel && (
-                    <span
-                      className="relative -mt-1 -mr-1 shrink-0 rounded-full px-3 py-1.5 text-xs font-bold text-black"
-                      style={{ background: accent }}
-                    >
-                      <span
-                        className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-black/80"
-                        aria-hidden
-                      />
-                      {plan.saveLabel}
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-end gap-x-3 gap-y-1">
-                  {plan.originalPrice !== plan.price && (
-                  <span
-                    className="text-3xl font-medium line-through decoration-2"
-                    style={{
-                      color: strikeColor,
-                      fontFamily: "var(--font-bebas), sans-serif",
-                    }}
-                  >
-                    {plan.originalPrice}
-                  </span>
-                  )}
-                  <span
-                    className="text-5xl leading-none tracking-[0.02em] sm:text-6xl"
-                    style={{
-                      color: accent,
-                      fontFamily: "var(--font-bebas), sans-serif",
-                    }}
-                  >
-                    {plan.price}
-                  </span>
-                  <span
-                    className="mb-1 text-sm font-medium"
-                    style={{ color: accent }}
-                  >
-                    {plan.cadence}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm font-medium" style={{ color: accent }}>
-                  {plan.billingNote}
-                </p>
-
-                <p
-                  className="mt-5 text-sm leading-relaxed"
-                  style={{ color: bodyColor }}
-                >
-                  {plan.blurb}
-                </p>
-
-                <div
-                  className="mt-6 border-t border-dashed"
-                  style={{ borderColor: dividerColor }}
-                  aria-hidden
-                />
-
-                <ul className="mt-6 flex flex-1 flex-col gap-3.5">
-                  {plan.included.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-start gap-3 text-sm"
-                      style={{ color: includedColor }}
-                    >
-                      <CheckIcon />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                  {plan.excluded.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-start gap-3 text-sm"
-                      style={{ color: excludedColor }}
-                    >
-                      <CrossIcon color={excludedColor} />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href={checkoutHref(plan.id, params)}
-                  className="mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3.5 text-center text-sm font-bold transition hover:-translate-y-0.5"
-                  style={{ background: ctaBg, color: ctaColor }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = ctaHover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = ctaBg;
-                  }}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            </article>
-          </Reveal>
-        ))}
+    <article
+      className={`flex h-full min-w-0 flex-1 flex-col rounded-[1.6rem] p-6 sm:p-7 ${
+        dark
+          ? "text-white shadow-[0_18px_40px_rgba(0,0,0,0.18)]"
+          : "text-[#111] dark:text-white"
+      }`}
+      style={
+        dark
+          ? {
+              background:
+                "radial-gradient(ellipse at 18% 0%, rgba(255,255,255,0.18), transparent 52%), radial-gradient(ellipse at 80% 110%, rgba(255,255,255,0.08), transparent 46%), #141414",
+            }
+          : undefined
+      }
+    >
+      <h3 className="text-lg font-semibold tracking-tight">{plan.shortName}</h3>
+      <div className="mt-6 flex flex-wrap items-end gap-x-2 gap-y-1">
+        {plan.originalPrice !== plan.price ? (
+          <span
+            className={`text-3xl font-semibold tracking-tight line-through ${
+              dark ? "text-white/35" : "text-black/25"
+            }`}
+          >
+            {plan.originalPrice}
+          </span>
+        ) : null}
+        <span className="text-4xl font-extrabold tracking-tight sm:text-[2.6rem]">
+          {plan.price}
+        </span>
+        <span className={`mb-1 text-sm ${dark ? "text-white/55" : "text-black/45"}`}>
+          {plan.cadence}
+        </span>
       </div>
-    </SectionShell>
+      <ul className="mt-7 flex flex-1 flex-col gap-3">
+        {features.map((feature) => (
+          <li
+            key={feature.label}
+            className={`flex items-start gap-2.5 text-sm leading-snug ${
+              feature.on ? "" : dark ? "text-white/35" : "text-black/35"
+            }`}
+          >
+            <Check on={feature.on} light={dark} />
+            <span>{feature.label}</span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={href}
+        className={`mt-8 inline-flex items-center justify-between rounded-full px-4 py-3 text-sm font-semibold ${
+          dark ? "bg-white/12 text-white hover:bg-white/18" : "bg-[#1a1a1a] text-white hover:bg-black"
+        }`}
+      >
+        Get started
+        <span aria-hidden>↗</span>
+      </Link>
+    </article>
+  );
+}
+
+export default function PricingSection() {
+  const params = useSearchParams();
+  const favorite = pricingPlans.find((plan) => plan.id === "performance") ?? pricingPlans[0];
+  const others = pricingPlans.filter((plan) => plan.id !== favorite.id);
+
+  return (
+    <section id="pricing" className="w-full bg-[var(--background)] px-4 pt-28 pb-16 text-[var(--foreground)] sm:px-6 sm:pt-32 lg:px-0 lg:pb-20">
+      <div className="mx-auto w-full lg:w-[80%]">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--muted)]">
+            <span
+              className="h-2 w-2 rounded-[2px]"
+              style={{ background: FLUORO_GREEN }}
+              aria-hidden
+            />
+            Pricing
+          </p>
+          <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)] sm:text-6xl lg:text-7xl lg:leading-[0.95]">
+            Flexible plans for
+            <br />
+            real coaching.
+          </h1>
+        </div>
+
+        <div className="mt-12 flex flex-col gap-4 lg:hidden">
+          {[favorite, ...others].map((plan) => (
+            <div
+              key={plan.id}
+              className={
+                plan.id === favorite.id ? "" : "rounded-[1.6rem] bg-[#f3f3f4] dark:bg-white/6"
+              }
+            >
+              <PlanCard
+                plan={plan}
+                href={checkoutHref(plan.id, params)}
+                tone={plan.id === favorite.id ? "dark" : "light"}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-14 hidden items-stretch gap-4 lg:flex">
+          <div className="w-1/4 shrink-0">
+            <PlanCard plan={favorite} href={checkoutHref(favorite.id, params)} tone="dark" />
+          </div>
+          <div className="flex min-w-0 flex-1 rounded-[1.75rem] bg-[#f3f3f4] dark:bg-white/6">
+            {others.map((plan) => (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                href={checkoutHref(plan.id, params)}
+                tone="light"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
