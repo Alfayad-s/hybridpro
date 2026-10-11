@@ -2,13 +2,14 @@ import SiteNavbar from "@/components/SiteNavbar";
 import FooterSection from "@/components/sections/FooterSection";
 import BlogSection from "@/components/sections/BlogSection";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Blog · Hybrid Pro",
+export const metadata = pageMeta({
+  title: "Training notes from Akash",
   description:
-    "Training tips, nutrition guidance, and Hybrid Pro insights from Akash.",
-};
+    "How Hybrid Pro writes a training week, fuels Performance and Elite, and manages recovery. Notes from Akash, not generic fitness lists.",
+  path: "/blog",
+});
 
 export default function BlogPage() {
   return (

@@ -62,10 +62,11 @@ export default function ProgramsSection() {
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Programs</Eyebrow>
-          <SectionTitle>Built around your goal.</SectionTitle>
+          <SectionTitle>Strength, fat loss, and muscle.</SectionTitle>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-[color:var(--muted)] sm:text-lg">
-            Three Hybrid Pro pathways, customised to your body, lifestyle, and
-            schedule. Online and in person.
+            Three Hybrid Pro pathways, 8 to 12 weeks, shaped to your body and
+            schedule. Train online now. In-person coaching starts when Hybrid
+            Pro Fitness Studio opens in Bengaluru.
           </p>
         </Reveal>
 

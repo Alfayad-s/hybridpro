@@ -1,19 +1,22 @@
+import JsonLd from "@/components/JsonLd";
 import SiteNavbar from "@/components/SiteNavbar";
 import FooterSection from "@/components/sections/FooterSection";
 import PricingSection from "@/components/sections/PricingSection";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
-import type { Metadata } from "next";
+import { offersJsonLd, pageMeta } from "@/lib/seo";
 import { Suspense } from "react";
 
-export const metadata: Metadata = {
-  title: "Pricing · Hybrid Pro",
+export const metadata = pageMeta({
+  title: "Coaching plans from ₹3,500",
   description:
-    "Hybrid Pro coaching pricing for online and in-person training programs tailored to your goals.",
-};
+    "Foundation, Performance, Elite, and Hyrox. Online coaching in rupees, cancel anytime. In-person coaching follows when Hybrid Pro Fitness Studio opens in Bengaluru.",
+  path: "/pricing",
+});
 
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-[var(--background)]">
+      <JsonLd data={offersJsonLd} />
       <SiteNavbar />
       <ThemeGlassToggle />
       <Suspense>

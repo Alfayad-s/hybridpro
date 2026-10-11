@@ -19,6 +19,7 @@ const navItems = [
   { name: "About", link: "#about" },
   { name: "Programs", link: "/programs" },
   { name: "Coaching", link: "/coaching" },
+  { name: "Studio", link: "/studio" },
   { name: "Shop", link: "/shop" },
   { name: "Nutrition", link: "#nutrition" },
   { name: "App", link: "/app" },
@@ -36,6 +37,7 @@ const staggeredItems = [
   { label: "About", ariaLabel: "Learn about us", link: "#about" },
   { label: "Programs", ariaLabel: "See training programs", link: "/programs" },
   { label: "Coaching", ariaLabel: "How coaching works", link: "/coaching" },
+  { label: "Studio", ariaLabel: "Hybrid Pro Fitness Studio in Bengaluru", link: "/studio" },
   { label: "Shop", ariaLabel: "Open the Hybrid Pro shop", link: "/shop" },
   { label: "Cart", ariaLabel: "Open your shop cart", link: "/shop/cart" },
   {

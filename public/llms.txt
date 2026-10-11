@@ -1,0 +1,25 @@
+# Hybrid Pro
+
+Hybrid Pro is personal coaching from Akash, a certified personal trainer (Active IQ Level 3, REPs UAE).
+
+Online coaching is available now at https://hybridpro.in. Hybrid Pro Fitness Studio is opening in Bengaluru. No street address is published yet.
+
+## Plans (INR)
+
+- Foundation, ₹3,999 per month. Training plan and app tracking. No personalised nutrition.
+- Performance, ₹11,999 per month. Custom training and personalised nutrition.
+- Elite, ₹24,999 per month. Custom training, meal plan, unlimited form reviews, and in-person gym sessions on the plan.
+- Hyrox, ₹3,500 for 90 days. A 12-week race plan with a group chat. No meal logging.
+
+## Programs
+
+Strength and Performance, Fat Loss, and Muscle Development run 8 to 12 weeks. Coaching is online now and will also be in person at the Bengaluru studio.
+
+## App
+
+The member app is at https://app.hybridpro.in. Android package: in.hybridpro.hybrid_pro_app. Meals are included for Performance and Elite. Foundation and Hyrox do not include meals.
+
+## Contact
+
+hello@hybridpro.fit
+https://hybridpro.in/contact is not a separate page. The contact form is on the home page at https://hybridpro.in/#contact

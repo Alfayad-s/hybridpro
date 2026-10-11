@@ -23,9 +23,21 @@ const greatVibes = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Hybrid Pro",
-  description: "Scroll-driven fitness coaching experience",
+  metadataBase: new URL("https://hybridpro.in"),
+  title: "Hybrid Pro | Personal coaching online and in Bengaluru",
+  description:
+    "Hybrid Pro is personal coaching from Akash for strength, fat loss, and habits. Train online now. Hybrid Pro Fitness Studio is opening in Bengaluru.",
   applicationName: "Hybrid Pro",
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: "Hybrid Pro",
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "Hybrid Pro" }],
+  },
+  twitter: {
+    card: "summary",
+    images: ["/icon-512.png"],
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

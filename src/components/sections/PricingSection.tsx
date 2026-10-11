@@ -137,10 +137,15 @@ export default function PricingSection() {
             Pricing
           </p>
           <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)] sm:text-6xl lg:text-7xl lg:leading-[0.95]">
-            Flexible plans for
+            Coaching plans
             <br />
-            real coaching.
+            from ₹3,500.
           </h1>
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-[color:var(--muted)]">
+            Foundation, Performance, and Elite are monthly. Hyrox is 12 weeks.
+            Meals are included on Performance and Elite. Train online now.
+            In-person coaching follows when the Bengaluru studio opens.
+          </p>
         </div>
 
         <div className="mt-12 flex flex-col gap-4 lg:hidden">

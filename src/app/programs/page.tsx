@@ -2,13 +2,14 @@ import SiteNavbar from "@/components/SiteNavbar";
 import FooterSection from "@/components/sections/FooterSection";
 import ProgramsSection from "@/components/sections/ProgramsSection";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Programs · Hybrid Pro",
+export const metadata = pageMeta({
+  title: "Strength, fat loss, and muscle programs",
   description:
-    "Hybrid Pro training programs for strength, fat loss, and muscle development. Online and in-person coaching built around your goals.",
-};
+    "Hybrid Pro programs for strength, fat loss, and muscle, 8 to 12 weeks. Train online now, or in person when the Bengaluru studio opens.",
+  path: "/programs",
+});
 
 export default function ProgramsPage() {
   return (

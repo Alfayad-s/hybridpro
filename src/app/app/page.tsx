@@ -1,12 +1,19 @@
 import AppInstallPageContent from "@/components/AppInstallPageContent";
-import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+import { appJsonLd, pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Hybrid Pro app",
   description:
-    "Open Hybrid Pro on your phone. Log sessions, track progress, and keep coaching with you.",
-};
+    "The Hybrid Pro member app for today’s workout, progress, coach chat, and the shop. Meals are on Performance and Elite. Open it at app.hybridpro.in.",
+  path: "/app",
+});
 
 export default function AppInstallPage() {
-  return <AppInstallPageContent />;
+  return (
+    <>
+      <JsonLd data={appJsonLd} />
+      <AppInstallPageContent />
+    </>
+  );
 }

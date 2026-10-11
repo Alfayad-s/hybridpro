@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Privacy policy · Hybrid Pro",
+export const metadata = pageMeta({
+  title: "Privacy policy",
   description:
     "Hybrid Pro data safety: account info, Health Connect steps and heart rate, progress and meal photos, and Google Play purchase tokens.",
-};
+  path: "/privacy",
+});
 
 const safetyRows = [
   {

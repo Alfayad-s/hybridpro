@@ -1,7 +1,7 @@
 {
   "name": "Hybrid Pro",
   "short_name": "Hybrid Pro",
-  "description": "Scroll-driven fitness coaching experience",
+  "description": "Personal coaching for strength, fat loss, and habits. Online now, with a studio opening in Bengaluru.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f7f7fa",

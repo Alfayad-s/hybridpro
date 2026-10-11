@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 export const metadata: Metadata = {
   title: "Checkout · Hybrid Pro",
   description: "Complete your Hybrid Pro coaching plan purchase securely via Pine Labs.",
+  robots: { index: false, follow: false },
 };
 
 type CheckoutSearch = {

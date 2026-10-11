@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Checkout · Hybrid Pro",
   description: "Pay for Hybrid Pro shop items with Pine Labs.",
+  robots: { index: false, follow: false },
 };
 
 export default function Page() {

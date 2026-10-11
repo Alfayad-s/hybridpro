@@ -55,7 +55,7 @@ function TypedHeadline() {
 
   return (
     <h1 className="mt-4 min-h-[3.35em] max-w-[14ch] text-[clamp(2.15rem,4.2vw,4.15rem)] leading-[1.08] font-semibold tracking-[-0.03em] text-[#111]">
-      <span className="sr-only">{headlines[index]}</span>
+      <span className="sr-only">{headlines[0]}</span>
       <span
         aria-hidden
         className={`inline ${leaving ? "translate-y-2 opacity-0 transition duration-500 ease-in" : ""}`}
@@ -96,6 +96,9 @@ export default function DesktopHeroSection() {
               Hybrid Pro coaching
             </p>
             <TypedHeadline />
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-black/55 sm:text-base">
+              Hybrid Pro is personal coaching from Akash. Train online now. Hybrid Pro Fitness Studio is opening in Bengaluru.
+            </p>
           </div>
 
           <div className="mt-10 flex flex-wrap items-center justify-between gap-4 lg:mt-0">

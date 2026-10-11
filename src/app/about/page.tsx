@@ -1,12 +1,19 @@
 import AboutPageContent from "@/components/AboutPageContent";
-import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+import { pageMeta, personJsonLd } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "About Akash · Hybrid Pro",
+export const metadata = pageMeta({
+  title: "About Akash",
   description:
-    "Meet Akash, Founder & CEO of Hybrid Pro, certified personal trainer helping clients build strength, lose fat, and create lasting habits.",
-};
+    "Akash is the founder of Hybrid Pro, a personal trainer with Active IQ Level 3 and REPs UAE credentials. Coaching is online now, with a studio opening in Bengaluru.",
+  path: "/about",
+});
 
 export default function AboutPage() {
-  return <AboutPageContent />;
+  return (
+    <>
+      <JsonLd data={personJsonLd} />
+      <AboutPageContent />
+    </>
+  );
 }

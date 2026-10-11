@@ -1,13 +1,14 @@
 import SiteNavbar from "@/components/SiteNavbar";
 import FooterSection from "@/components/sections/FooterSection";
 import ShopSection from "@/components/sections/ShopSection";
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Shop · Hybrid Pro",
+export const metadata = pageMeta({
+  title: "Shop",
   description:
-    "Hybrid Pro digital e-books. The same shop as the member app.",
-};
+    "Hybrid Pro digital guides. The same shop as the member app. Coaching plans are separate and include check-ins.",
+  path: "/shop",
+});
 
 export default function ShopPage() {
   return (

@@ -56,8 +56,10 @@ export default function CoachingSection() {
               <span className="text-white">Real coaching, not a PDF.</span>
             </SectionTitle>
             <p className="mt-5 max-w-md text-base leading-relaxed text-white/75 sm:mt-6 sm:text-lg">
-              You get a coach who knows your name, your lifts and your limits,
-              and who answers when you message.
+              Online coaching starts with an assessment, then a plan in the
+              app, video form reviews, and a weekly check-in. The same coaching
+              will be in person when Hybrid Pro Fitness Studio opens in
+              Bengaluru.
             </p>
           </div>
         </Reveal>

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Delete your account · Hybrid Pro",
+export const metadata = pageMeta({
+  title: "Delete your account",
   description: "How to delete a Hybrid Pro account and the data stored with it.",
-};
+  path: "/delete-account",
+});
 
 export default function DeleteAccountPage() {
   return (

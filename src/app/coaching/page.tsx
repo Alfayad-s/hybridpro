@@ -2,13 +2,14 @@ import SiteNavbar from "@/components/SiteNavbar";
 import FooterSection from "@/components/sections/FooterSection";
 import CoachingSection from "@/components/sections/CoachingSection";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Coaching · Hybrid Pro",
+export const metadata = pageMeta({
+  title: "Online coaching with weekly check-ins",
   description:
-    "How Hybrid Pro coaching works, structured training, accountability, and guidance built around your life.",
-};
+    "Hybrid Pro coaching starts with an assessment, then a plan in the app, video form reviews, and weekly check-ins. Online now. A studio is opening in Bengaluru.",
+  path: "/coaching",
+});
 
 export default function CoachingPage() {
   return (
