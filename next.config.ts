@@ -53,6 +53,8 @@ const nextConfig: NextConfig = {
   // Required for Next.js 16 when a webpack plugin (next-pwa) is present.
   turbopack: {},
   images: {
+    formats: ["image/avif", "image/webp"],
+    qualities: [60, 75],
     remotePatterns: [
       {
         protocol: "https",
@@ -62,7 +64,19 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    const security = [
+      { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
+    ];
     return [
+      {
+        source: "/:path*",
+        headers: security,
+      },
       {
         // Immutable frame pack — browsers + SW can keep forever until URL/version changes.
         source: "/frames/:path*",

@@ -33,7 +33,7 @@ export function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <p
       className="mb-5 text-[0.7rem] tracking-[0.4em] uppercase sm:text-xs sm:tracking-[0.45em]"
-      style={{ color: FLUORO_GREEN }}
+      style={{ color: "var(--brand-text)" }}
     >
       {children}
     </p>

@@ -24,6 +24,18 @@ export default function SplashScreen() {
       // private mode — still show once this load
     }
 
+    const automated = navigator.webdriver;
+    const connection = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }).connection;
+    const slow = Boolean(
+      connection?.saveData ||
+        connection?.effectiveType === "slow-2g" ||
+        connection?.effectiveType === "2g" ||
+        connection?.effectiveType === "3g",
+    );
+    if (automated || slow) return;
+
     setVisible(true);
 
     const reduceMotion = window.matchMedia(

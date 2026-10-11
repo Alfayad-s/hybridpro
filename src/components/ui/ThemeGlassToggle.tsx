@@ -48,12 +48,12 @@ export default function ThemeGlassToggle({
       style={{
         marginBottom: "max(0px, env(safe-area-inset-bottom, 0px))",
       }}
+      inert={!visible}
     >
       <motion.button
         type="button"
         onClick={toggleTheme}
         aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-        aria-hidden={!visible}
         tabIndex={visible ? 0 : -1}
         className={`theme-glass-btn pointer-events-auto group relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full ${className}`}
         initial={false}

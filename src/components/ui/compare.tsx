@@ -195,6 +195,8 @@ export const Compare = ({
               <img
                 alt="Before transformation"
                 src={firstImage}
+                loading="lazy"
+                decoding="async"
                 className={cn(
                   "absolute inset-0 z-20 h-full w-full shrink-0 rounded-2xl select-none",
                   firstImageClassName,
@@ -215,6 +217,8 @@ export const Compare = ({
             )}
             alt="After transformation"
             src={secondImage}
+            loading="lazy"
+            decoding="async"
             draggable={false}
           />
         ) : null}

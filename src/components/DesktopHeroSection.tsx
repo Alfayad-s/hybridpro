@@ -15,7 +15,7 @@ const headlines = [
 
 function TypedHeadline() {
   const [index, setIndex] = useState(0);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(headlines[0]);
   const [leaving, setLeaving] = useState(false);
   const [reduced, setReduced] = useState(false);
 
@@ -92,11 +92,11 @@ export default function DesktopHeroSection() {
       <div className="mx-auto flex min-h-[calc(100dvh-var(--site-nav-height,4.75rem)-1.5rem)] w-full max-w-[1440px] flex-col overflow-hidden rounded-[1.75rem] bg-white lg:h-[calc(100dvh-var(--site-nav-height,4.75rem)-1.5rem)] lg:flex-row lg:rounded-[2rem]">
         <div className="flex flex-1 flex-col px-5 py-8 sm:px-8 lg:px-10 lg:py-8">
           <div className="flex flex-1 flex-col items-center justify-center px-2 text-center">
-            <p className="text-xs tracking-[0.08em] text-black/45 sm:text-sm">
+            <p className="text-xs tracking-[0.08em] text-[#3a3a3a] sm:text-sm">
               Hybrid Pro coaching
             </p>
             <TypedHeadline />
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-black/55 sm:text-base">
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-[#3a3a3a] sm:text-base">
               Hybrid Pro is personal coaching from Akash. Train online now. Hybrid Pro Fitness Studio is opening in Bengaluru.
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function DesktopHeroSection() {
             </Link>
             <Link
               href="/programs"
-              className="inline-flex items-center gap-3 text-right text-xs leading-tight text-black/55 transition hover:text-[#111]"
+              className="inline-flex items-center gap-3 text-right text-xs leading-tight text-[#3a3a3a] transition hover:text-[#111]"
             >
               See the
               <br />
@@ -136,7 +136,9 @@ export default function DesktopHeroSection() {
               alt="Athlete performing a heavy deadlift in the gym"
               fill
               priority
-              sizes="(min-width: 1024px) 52vw, 100vw"
+              fetchPriority="high"
+              quality={60}
+              sizes="(min-width: 1024px) 46vw, 100vw"
               className="object-cover object-center"
             />
             <Link

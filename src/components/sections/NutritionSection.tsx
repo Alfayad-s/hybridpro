@@ -129,7 +129,7 @@ export default function NutritionSection() {
                 aria-hidden
               />
               <div className="relative z-10 mt-auto flex flex-col p-7 sm:p-8 md:p-10">
-                <p className="text-[0.65rem] tracking-[0.35em] text-white/70 uppercase">
+                <p className="text-[0.65rem] tracking-[0.35em] text-white uppercase">
                   Meal planning
                 </p>
                 <h3

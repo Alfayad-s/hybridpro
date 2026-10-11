@@ -1,25 +1,25 @@
 # Hybrid Pro
 
-Hybrid Pro is personal coaching from Akash, a certified personal trainer (Active IQ Level 3, REPs UAE).
+> Hybrid Pro is personal coaching from Akash, a certified personal trainer with Active IQ Level 3 and REPs UAE credentials. Online coaching is available now. Hybrid Pro Fitness Studio is opening in Bengaluru and does not have a published street address yet.
 
-Online coaching is available now at https://hybridpro.in. Hybrid Pro Fitness Studio is opening in Bengaluru. No street address is published yet.
+## Coaching
 
-## Plans (INR)
+- [Home](https://hybridpro.in/): Personal coaching for strength, fat loss, and habits.
+- [Programs](https://hybridpro.in/programs): Strength, fat loss, and muscle blocks of 8 to 12 weeks.
+- [Coaching](https://hybridpro.in/coaching): Assessment, a plan in the app, video form reviews, and weekly check-ins.
+- [Pricing](https://hybridpro.in/pricing): Foundation ₹3,999 per month, Performance ₹11,999 per month, Elite ₹24,999 per month, Hyrox ₹3,500 for 90 days.
+- [Studio](https://hybridpro.in/studio): Hybrid Pro Fitness Studio, opening in Bengaluru. Online coaching is available now.
 
-- Foundation, ₹3,999 per month. Training plan and app tracking. No personalised nutrition.
-- Performance, ₹11,999 per month. Custom training and personalised nutrition.
-- Elite, ₹24,999 per month. Custom training, meal plan, unlimited form reviews, and in-person gym sessions on the plan.
-- Hyrox, ₹3,500 for 90 days. A 12-week race plan with a group chat. No meal logging.
+## App and shop
 
-## Programs
+- [Member app](https://app.hybridpro.in): Workouts, progress, and coach chat. Meals are included on Performance and Elite only.
+- [App page](https://hybridpro.in/app): How to open the Hybrid Pro app.
+- [Shop](https://hybridpro.in/shop): Digital guides. Coaching plans are separate from the shop.
 
-Strength and Performance, Fat Loss, and Muscle Development run 8 to 12 weeks. Coaching is online now and will also be in person at the Bengaluru studio.
+## Notes
 
-## App
-
-The member app is at https://app.hybridpro.in. Android package: in.hybridpro.hybrid_pro_app. Meals are included for Performance and Elite. Foundation and Hyrox do not include meals.
-
-## Contact
-
-hello@hybridpro.fit
-https://hybridpro.in/contact is not a separate page. The contact form is on the home page at https://hybridpro.in/#contact
+- [Why hybrid training](https://hybridpro.in/blog/why-hybrid-athletes-out-progress-pure-lifters): Strength work first, then conditioning.
+- [Eating for a training block](https://hybridpro.in/blog/eating-for-a-heavy-training-block): Nutrition is included on Performance and Elite.
+- [Recovery](https://hybridpro.in/blog/recovery-habits-that-move-the-needle): Sleep, protein, and a repeatable week of load.
+- [About Akash](https://hybridpro.in/about): Founder and coach.
+- [Contact](https://hybridpro.in/#contact): hello@hybridpro.fit

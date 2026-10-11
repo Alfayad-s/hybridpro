@@ -15,7 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 
-const BRAND = "var(--brand-green)";
+const BRAND = "var(--brand-text)";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /** Mobile / PWA About — stacked portrait + content, safe-area aware */
@@ -125,7 +125,7 @@ function AboutSectionMobile({
                 href="/about"
                 className="inline-flex min-h-12 w-full items-center justify-center rounded-full px-6 text-sm font-semibold text-black transition active:scale-[0.98]"
                 style={{
-                  background: BRAND,
+                  background: "var(--brand-green)",
                   boxShadow: "0 10px 28px rgba(var(--brand-green-rgb), 0.35)",
                 }}
               >
@@ -312,7 +312,7 @@ function AboutSectionDesktop({
                   href="/about"
                   className="inline-flex items-center justify-center rounded-full px-7 py-3.5 text-sm font-semibold text-black transition hover:-translate-y-0.5"
                   style={{
-                    background: BRAND,
+                    background: "var(--brand-green)",
                     boxShadow: "0 10px 28px rgba(var(--brand-green-rgb), 0.35)",
                   }}
                 >
