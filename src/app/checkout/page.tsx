@@ -1,5 +1,4 @@
 import CheckoutPageContent from "@/components/CheckoutPageContent";
-import { getHybridAppLoginUrl } from "@/lib/hybridAppApi";
 import { getPricingPlan } from "@/lib/pricingPlans";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -27,7 +26,7 @@ export default async function CheckoutPage({
   const userId = params.userId?.trim() || "";
 
   if (plan && (!email || !userId)) {
-    redirect(getHybridAppLoginUrl(undefined, { checkoutPlan: plan.id }));
+    redirect(`/pricing?plan=${encodeURIComponent(plan.id)}`);
   }
 
   return <CheckoutPageContent />;

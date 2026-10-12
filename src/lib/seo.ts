@@ -116,8 +116,9 @@ export const appJsonLd = {
   name: "Hybrid Pro",
   applicationCategory: "HealthApplication",
   operatingSystem: "Android, Web",
-  url: "https://app.hybridpro.in",
-  installUrl: "https://app.hybridpro.in",
+  url: "https://hybridpro.in/app",
+  installUrl:
+    "https://play.google.com/store/apps/details?id=in.hybridpro.hybrid_pro_app",
   identifier: "in.hybridpro.hybrid_pro_app",
   description:
     "Member app for today’s workout, progress, coach chat, and the Hybrid Pro shop. Meals are included on Performance and Elite.",

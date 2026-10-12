@@ -5,7 +5,7 @@ import SiteNavbar from "@/components/SiteNavbar";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
 import { useCart } from "@/components/shop/CartProvider";
-import { GYM_APP_URL } from "@/lib/gymApp";
+import { PLAY_STORE_URL } from "@/lib/gymApp";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -167,8 +167,10 @@ function SuccessBody() {
         setState("ok");
         setMessage(
           data.planName
-            ? `${data.planName} is active for ${planId === "hyrox" ? 90 : 30} days. Opening the Hybrid Pro app…`
-            : "Payment confirmed. Opening the Hybrid Pro app…",
+            ? `${data.planName} is active for ${planId === "hyrox" ? 90 : 30} days.${fromFlutterApp ? " Opening the Hybrid Pro app…" : ""}`
+            : fromFlutterApp
+              ? "Payment confirmed. Opening the Hybrid Pro app…"
+              : "Payment confirmed.",
         );
       } catch (error) {
         if (cancelled) return;
@@ -187,7 +189,7 @@ function SuccessBody() {
     return () => {
       cancelled = true;
     };
-  }, [alreadyActivated, clearCart, email, isShop, merchantOrderReference, orderId, planId, userId]);
+  }, [alreadyActivated, clearCart, email, fromFlutterApp, isShop, merchantOrderReference, orderId, planId, userId]);
 
   const appHomeUrl = fromFlutterApp
     ? `in.hybridpro.app://checkout-callback?welcome=1${
@@ -195,19 +197,13 @@ function SuccessBody() {
       }${planId ? `&plan=${encodeURIComponent(planId)}` : ""}${
         orderId ? `&order_id=${encodeURIComponent(orderId)}` : ""
       }`
-    : `${GYM_APP_URL}/dashboard${
-        state === "ok"
-          ? `?welcome=1${unlockedEmail ? `&email=${encodeURIComponent(unlockedEmail)}` : ""}`
-          : ""
-      }`;
+    : PLAY_STORE_URL;
 
-  // Always bounce back into the native app after activation (WebView + Safari).
   useEffect(() => {
-    if (isShop || state !== "ok") return;
-    const delay = fromFlutterApp ? 700 : 1600;
+    if (!fromFlutterApp || isShop || state !== "ok") return;
     const timer = window.setTimeout(() => {
       window.location.assign(appHomeUrl);
-    }, delay);
+    }, 700);
     return () => window.clearTimeout(timer);
   }, [appHomeUrl, fromFlutterApp, isShop, state]);
 
@@ -269,7 +265,7 @@ function SuccessBody() {
             className="inline-flex rounded-full px-6 py-3 text-sm font-bold text-black"
             style={{ background: FLUORO_GREEN }}
           >
-            Open Hybrid Pro app
+            {fromFlutterApp ? "Open Hybrid Pro app" : "Get the app on Google Play"}
           </a>
         )}
         <Link

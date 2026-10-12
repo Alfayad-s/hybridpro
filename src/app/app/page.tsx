@@ -5,7 +5,7 @@ import { appJsonLd, pageMeta } from "@/lib/seo";
 export const metadata = pageMeta({
   title: "Hybrid Pro app",
   description:
-    "The Hybrid Pro member app for today’s workout, progress, coach chat, and the shop. Meals are on Performance and Elite. Open it at app.hybridpro.in.",
+    "The Hybrid Pro member app for today’s workout, progress, coach chat, and the shop. Meals are on Performance and Elite.",
   path: "/app",
 });
 

@@ -1,4 +1,4 @@
-import { confirmBackendPayment, getHybridAppUrl } from "@/lib/hybridAppApi";
+import { confirmBackendPayment } from "@/lib/hybridAppApi";
 import { getPublicSiteUrl } from "@/lib/pinelabs";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -38,13 +38,6 @@ function collectParams(source: URLSearchParams | Record<string, unknown>) {
     ]),
     status: readValue(source, ["status", "payment_status"]),
   };
-}
-
-function appWelcomeUrl(email?: string) {
-  const url = new URL("/dashboard", `${getHybridAppUrl()}/`);
-  url.searchParams.set("welcome", "1");
-  if (email) url.searchParams.set("email", email);
-  return url;
 }
 
 function websiteUrl(
@@ -111,7 +104,9 @@ async function handle(request: NextRequest, extra?: Record<string, unknown>) {
           url.searchParams.set("source", "flutter");
           return NextResponse.redirect(url, 303);
         }
-        return NextResponse.redirect(appWelcomeUrl(result.email || params.email), 303);
+        const url = websiteUrl("/payment/success", params);
+        url.searchParams.set("activated", "1");
+        return NextResponse.redirect(url, 303);
       }
       return NextResponse.redirect(websiteUrl("/payment/failure", params), 303);
     } catch (error) {

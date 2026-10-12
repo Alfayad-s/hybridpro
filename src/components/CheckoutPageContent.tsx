@@ -4,7 +4,6 @@ import BrandLogo from "@/components/BrandLogo";
 import SiteNavbar from "@/components/SiteNavbar";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
 import { FLUORO_GREEN } from "@/components/sections/Reveal";
-import { getHybridAppLoginUrl } from "@/lib/hybridAppApi";
 import { getPricingPlan, type PricingPlanId } from "@/lib/pricingPlans";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -207,23 +206,7 @@ function CheckoutForm() {
             className="w-full cursor-default rounded-xl border border-[color:var(--border)] bg-[var(--background)] px-4 py-3 text-[var(--foreground)] outline-none"
           />
           <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
-            Checkout is locked to the email you signed in with.
-            {emailLocked ? (
-              <>
-                {" "}
-                To use a different address,{" "}
-                <a
-                  href={getHybridAppLoginUrl(undefined, {
-                    checkoutPlan: plan.id,
-                    reauth: true,
-                  })}
-                  className="font-semibold text-[var(--foreground)] underline underline-offset-2"
-                >
-                  sign in again with that email
-                </a>
-                .
-              </>
-            ) : null}
+            Checkout is locked to the email you signed in with in the Hybrid Pro app.
           </p>
         </label>
 

@@ -12,7 +12,7 @@
 
 ## App and shop
 
-- [Member app](https://app.hybridpro.in): Workouts, progress, and coach chat. Meals are included on Performance and Elite only.
+- [Member app](https://hybridpro.in/app): Workouts, progress, and coach chat. Meals are included on Performance and Elite only.
 - [App page](https://hybridpro.in/app): How to open the Hybrid Pro app.
 - [Shop](https://hybridpro.in/shop): Digital guides. Coaching plans are separate from the shop.
 

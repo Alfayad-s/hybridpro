@@ -1,6 +1,5 @@
 const DEFAULT_LOCAL_BACKEND_URL = "http://localhost:3002";
 const DEFAULT_REMOTE_BACKEND_URL = "https://api.hybridpro.in";
-const DEFAULT_APP_URL = "https://app.hybridpro.in";
 
 export function getHybridBackendUrl() {
   // Explicit env always wins so website + Flutter can share https://api.hybridpro.in.
@@ -20,25 +19,6 @@ export function getShopBackendUrl() {
   const override = process.env.SHOP_API_URL?.trim().replace(/\/$/, "");
   if (override) return override;
   return getHybridBackendUrl();
-}
-
-export function getHybridAppUrl() {
-  return (
-    process.env.HYBRID_APP_PUBLIC_URL?.trim().replace(/\/$/, "") ||
-    process.env.NEXT_PUBLIC_HYBRID_APP_URL?.trim().replace(/\/$/, "") ||
-    DEFAULT_APP_URL
-  );
-}
-
-export function getHybridAppLoginUrl(
-  email?: string | null,
-  options?: { checkoutPlan?: string | null; reauth?: boolean },
-) {
-  const url = new URL("/login", `${getHybridAppUrl()}/`);
-  if (email) url.searchParams.set("email", email);
-  if (options?.checkoutPlan) url.searchParams.set("checkout", options.checkoutPlan);
-  if (options?.reauth) url.searchParams.set("reauth", "1");
-  return url.toString();
 }
 
 function internalHeaders() {

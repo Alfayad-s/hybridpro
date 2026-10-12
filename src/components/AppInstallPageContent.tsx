@@ -3,7 +3,7 @@
 import SiteNavbar from "@/components/SiteNavbar";
 import FooterSection from "@/components/sections/FooterSection";
 import ThemeGlassToggle from "@/components/ui/ThemeGlassToggle";
-import { GYM_APP_NAME, GYM_APP_URL } from "@/lib/gymApp";
+import { PLAY_STORE_URL, GYM_APP_NAME } from "@/lib/gymApp";
 import { resultImages, trainerGalleryCards, trainerPortraits } from "@/lib/trainerMedia";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
@@ -128,7 +128,7 @@ function StoreBadge({
   kicker,
   label,
   glyph,
-  href = GYM_APP_URL,
+  href = PLAY_STORE_URL,
 }: {
   kicker: string;
   label: string;
@@ -281,7 +281,7 @@ function FeatureCarousel() {
                 <h3 className="mt-8 text-xl font-semibold tracking-tight">{feature.title}</h3>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-black/70">{feature.body}</p>
                 <a
-                  href={GYM_APP_URL}
+                  href={PLAY_STORE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-8 inline-flex w-fit rounded-full bg-[#111] px-4 py-2 text-sm font-semibold text-white"
