@@ -3,6 +3,9 @@ export type ContactPayload = {
   email: string;
   phone: string;
   goal: string;
+  planId?: string;
+  planName?: string;
+  planDetail?: string;
 };
 
 const BRAND_GREEN = "#93E200";
@@ -158,6 +161,7 @@ export function buildContactThankYouEmail(payload: ContactPayload, siteUrl: stri
     "Thanks for reaching out — your enquiry is with the Hybrid Pro team.",
     "Akash will review what you shared and get back to you shortly.",
     "",
+    payload.planName ? `Plan: ${payload.planName}` : "",
     `Your goal: ${payload.goal}`,
     "",
     `Start a free assessment: ${safeSite}/assessment`,
@@ -176,8 +180,12 @@ export function buildContactNotifyEmail(payload: ContactPayload) {
   const email = escapeHtml(payload.email);
   const phone = escapeHtml(payload.phone || "—");
   const goal = escapeHtml(payload.goal);
+  const planName = escapeHtml(payload.planName || "");
+  const planDetail = escapeHtml(payload.planDetail || "");
 
-  const subject = `New Hybrid Pro enquiry — ${payload.name}`;
+  const subject = payload.planName
+    ? `New Hybrid Pro enquiry — ${payload.planName} — ${payload.name}`
+    : `New Hybrid Pro enquiry — ${payload.name}`;
 
   const html = `
 <!DOCTYPE html>
@@ -195,6 +203,13 @@ export function buildContactNotifyEmail(payload: ContactPayload) {
         <p style="margin:0 0 12px;font-size:15px;color:#222;"><strong>Name:</strong> ${name}</p>
         <p style="margin:0 0 12px;font-size:15px;color:#222;"><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
         <p style="margin:0 0 12px;font-size:15px;color:#222;"><strong>Phone:</strong> ${phone}</p>
+        ${
+          planName
+            ? `<p style="margin:0 0 12px;font-size:15px;color:#222;"><strong>Plan:</strong> ${planName}</p>
+        <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#888;">Plan detail</p>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#333;white-space:pre-wrap;">${planDetail}</p>`
+            : ""
+        }
         <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#888;">Goal</p>
         <p style="margin:0;font-size:15px;line-height:1.55;color:#333;white-space:pre-wrap;">${goal}</p>
       </td>
@@ -204,7 +219,17 @@ export function buildContactNotifyEmail(payload: ContactPayload) {
 </html>
 `.trim();
 
-  const text = `New enquiry\nName: ${payload.name}\nEmail: ${payload.email}\nPhone: ${payload.phone || "—"}\n\nGoal:\n${payload.goal}`;
+  const text = [
+    "New enquiry",
+    `Name: ${payload.name}`,
+    `Email: ${payload.email}`,
+    `Phone: ${payload.phone || "—"}`,
+    payload.planName ? `Plan: ${payload.planName}` : "",
+    payload.planDetail ? `\nPlan detail:\n${payload.planDetail}` : "",
+    `\nGoal:\n${payload.goal}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   return { subject, html, text };
 }

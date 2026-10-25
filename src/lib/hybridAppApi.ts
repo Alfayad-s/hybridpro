@@ -263,6 +263,9 @@ export async function saveContactSubmission(input: {
   email: string;
   phone?: string;
   goal: string;
+  planId?: string;
+  planName?: string;
+  planDetail?: string;
 }) {
   const res = await fetch(`${getHybridBackendUrl()}/api/contact/submissions`, {
     method: "POST",

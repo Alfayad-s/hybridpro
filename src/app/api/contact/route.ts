@@ -4,6 +4,7 @@ import {
   type ContactPayload,
 } from "@/lib/contactEmail";
 import { saveContactSubmission } from "@/lib/hybridAppApi";
+import { getPricingPlan, planEnquiry } from "@/lib/pricingPlans";
 import { readFile } from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
@@ -29,11 +30,19 @@ function parsePayload(body: unknown): ContactPayload | null {
   const email = typeof data.email === "string" ? data.email.trim() : "";
   const phone = typeof data.phone === "string" ? data.phone.trim() : "";
   const goal = typeof data.goal === "string" ? data.goal.trim() : "";
+  const requestedPlan =
+    typeof data.planId === "string" ? getPricingPlan(data.planId.trim()) : undefined;
 
   if (!name || !email || !goal) return null;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
 
-  return { name, email, phone, goal };
+  return {
+    name,
+    email,
+    phone,
+    goal,
+    ...(requestedPlan ? planEnquiry(requestedPlan) : {}),
+  };
 }
 
 export async function POST(request: Request) {

@@ -12,6 +12,8 @@ type Submission = {
   email: string;
   phone: string | null;
   goal: string;
+  planId: string | null;
+  planName: string | null;
   status: string;
   createdAt: string;
 };
@@ -117,7 +119,10 @@ export default function AdminContactsContent() {
                 </div>
                 <AdminStatusBadge status={row.status} />
               </div>
-              <p className="mt-3 line-clamp-2 text-sm">{row.goal}</p>
+              {row.planName ? (
+                <p className="mt-3 text-sm font-semibold">{row.planName}</p>
+              ) : null}
+              <p className={`line-clamp-2 text-sm ${row.planName ? "mt-1" : "mt-3"}`}>{row.goal}</p>
               <p className="mt-2 text-xs text-[color:var(--muted)]">
                 {new Date(row.createdAt).toLocaleString()}
               </p>
@@ -137,6 +142,7 @@ export default function AdminContactsContent() {
                 <th className="px-4 py-3 font-medium">When</th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Contact</th>
+                <th className="px-4 py-3 font-medium">Plan</th>
                 <th className="px-4 py-3 font-medium">Goal</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium"></th>
@@ -155,6 +161,7 @@ export default function AdminContactsContent() {
                       <p className="text-xs text-[color:var(--muted)]">{row.phone}</p>
                     )}
                   </td>
+                  <td className="px-4 py-3">{row.planName || "—"}</td>
                   <td className="max-w-[280px] truncate px-4 py-3">{row.goal}</td>
                   <td className="px-4 py-3">
                     <AdminStatusBadge status={row.status} />
@@ -172,7 +179,7 @@ export default function AdminContactsContent() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-[color:var(--muted)]">
+                  <td colSpan={7} className="px-4 py-10 text-center text-[color:var(--muted)]">
                     No contact submissions yet.
                   </td>
                 </tr>

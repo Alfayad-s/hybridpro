@@ -14,6 +14,9 @@ type Submission = {
   email: string;
   phone: string | null;
   goal: string;
+  planId: string | null;
+  planName: string | null;
+  planDetail: string | null;
   status: string;
   createdAt: string;
 };
@@ -49,6 +52,7 @@ export default function AdminContactDetail() {
         return;
       }
       setRow(data.submission);
+      if (data.submission.planId) setPlanId(data.submission.planId);
       setClientId(data.clientId ?? null);
       setClientStatus(data.clientStatus ?? null);
       setClientPlan(data.clientPlan ?? null);
@@ -134,6 +138,19 @@ export default function AdminContactDetail() {
             <p className="text-sm text-[color:var(--muted)]">
               {new Date(row.createdAt).toLocaleString()}
             </p>
+            {row.planName ? (
+              <div className="border-t border-[color:var(--border)] pt-4">
+                <p className="text-[0.65rem] tracking-[0.2em] text-[color:var(--muted)] uppercase">
+                  Plan
+                </p>
+                <p className="mt-2 font-semibold">{row.planName}</p>
+                {row.planDetail ? (
+                  <p className="mt-2 whitespace-pre-wrap break-words text-sm text-[color:var(--muted)]">
+                    {row.planDetail}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             <div className="border-t border-[color:var(--border)] pt-4">
               <p className="text-[0.65rem] tracking-[0.2em] text-[color:var(--muted)] uppercase">
                 Goal

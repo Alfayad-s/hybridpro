@@ -122,12 +122,16 @@ export const pricingPlans: PricingPlan[] = [
     billingNote: "90 days of access · beginner to race day",
     blurb: "3 months · ₹3,500 · beginner to race day.",
     included: [
-      "12-week Hyrox workouts",
-      "Mark each session finished and log RPE",
-      "Open Hyrox group chat",
-      "Home, workout, progress, and store",
+      "Structured HYROX training plan",
+      "12-week program (build endurance, strength & speed)",
+      "Event-specific workouts (1 km runs + functional stations)",
+      "Tailored progressions and performance tracking",
+      "Full body strength & conditioning",
+      "Nutrition and hydration coaching",
+      "Race day strategy and pacing tips",
+      "Direct coach support",
     ],
-    excluded: ["Meal logging", "Private coach chat"],
+    excluded: [],
     cta: "Buy Hybrid Pro Hyrox",
     featured: false,
   },
@@ -135,6 +139,15 @@ export const pricingPlans: PricingPlan[] = [
 
 export function getPricingPlan(id: string): PricingPlan | undefined {
   return pricingPlans.find((p) => p.id === id);
+}
+
+/** What a “Get the price” enquiry stores for the admin app. Prices stay off this payload. */
+export function planEnquiry(plan: PricingPlan) {
+  return {
+    planId: plan.id,
+    planName: plan.name,
+    planDetail: [plan.category, ...plan.included.map((item) => `• ${item}`)].join("\n"),
+  };
 }
 
 export function isPricingPlanId(id: string): id is PricingPlanId {

@@ -1,7 +1,8 @@
 "use client";
 
 import BrandLogo from "@/components/BrandLogo";
-import { type FormEvent, useState } from "react";
+import { getPricingPlan, type PricingPlan } from "@/lib/pricingPlans";
+import { type FormEvent, useEffect, useState } from "react";
 import { FLUORO_GREEN, Reveal } from "./Reveal";
 
 const fieldClass =
@@ -12,6 +13,45 @@ type SubmitState = "idle" | "loading" | "success" | "error";
 export default function ContactSection() {
   const [status, setStatus] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [plan, setPlan] = useState<PricingPlan | null>(null);
+
+  // The home hero grows after load, so a fresh /#contact visit can stop
+  // short of this section. Follow the section until its position settles.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("plan");
+    setPlan(requested ? (getPricingPlan(requested) ?? null) : null);
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash !== "#contact") return;
+    const el = document.getElementById("contact");
+    if (!el) return;
+
+    const previousRestoration = history.scrollRestoration;
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+    const align = () => {
+      const y = Math.max(0, el.getBoundingClientRect().top + window.scrollY);
+      if (Math.abs(window.scrollY - y) > 2) window.scrollTo(0, y);
+    };
+
+    align();
+    const timers = [0, 50, 250, 800, 1600].map((delay) =>
+      window.setTimeout(align, delay),
+    );
+    const observer = new ResizeObserver(() => align());
+    observer.observe(document.documentElement);
+    const stop = window.setTimeout(() => observer.disconnect(), 8000);
+
+    return () => {
+      observer.disconnect();
+      timers.forEach((timer) => window.clearTimeout(timer));
+      window.clearTimeout(stop);
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = previousRestoration;
+      }
+    };
+  }, []);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,7 +71,13 @@ export default function ContactSection() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, goal }),
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          goal,
+          ...(plan ? { planId: plan.id } : {}),
+        }),
       });
 
       const json = (await res.json().catch(() => ({}))) as {
@@ -108,6 +154,11 @@ export default function ContactSection() {
             onSubmit={onSubmit}
             className="flex w-full flex-col gap-3 sm:gap-4"
           >
+            {plan ? (
+              <p className="text-sm font-semibold tracking-[0.08em] text-black/70 uppercase">
+                Asking about {plan.shortName}
+              </p>
+            ) : null}
             <label className="sr-only" htmlFor="contact-name">
               Name
             </label>
