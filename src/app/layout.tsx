@@ -6,6 +6,7 @@ import { CartProvider } from "@/components/shop/CartProvider";
 import { ShopCatalogProvider } from "@/components/shop/ShopCatalogProvider";
 import { WishlistProvider } from "@/components/shop/WishlistProvider";
 import SplashScreen from "@/components/SplashScreen";
+import VisitorNameModal from "@/components/VisitorNameModal";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -105,6 +106,7 @@ export default function RootLayout({
             <CartProvider>
               <WishlistProvider>
                 <SplashScreen />
+                <VisitorNameModal />
                 {children}
               </WishlistProvider>
             </CartProvider>

@@ -282,3 +282,20 @@ export async function saveContactSubmission(input: {
   }
   return data;
 }
+
+export async function saveSiteVisitor(name: string) {
+  const res = await fetch(`${getHybridBackendUrl()}/api/contact/visitors`, {
+    method: "POST",
+    headers: internalHeaders(),
+    body: JSON.stringify({ name }),
+    cache: "no-store",
+  });
+  const data = (await res.json().catch(() => ({}))) as {
+    error?: string;
+    message?: string;
+  };
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `Visitor save failed (${res.status})`);
+  }
+  return data;
+}
