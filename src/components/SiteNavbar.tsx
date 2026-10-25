@@ -147,14 +147,15 @@ export default function SiteNavbar() {
     <div className="relative w-full">
       <Navbar
         className="px-4 pt-3 xl:px-6"
-        // At the top of every page the bar matches the home hero: open, no pill.
-        // Home tightens when About reaches the top. Other pages tighten after a short scroll.
+        // Home hero is the dark frame video: light links until About reaches the top.
+        // Other pages keep the light open bar, then tighten after a short scroll.
         alwaysScrolled={false}
         hideOnScroll={!pinHeader}
         shrinkOnSectionId={onHome ? "about" : undefined}
         shrinkOnScroll={!onHome}
         shrinkScrollThreshold={24}
-        lightHero
+        darkHero={onHome}
+        lightHero={!onHome}
       >
         <NavBody>
           <NavbarLogo />

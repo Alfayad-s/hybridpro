@@ -1,8 +1,15 @@
 "use client";
 
-import DesktopHeroSection from "@/components/DesktopHeroSection";
+import ScrollFrameAnimation from "@/components/ScrollFrameAnimation";
 
-/** Home hero. Same split layout on phone and desktop. */
+/** Scroll-scrubbed frame hero on phone and desktop. */
 export default function HomeHero() {
-  return <DesktopHeroSection />;
+  return (
+    <ScrollFrameAnimation
+      frameCount={1523}
+      folderPath="/frames"
+      imageExtension="webp"
+      scrollLength={28000}
+    />
+  );
 }
