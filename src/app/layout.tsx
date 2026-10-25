@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import { CartProvider } from "@/components/shop/CartProvider";
 import { ShopCatalogProvider } from "@/components/shop/ShopCatalogProvider";
 import { WishlistProvider } from "@/components/shop/WishlistProvider";
@@ -109,6 +110,7 @@ export default function RootLayout({
             </CartProvider>
           </ShopCatalogProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

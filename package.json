@@ -13,6 +13,7 @@
     "@ducanh2912/next-pwa": "^10.2.9",
     "@sneas/telephone": "^1.2.0",
     "@tabler/icons-react": "^3.45.0",
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
