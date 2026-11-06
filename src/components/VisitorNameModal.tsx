@@ -6,19 +6,57 @@ import { type FormEvent, useEffect, useId, useState } from "react";
 const NAME_KEY = "hybridpro-visitor-name";
 const SPLASH_KEY = "hybridpro-splash-seen";
 
+function readStoredName() {
+  try {
+    const fromLocal = window.localStorage.getItem(NAME_KEY)?.trim();
+    if (fromLocal) return fromLocal;
+  } catch {
+    // storage can be blocked
+  }
+  try {
+    const fromSession = window.sessionStorage.getItem(NAME_KEY)?.trim();
+    if (fromSession) return fromSession;
+  } catch {
+    // session storage can be blocked
+  }
+  const match = document.cookie.match(
+    /(?:^|;\s*)hybridpro-visitor-name=([^;]*)/,
+  );
+  const fromCookie = match?.[1] ? decodeURIComponent(match[1]).trim() : "";
+  return fromCookie;
+}
+
+function rememberName(name: string) {
+  try {
+    window.localStorage.setItem(NAME_KEY, name);
+  } catch {
+    // keep going with the other stores
+  }
+  try {
+    window.sessionStorage.setItem(NAME_KEY, name);
+  } catch {
+    // keep going with the cookie
+  }
+  const cookie = [
+    `${NAME_KEY}=${encodeURIComponent(name)}`,
+    "Max-Age=31536000",
+    "Path=/",
+    "SameSite=Lax",
+  ];
+  if (window.location.hostname.endsWith("hybridpro.in")) {
+    cookie.push("Domain=.hybridpro.in");
+  }
+  document.cookie = cookie.join("; ");
+}
+
 export default function VisitorNameModal() {
   const titleId = useId();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    try {
-      if (window.localStorage.getItem(NAME_KEY)?.trim()) return;
-    } catch {
-      return;
-    }
+    if (readStoredName()) return;
 
     let splashSeen = false;
     try {
@@ -28,44 +66,27 @@ export default function VisitorNameModal() {
     }
 
     const timer = window.setTimeout(() => {
-      try {
-        if (window.localStorage.getItem(NAME_KEY)?.trim()) return;
-      } catch {
-        return;
-      }
+      if (readStoredName()) return;
       setOpen(true);
     }, splashSeen ? 0 : 2100);
 
     return () => window.clearTimeout(timer);
   }, []);
 
-  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmed = name.trim();
     if (!trimmed || saving) return;
     setSaving(true);
-    setError("");
-    try {
-      const res = await fetch("/api/visitors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
-      });
-      const json = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) {
-        throw new Error(json.error || "Could not save your name. Please try again.");
-      }
-      try {
-        window.localStorage.setItem(NAME_KEY, trimmed);
-      } catch {
-        // the visit is already stored for the admin app
-      }
-      setOpen(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save your name. Please try again.");
-    } finally {
-      setSaving(false);
-    }
+    rememberName(trimmed);
+    setOpen(false);
+    void fetch("/api/visitors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: trimmed }),
+    }).catch(() => {
+      // name is already remembered on this device
+    });
   };
 
   if (!open) return null;
@@ -111,13 +132,8 @@ export default function VisitorNameModal() {
             className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full text-sm font-bold text-[#111] disabled:opacity-60"
             style={{ background: FLUORO_GREEN }}
           >
-            {saving ? "Saving…" : "Continue"}
+            Continue
           </button>
-          {error ? (
-            <p className="mt-3 text-sm text-red-600" role="alert">
-              {error}
-            </p>
-          ) : null}
         </form>
       </div>
     </div>
